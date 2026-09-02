@@ -1,0 +1,16 @@
+{
+  "name": "希腊 · 西班牙 2026 旅行助手",
+  "short_name": "旅行助手",
+  "description": "2026年9月希腊西班牙双人自由行：行程、交通、酒店、美食、清单",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5F0E6",
+  "theme_color": "#0F3D63",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
