@@ -1,7 +1,6 @@
-// 希腊·西班牙旅行助手 — 离线缓存 Service Worker v12
-// 页面（HTML）：网络优先，拿到新版就更新缓存；离线时回退缓存
-// 静态资源（带哈希的 JS/CSS/图标）：缓存优先，网络回源并写入缓存
-const CACHE = 'trip-assistant-v12';
+// 希腊·西班牙旅行助手 — 离线缓存 Service Worker v13
+// 修复：不同网页按各自地址缓存，避免宝宝手册覆盖旅行主页的离线缓存。
+const CACHE = 'trip-assistant-v13';
 const CORE = ['./', './index.html', './manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
@@ -12,41 +11,54 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys().then((keys) => Promise.all(
+      keys.filter((key) => key.startsWith('trip-assistant-') && key !== CACHE)
+        .map((key) => caches.delete(key))
+    )).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) return;
+  const url = new URL(req.url);
+  if (req.method !== 'GET' || url.origin !== self.location.origin) return;
 
-  // 页面导航：网络优先，保证新版本能进来；失败回退缓存（离线可用）
   if (req.mode === 'navigate' || req.destination === 'document') {
     event.respondWith(
       fetch(req).then((res) => {
         if (res.ok) {
           const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put('./index.html', copy));
+          // 只以请求自己的地址保存页面，不统一写入旅行首页。
+          event.waitUntil(caches.open(CACHE).then((cache) => cache.put(req, copy)));
         }
         return res;
-      }).catch(() => caches.match('./index.html'))
+      }).catch(async () => {
+        const cached = await caches.match(req, { ignoreSearch: true });
+        if (cached) return cached;
+        // 只有旅行首页可以回退到首页缓存。其他页面绝不显示错误的网页。
+        if (url.pathname === '/' || url.pathname === '/index.html') {
+          const home = await caches.match('./index.html');
+          if (home) return home;
+        }
+        return new Response('当前离线，且此页面尚未缓存。请恢复网络后重试。', {
+          status: 503,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
+      })
     );
     return;
   }
 
-  // 静态资源：缓存优先（带哈希文件名，更新即换名，不怕旧）
   event.respondWith(
     caches.match(req, { ignoreSearch: true }).then((hit) => {
       if (hit) return hit;
       return fetch(req).then((res) => {
         if (res.ok) {
           const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
+          event.waitUntil(caches.open(CACHE).then((cache) => cache.put(req, copy)));
         }
         return res;
-      }).catch(() => caches.match('./index.html'));
+      }).catch(() => Response.error());
     })
   );
 });
