@@ -214,6 +214,23 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 
+.meas{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ages{margin:10px 0 4px}
+.kidsum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 4px}
+.kidsum div{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;min-width:0}
+.kidsum small{font-size:11.5px;color:var(--muted)}
+.kidsum b{font-size:18px;line-height:1.3}
+.kidsum span{font-size:11.5px;color:var(--muted)}
+.adv{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.adv li{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px}
+.adv li.ok{background:transparent;border-style:dashed}
+.adv li>div{min-width:0}
+.adv b{font-size:13.5px}
+.adv p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.atag{display:inline-block;font-size:11px;font-weight:600;color:var(--accent);margin-right:6px}
+.done{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--ok);white-space:nowrap}
+.done .ic{width:14px;height:14px}
+
 </style>
 <div id="app"></div>
 <script>window.LWS_REPO="coolhjc1987-chao/coolhjc1987-chao.github.io";</script>
@@ -465,6 +482,8 @@ const OPTS = {
   handPocket:[['none','无'],['welt','斜插拉链袋'],['flap','带盖贴袋'],['kangaroo','袋鼠兜'],['high','高位拉链袋']],
   cuff:[['elastic','松紧袖口'],['velcro','魔术贴袖襻'],['rib','罗纹袖口']],
   hem:[['straight','平下摆'],['droptail','前短后长']],
+  fit:[['slim','合体'],['regular','标准'],['roomy','宽松']],
+  growth:[[0,'不留'],[1,'半年'],[2,'一年']],
   lining:[['mesh','网眼内衬','透气，日常最常见'],['taffeta','光面塔夫绸','顺滑好穿脱'],['fleece','抓绒内衬','秋冬加暖'],['quilted','菱格绗棉','保暖，带一点厚度'],['print','童趣印花','打开就有小惊喜']],
   colorRef:[['main','主色'],['acc1','拼色 1'],['acc2','拼色 2']]
 };
@@ -488,9 +507,20 @@ const FONTS={round:['圆体','"Baloo 2","ZCOOL KuaiLe","Noto Sans SC",sans-serif
 const PLACES={chestL:'左胸',chestR:'右胸',back:'后背中',backLow:'后背下',backNeck:'后领下',sleeveL:'左袖',sleeveR:'右袖',hemR:'右前下摆'};
 const METHODS={embroidery:['刺绣',14],print:['热转印',6],reflective:['反光印',10],rubber:['硅胶章',12],woven:['织唛',8]};
 
-const AGES=[ // 年龄 → 参考身高/胸围（cm），按 GB/T 1335.3 儿童号型取整，正式生产以量体为准
-  null,{h:80,c:48,s:25},{h:90,c:50,s:28},{h:100,c:52,s:31},{h:106,c:54,s:33},{h:113,c:56,s:35},{h:120,c:58,s:38}
+const AGES=[ // 年龄 → 参考身高/体重/胸围/臂长（cm、kg），按儿童生长中位水平取整，正式生产以量体为准
+  null,{h:80,w:10.5,c:48,s:25},{h:90,w:13,c:50,s:28},{h:98,w:15,c:52,s:30.5},{h:106,w:17,c:54,s:33},{h:113,w:19,c:56,s:35},{h:120,w:21.5,c:58,s:37.5}
 ];
+// BMI-年龄参考（WHO 儿童生长标准近似值，取男女平均）：[-2SD, 中位数, +2SD]
+const BMI_REF=[null,[14.6,16.9,19.6],[13.7,15.9,18.6],[13.4,15.6,18.2],[13.2,15.4,18.1],[13.0,15.3,18.2],[13.0,15.3,18.5]];
+const SIZE_STEPS=[80,90,100,110,120,130,140]; // GB/T 1335.3：80–130 cm 身高 10 cm 一档
+function bodyInfo(c){const m=c.meas,a=c.age,h=m.height/100,bmi=m.weight/(h*h);const [lo,md,hi]=BMI_REF[a];
+  const z=bmi>=md?2*(bmi-md)/(hi-md):-2*(md-bmi)/(md-lo);
+  const type=z<-1?['slim','偏瘦']:z<=1?['regular','标准']:z<=2?['sturdy','偏壮']:['round','圆润'];
+  const grow=[0,3,6][c.growth||0];const hz=m.height+grow;const hao=SIZE_STEPS.find(x=>x>=hz-2)||140;
+  const xing=Math.round((m.chest+(c.growth||0)*1)/4)*4;
+  return {bmi,z,type:type[0],typeName:type[1],grow,fitTo:Math.round(m.height+grow+2),code:`${hao}/${xing}`,measured:`${m.height}/${m.chest}`}}
+function estimateMeas(m,a){const h=m.height;const base=.25*h+28;const md=BMI_REF[a][1];const bmi=m.weight/Math.pow(h/100,2);
+  return {chest:Math.round(base*Math.pow(bmi/md,.6)),sleeve:Math.round(h*.312*2)/2}}
 
 const BASE = {
   name:'我的设计',type:'hardshell',template:'yoke',
@@ -501,7 +531,8 @@ const BASE = {
   cuff:'velcro',hem:'straight',refl:{band:true,back:false,piping:false},
   lining:'mesh',nameLabel:'乐乐',
   logos:[{id:'l1',kind:'mark',icon:'mountain',text:'LELE',font:'round',shape:'circle',fg:'#eef0ec',bg:'#1f3354',place:'chestL',size:6,method:'embroidery',img:null}],
-  age:4,meas:{height:106,chest:54,sleeve:33}
+  age:4,sex:'',fit:'regular',growth:1,growCuff:false,twoWayZip:false,detachHood:false,
+  meas:{height:106,weight:17,chest:54,sleeve:33,auto:true}
 };
 
 const PRESETS = [
@@ -533,6 +564,42 @@ const PRESETS = [
 const clone=o=>JSON.parse(JSON.stringify(o));
 function mergeCfg(base,over){const c=clone(base);for(const k in over){if(over[k]&&typeof over[k]==='object'&&!Array.isArray(over[k])&&c[k]&&typeof c[k]==='object'&&!Array.isArray(c[k]))c[k]={...c[k],...clone(over[k])};else c[k]=clone(over[k])}return c}
 
+// —— 适龄与体型设计建议 ——
+function adviceList(c){const A=[];const a=c.age,b=bodyInfo(c),hood=c.collar==='hood',vest=c.type==='vest';
+  const add=(id,title,why,ok,apply,tag)=>A.push({id,title,why,ok:!!ok,apply,tag});
+  if(a<=2){
+    add('twoway','双头拉链','大人蹲着给孩子穿、换尿布时，能从下往上拉开。',c.twoWayZip,{twoWayZip:true},'1–2 岁');
+    if(hood)add('dhood','可拆卸帽子','午睡、坐安全座椅时帽子会顶住后脑，能拆下来更舒服也更安全。',c.detachHood,{detachHood:true},'1–2 岁');
+    if(!vest)add('gcuff','可翻折袖口','袖子多留 3 cm，冷天翻下来盖住手背，长个了放下来继续穿。',c.growCuff,{growCuff:true},'1–2 岁');
+    add('drop','前短后长下摆','蹲、爬、坐时不露后腰，能盖住尿布。',c.hem==='droptail',{hem:'droptail'},'1–2 岁');
+    if(!vest)add('rib','罗纹袖口','软罗纹包住手腕挡风，不像魔术贴那样会刮到皮肤。',c.cuff==='rib',{cuff:'rib'},'1–2 岁');
+    add('nochest','不做胸袋','这个年龄用不上小拉链袋，少一个小部件更省心。',c.chestPocket==='none',{chestPocket:'none'},'1–2 岁');
+    if(hood&&c.hoodDeco!=='none')add('softdeco','帽饰做软、缝牢','立体耳朵用软填充并加固缝合，避免被扯下误吞；也可以去掉。',false,{hoodDeco:'none'},'安全');
+    add('grow1','成长余量一年','1–2 岁长得最快，一年能长 8–10 cm。',(c.growth||0)>=2,{growth:2},'1–2 岁');
+  }else if(a<=4){
+    add('bigpull','大号拉片','幼儿园开始自己穿外套，大拉片小手更好抓。',c.bigPull,{bigPull:true},'3–4 岁');
+    add('name','缝姓名标','班里同款外套多，写上名字不易拿错。',!!c.nameLabel,{nameLabel:c.nameLabel||'宝贝'},'3–4 岁');
+    if(!vest)add('velcro','魔术贴袖口','自己就能调松紧，洗手时方便往上撸。',c.cuff==='velcro',{cuff:'velcro'},'3–4 岁');
+    add('easyp','浅口大手袋','斜插拉链袋对小手太难，袋鼠兜或带盖贴袋更好用。',['kangaroo','flap'].includes(c.handPocket),{handPocket:'kangaroo'},'3–4 岁');
+    if(!vest)add('refl','袖口反光带','上下学天色暗时更容易被看见。',c.refl.band,{refl:{...c.refl,band:true}},'安全');
+    if(hood)add('dhood','可拆卸帽子','午睡和户外活动时可以拿掉。',c.detachHood,{detachHood:true},'3–4 岁');
+    add('grow','成长余量半年','这个阶段每年约长 7 cm，留半年刚好。',(c.growth||0)>=1,{growth:1},'3–4 岁');
+  }else{
+    if(!vest)add('refl2','反光带 + 后背反光条','活动范围变大，前后都能被看见。',c.refl.band&&c.refl.back,{refl:{...c.refl,band:true,back:true}},'安全');
+    add('flap','防风门襟','跑跳出汗后吹风，门襟能挡住拉链处的冷风。',c.zipFlap,{zipFlap:true},'5–6 岁');
+    add('pocket','加一个拉链胸袋','开始有自己的小东西（卡片、纸巾），拉链袋不易掉。',c.chestPocket!=='none',{chestPocket:'zipV'},'5–6 岁');
+    add('drop','前短后长下摆','运动时弯腰不露后背。',c.hem==='droptail',{hem:'droptail'},'5–6 岁');
+    if(!vest)add('gcuff','可放长袖口','袖口内藏 3 cm 折边，长个后拆线放长。',c.growCuff,{growCuff:true},'5–6 岁');
+    add('grow','成长余量半年','每年约长 6 cm，留半年不显大。',(c.growth||0)>=1,{growth:1},'5–6 岁');
+  }
+  if(b.type==='sturdy'||b.type==='round'){
+    add('roomy','宽松版型','胸腹部留足空间，抬手时衣摆不往上吊。',c.fit==='roomy',{fit:'roomy'},'体型 · '+b.typeName);
+    if(['tri','classic'].includes(c.template))add('vert','换成侧片或斜向拼色','横向色带会让身形显宽，竖向、斜向分割更显修长。',false,{template:'side',hoodColor:TEMPLATES.side.hood},'体型 · '+b.typeName);
+  }
+  if(b.type==='slim')add('slimfit','合体版型','偏瘦的孩子穿标准版容易空荡，合体版更精神，衣长仍按身高定。',c.fit==='slim',{fit:'slim'},'体型 · 偏瘦');
+  return A.sort((x,y)=>x.ok-y.ok);
+}
+
 // ---- geo.js ----
 // ===== geo.js — 儿童人台 + 参数化服装几何 =====
 const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};
@@ -551,10 +618,11 @@ function dims(cfg){
   const k=.82, C=m.chest/100; d.chestRx=C/(2*Math.PI*Math.sqrt((1+k*k)/2)); d.chestRz=d.chestRx*k;
   d.crotchY=H*(.36+.018*(a-1));
   d.chestY=d.shoulderY-hh*.42;
-  d.belly=1+.07*(6-a)/5;
-  d.armR=d.chestRx*.31; d.wristR=d.armR*.64;
+  const bmi=(m.weight||AGES[a].w)/(H*H), md=BMI_REF[a][1]; d.bk=Math.max(.86,Math.min(1.25,Math.pow(bmi/md,.55)));
+  d.belly=(1+.07*(6-a)/5)*(1+(d.bk-1)*.6);
+  d.armR=d.chestRx*.31*Math.pow(d.bk,.4); d.wristR=d.armR*.64;
   d.armLen=(m.sleeve||AGES[a].s)/100;
-  d.thighR=d.chestRx*.5; d.ankleR=d.thighR*.5; d.hipX=d.chestRx*.46;
+  d.thighR=d.chestRx*.5*Math.pow(d.bk,.3); d.ankleR=d.thighR*.5; d.hipX=d.chestRx*.46;
   const side=s=>{ // 手臂路径（A 字站姿，肘部微屈）
     const ang=.40, J=[s*(d.shHalf-d.armR*.8),d.shoulderY-d.armR*.85,0];
     const T1=[s*Math.sin(ang),-Math.cos(ang),0];
@@ -624,10 +692,10 @@ function buildBody(d){
 
 // ---------- 服装 ----------
 function buildGarment(cfg,d,st){
-  const T=TYPES[cfg.type], H=d.H, hh=d.hh, e=T.ease*(H/1.06);
+  const T=TYPES[cfg.type], H=d.H, hh=d.hh, fitK={slim:.72,regular:1,roomy:1.35}[cfg.fit||'regular'], gr=cfg.growth||0, e=T.ease*(H/1.06)*fitK+gr*.003;
   const open=st.open||0, puffy=cfg.type==='down', vest=cfg.type==='vest';
   const out={};
-  const hemY=d.crotchY-H*.012, drop=cfg.hem==='droptail'?H*.035:0;
+  const hemY=d.crotchY-H*.012-gr*H*.01, drop=cfg.hem==='droptail'?H*.035:0;
   const gRx=d.chestRx+e, gRz=d.chestRz+e*.9, gSh=d.shHalf+e*.75, y0=d.shoulderY-d.armR*.75;
   const collarY=d.neckBaseY+e*.25, nRx=d.neckR+e*.62, nRz=d.neckR*.96+e*.58;
   const P0=[gSh,y0],P1=[gSh*.97,d.shoulderY+e*.35],P2=[nRx,collarY];
@@ -642,7 +710,7 @@ function buildGarment(cfg,d,st){
     let y,rx,rz,n;
     const backW=Math.pow(Math.max(0,-c),1.6), hemYp=hemY-drop*backW;
     if(v<=vA){const t=v/vA;y=lerp(hemYp,y0,t);
-      if(y<d.chestY){const k=clamp01((y-hemY)/(d.chestY-hemY));const bl=1+(d.belly-1)*Math.sin(Math.PI*clamp01(k*1.2));rx=gRx*(1+.035*(1-k))*bl;rz=gRz*(1+.05*(1-k))*bl;n=2.35}
+      if(y<d.chestY){const k=clamp01((y-hemY)/(d.chestY-hemY));const bl=1+(d.belly-1)*Math.sin(Math.PI*clamp01(k*1.2));const fl=.035+(cfg.fit==='roomy'?.035:cfg.fit==='slim'?-.02:0);rx=gRx*(1+fl*(1-k))*bl;rz=gRz*(1+(fl+.015)*(1-k))*bl;n=2.35}
       else{const k=smooth((y-d.chestY)/(y0-d.chestY));rx=lerp(gRx,gSh,k);rz=lerp(gRz,gRz*.86,k);n=lerp(2.35,2.9,k)}
       if(puffy){const f=t*Nb%1;const b=Math.pow(Math.sin(Math.PI*f),.6);rx+=puffAmp*b;rz+=puffAmp*b}
       const fold=(1+.014*Math.pow(1-t,2)*Math.sin(phi*6+.8)+.006*Math.pow(1-t,3)*Math.sin(phi*13));rx*=fold;rz*=fold;
@@ -711,7 +779,7 @@ function buildGarment(cfg,d,st){
     out.sleeves={};
     for(const s of [1,-1]){
       const g=armTube(d,s,t=>{let r=lerp(d.armR+es,d.wristR+es*.95,Math.pow(t,1.1));if(t>.93)r*=lerp(1,cuffK,smooth((t-.93)/.03));return r},
-        {cap:true,ext:hh*.06,reverseU:s<0,nu:44,n:70,wr:(t,u)=>{let w=0;
+        {cap:true,ext:hh*.06+gr*H*.008+(cfg.growCuff?H*.008:0),reverseU:s<0,nu:44,n:70,wr:(t,u)=>{let w=0;
           const el=Math.exp(-Math.pow((t-.47)/.08,2));w+=el*.0022*Math.sin(t*140+u*6.3)*(.5+.5*Math.cos(u*6.283));
           if(t>.84&&cfg.cuff!=='velcro')w+=.0014*Math.sin(u*2*Math.PI*14)*smooth((t-.86)/.06);
           if(puffy){const f=(t*7)%1;w+=puffAmp*.75*Math.pow(Math.sin(Math.PI*f),.6)}
@@ -744,6 +812,7 @@ function buildGarment(cfg,d,st){
   // 门襟拉头
   const zv=open>.3?.06:.965; const pa=torsoP(0,zv),pb=torsoP(1,zv);const zp=open>.3?pa:V3.scale(V3.add(pa,pb),.5);
   puller(zp,[open>.3?.3:0,0,1],cfg.bigPull,'pull');
+  if(cfg.twoWayZip&&open<=.3){const qa=torsoP(0,.035),qb=torsoP(1,.035);puller(V3.add(V3.scale(V3.add(qa,qb),.5),[0,.022*S,0]),[0,0,1],false,'pull')}
   // 口袋拉头
   const fu=f=>f<0?1+f:f;
   const pocketPulls=[];
@@ -980,6 +1049,7 @@ function paintAll(cfg,g){
         if(cfg.cuff==='rib')for(let i=0;i<64;i++){const u=i/64;SP.line(conv([[u,.93],[u,1]]),3,'rgba(0,0,0,.18)',{h:.4})}
         else for(let i=0;i<40;i++){const u=i/40;SP.line(conv([[u,.935],[u+.008,1]]),2,'rgba(0,0,0,.12)',{h:.42})}
         SP.seam(conv([[-.02,.93],[1.02,.93]]))}
+      if(cfg.growCuff)SP.line([[-.02,.9],[1.02,.9]],1.4,'rgba(0,0,0,.35)',{dash:[3,3],h:.4});
       if(cfg.refl.band){const b=[[-.02,.8],[1.02,.8],[1.02,.835],[-.02,.835]];SP.fill(conv(b),REFL_HEX,{h:.6,refl:1,rough:.35})}
       if(side==='L'&&cfg.sleevePocket){const s0=sToT(.26),s1=sToT(.45);const pts=conv([[.06,s0],[.06,s1]]);const wpx=6;SP.line(pts,wpx+8,null,{h:.38});SP.line(pts,wpx,C.zip,{h:.62,gloss:.4});SP.seam(offsetLine(pts,9,SP),{top:false,w:1.5});SP.seam(offsetLine(pts,-9,SP),{top:false,w:1.5})}
       for(const L of logos){if(L.place!=='sleeve'+side)continue;const pxu=512/g.sleeveM.u,pxv=1024/g.sleeveM.v;drawLogo(SP,L,SP.X(.0),SP.Y(sToT(.3)),L.size/100*pxu,pxv/pxu,side==='L'?[-1,-1]:[1,-1])}
@@ -989,6 +1059,7 @@ function paintAll(cfg,g){
   const CP=Part(512,128,{rough:T.rough});CP.x.fillStyle=C.collar;CP.x.fillRect(0,0,512,128);
   const zwc=.0075/g.collarM.u;for(const side of [0,1]){const u0=side?1-zwc:0,u1=side?1:zwc;CP.fill([[u0,-.1],[u1,-.1],[u1,1.1],[u0,1.1]],C.tape,{h:.55})}
   CP.line([[-.02,.88],[1.02,.88]],1.2,'rgba(0,0,0,.3)',{dash:[4,3],h:.6});
+  if(cfg.detachHood&&cfg.collar==='hood'){CP.line([[.06,.93],[.94,.93]],5,shade(C.zip,1),{h:.7,gloss:.3});for(let i=1;i<8;i++){const cx=CP.X(i/8),cy=CP.Y(.72);CP.x.fillStyle=shade(C.collar,.75);CP.x.beginPath();CP.x.arc(cx,cy,6,0,7);CP.x.fill();CP.y.fillStyle=gray(.82);CP.y.beginPath();CP.y.arc(cx,cy,6,0,7);CP.y.fill()}}
   for(const L of logos){if(L.place==='backNeck'&&cfg.collar==='stand'){const pxu=512/g.collarM.u,pxv=128/g.collarM.v;drawLogo(CP,L,CP.X(.5),CP.Y(.5),L.size/100*pxu,pxv/pxu,[1,1])}}
   out.collar={map:CP.c,hgt:CP.hg,pmap:CP.pr,lmap:liningCanvas(cfg,256,64,{type:'collar'})};
   if(g.hood){const HP=Part(1024,768,{rough:T.rough});HP.x.fillStyle=C.hood;HP.x.fillRect(0,0,1024,768);
@@ -1017,7 +1088,7 @@ function liningCanvas(cfg,w,h,o={}){
     x.fillStyle=o.mainAt(.5,.01);x.fillRect(0,h-h*.03,w,h*.03);
     // 姓名标
     if(cfg.nameLabel){const lw=.05*o.pxU,lh=.024*o.pxV;const cx=o.label.u*w,cy=(1-o.label.v)*h;x.save();x.translate(cx,cy);x.scale(-1,1);x.fillStyle='#fbfaf6';x.shadowColor='rgba(0,0,0,.25)';x.shadowBlur=3;x.fillRect(-lw/2,-lh/2,lw,lh);x.shadowBlur=0;
-      x.fillStyle='#2b3440';x.font=`700 ${lh*.42}px "ZCOOL KuaiLe","Noto Sans SC",sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText(cfg.nameLabel.slice(0,8),0,-lh*.08);x.font=`${lh*.18}px "IBM Plex Mono",monospace`;x.fillStyle='#7a8592';x.fillText('LITTLE WEAR · '+AGES[cfg.age].h+'cm',0,lh*.3);x.restore()}}
+      x.fillStyle='#2b3440';x.font=`700 ${lh*.42}px "ZCOOL KuaiLe","Noto Sans SC",sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText(cfg.nameLabel.slice(0,8),0,-lh*.08);x.font=`${lh*.18}px "IBM Plex Mono",monospace`;x.fillStyle='#7a8592';x.fillText('LITTLE WEAR · '+cfg.meas.height+'cm',0,lh*.3);x.restore()}}
   if(o.type==='hood'){x.fillStyle=cfg.colors.lining;}
   return c;
 }
@@ -1238,10 +1309,10 @@ const ICON={undo:'M9 14L4 9l5-5 M4 9h10a6 6 0 010 12h-3',redo:'M15 14l5-5-5-5 M2
   body:'M12 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5z M7 22l1-9-3-4 4-1h6l4 1-3 4 1 9',plus:'M12 5v14 M5 12h14',minus:'M5 12h14',doc:'M6 3h9l4 4v14H6z M14 3v5h5 M9 13h7 M9 17h5',dice:'M4 4h16v16H4z M8.5 8.5h.01 M15.5 15.5h.01 M15.5 8.5h.01 M8.5 15.5h.01 M12 12h.01',
   close:'M6 6l12 12 M18 6L6 18',chat:'M4 5h16v11H9l-5 4z',trash:'M4 7h16 M9 7V4h6v3 M6 7l1 14h10l1-14',download:'M12 3v12 M7 10l5 5 5-5 M4 17v4h16v-4',upload:'M12 21V9 M7 14l5-5 5 5 M4 7V3h16v4',copy:'M8 8h12v12H8z M4 16V4h12',check:'M5 12l4 4L19 6'};
 const ic=n=>`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON[n]}"/></svg>`;
-const TABS=[['style','款式'],['color','配色'],['detail','细节'],['lining','内衬'],['logo','标志'],['size','尺码'],['make','制作单']];
+const TABS=[['kid','孩子'],['style','款式'],['color','配色'],['detail','细节'],['lining','内衬'],['logo','标志'],['make','制作单']];
 
 let cfg=normalize(LS.get('draft',null)||mergeCfg(BASE,{}));
-const ui={tab:LS.get('tab','style'),slot:'main',logo:0,hoodUp:false,open:false,night:false,auto:false,body:true,docId:LS.get('docId',null),confirmDel:null};
+const ui={tab:(t=>TABS.some(x=>x[0]===t)?t:'kid')(LS.get('tab','kid')),slot:'main',logo:0,hoodUp:false,open:false,night:false,auto:false,body:true,docId:LS.get('docId',null),confirmDel:null};
 let hist=[],fut=[],V=null,saved=[],db=null,uid=null,dl=null,unsub=null;
 
 function normalize(c){c=mergeCfg(BASE,c||{});c.logos=(c.logos||[]).slice(0,4).map((l,i)=>({...BASE.logos[0],id:'l'+i+Date.now().toString(36),...l}));c.refl={band:false,back:false,piping:false,...c.refl};return c}
@@ -1299,7 +1370,7 @@ let rt=0;
 function rebuild(delay=20){clearTimeout(rt);rt=setTimeout(()=>{if(!V)return;V.hoodUp=ui.hoodUp;V.showBody=ui.body;
   const d=dims(cfg);const g=buildGarment(cfg,d,{open:0,hoodUp:ui.hoodUp});V.paint=paintAll(cfg,g);V.build(cfg,V.paint);vtag()},delay)}
 if(V)V.rebuild=()=>{V.hoodUp=ui.hoodUp;V.build(cfg,V.paint)};
-function vtag(){const T=TYPES[cfg.type];$('#vtag').innerHTML=`<b>${T.name}</b><span>${cfg.age} 岁 · ${cfg.meas.height} cm</span>`;
+function vtag(){const T=TYPES[cfg.type];$('#vtag').innerHTML=`<b>${T.name}</b><span>${cfg.age} 岁 · ${cfg.meas.height} cm · ${cfg.meas.weight} kg · ${bodyInfo(cfg).typeName}</span>`;
   document.querySelectorAll('[data-vt]').forEach(b=>b.setAttribute('aria-pressed',!!ui[b.dataset.vt]));$('#t-hood').hidden=cfg.collar!=='hood'}
 
 // ---------- 状态变更 ----------
@@ -1308,7 +1379,9 @@ function setPath(k,v){
   if(k.startsWith('logo.')){const L=cfg.logos[ui.logo];if(!L)return;L[k.slice(5)]=v;return}
   const ks=k.split('.');let o=cfg;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks[ks.length-1]]=v;
   if(k==='template')cfg.hoodColor=TEMPLATES[v].hood;
-  if(k==='age'){const A=AGES[v];cfg.meas={height:A.h,chest:A.c,sleeve:A.s}}
+  if(k==='age'){const A=AGES[v];cfg.meas={height:A.h,weight:A.w,chest:A.c,sleeve:A.s,auto:true}}
+  if((k==='meas.height'||k==='meas.weight')&&cfg.meas.auto)Object.assign(cfg.meas,estimateMeas(cfg.meas,cfg.age));
+  if(k==='meas.chest'||k==='meas.sleeve')cfg.meas.auto=false;
   if(k==='type'&&v==='vest'&&cfg.collar==='hood'){}
 }
 function change(k,v,{panel=true,delay=20}={}){snap();setPath(k,v);afterChange(panel,delay)}
@@ -1327,7 +1400,7 @@ const getK=k=>k.split('.').reduce((o,p)=>o?.[p],cfg);
 // ---------- 面板 ----------
 function renderPanel(){const top=$('.panel').scrollTop, ws=window.scrollY;
   document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===ui.tab));
-  $('#tb').innerHTML=({style:tabStyle,color:tabColor,detail:tabDetail,lining:tabLining,logo:tabLogo,size:tabSize,make:tabMake})[ui.tab]();
+  $('#tb').innerHTML=({kid:tabKid,style:tabStyle,color:tabColor,detail:tabDetail,lining:tabLining,logo:tabLogo,make:tabMake})[ui.tab]();
   $('.panel').scrollTop=top;if(Math.abs(window.scrollY-ws)>2)window.scrollTo(0,ws);
   if(ui.tab==='logo')drawLogoPreview();vtag();}
 
@@ -1360,11 +1433,13 @@ function tabDetail(){const vest=cfg.type==='vest';
   return `<section class="sec"><h2>帽子与领口</h2>
    ${row('领型',seg('collar',OPTS.collar,cfg.collar))}
    ${cfg.collar==='hood'?row('帽檐',sw('hoodBrim',cfg.hoodBrim,'硬挺帽檐','挡雨，户外感更强'))+row('帽饰',seg('hoodDeco',OPTS.hoodDeco,cfg.hoodDeco),cfg.age<3&&cfg.hoodDeco!=='none'?'3 岁以下建议做软质、缝牢':''):''}
+   ${cfg.collar==='hood'?row('可拆卸',sw('detachHood',cfg.detachHood,'帽子可拆','领口拉链 + 按扣')):''}
    <p class="safe">${ic('check')}帽子不设抽绳：7 岁及以下儿童服装头颈部不应有绳带（GB 31701）。</p></section>
   <section class="sec"><h2>门襟拉链</h2>
    ${row('拉链',seg('zipType',OPTS.zipType,cfg.zipType))}
    ${row('防风门襟',sw('zipFlap',cfg.zipFlap,'外置门襟','带按扣，挡风'))}
    ${row('拉头',sw('bigPull',cfg.bigPull,'大号拉片','小手更好抓'))}
+   ${row('双头拉链',sw('twoWayZip',cfg.twoWayZip,'下端也能拉开','1–2 岁换尿布、坐下时方便'))}
   </section>
   <section class="sec"><h2>口袋</h2>
    ${row('胸袋',seg('chestPocket',OPTS.chestPocket,cfg.chestPocket))}
@@ -1373,6 +1448,7 @@ function tabDetail(){const vest=cfg.type==='vest';
   </section>
   <section class="sec"><h2>袖口与下摆</h2>
    ${vest?'':row('袖口',seg('cuff',OPTS.cuff,cfg.cuff))}
+   ${vest?'':row('可放长',sw('growCuff',cfg.growCuff,'袖口内藏 3 cm','冷天翻下盖手，长个后放长'))}
    ${row('下摆',seg('hem',OPTS.hem,cfg.hem))}
   </section>
   <section class="sec"><h2>反光</h2><p class="note">傍晚和雨天更容易被看见。打开左侧“夜间”可以模拟车灯照射的效果。</p>
@@ -1409,14 +1485,24 @@ function tabLogo(){const L=cfg.logos[ui.logo];
 }
 function drawLogoPreview(){cfg.logos.forEach((L,i)=>{const c=document.querySelector(`[data-lprev="${i}"]`);if(!c)return;const x=c.getContext('2d');x.clearRect(0,0,64,64);const lc=logoCanvas(L,200);const s=Math.min(54/lc.width,54/lc.height);x.drawImage(lc,32-lc.width*s/2,32-lc.height*s/2,lc.width*s,lc.height*s)});
   const c=$('#lbig');const L=cfg.logos[ui.logo];if(!c||!L)return;const x=c.getContext('2d');x.fillStyle=cfg.colors.main;x.fillRect(0,0,c.width,c.height);const lc=logoCanvas(L,400);const s=Math.min(200/lc.width,120/lc.height);x.drawImage(lc,130-lc.width*s/2,80-lc.height*s/2,lc.width*s,lc.height*s)}
-function tabSize(){const m=cfg.meas,sp=sizeSpec(cfg);
-  return `<section class="sec"><h2>年龄</h2><div class="ages">${[1,2,3,4,5,6].map(a=>`<button data-set="age" data-v="${a}" data-type="num" aria-pressed="${cfg.age===a}"><b>${a}</b><small>岁</small></button>`).join('')}</div>
-   <p class="note">选年龄会填入参考尺寸（按 GB/T 1335.3 儿童号型取整）。有实际量体数据就改下面三项，人台和衣服会跟着变。</p></section>
-  <section class="sec"><h2>量体（cm）</h2><div class="meas">
-   ${[['height','身高',70,135],['chest','胸围',44,70],['sleeve','臂长','20','45','肩点到手腕']].map(([k,n,a,b,h])=>`<label class="field"><span>${n}${h?`<small>${h}</small>`:''}</span><input type="number" inputmode="decimal" min="${a}" max="${b}" step="1" data-num="meas.${k}" value="${m[k]}"></label>`).join('')}
-   </div></section>
+function tabKid(){const m=cfg.meas,sp=sizeSpec(cfg),b=bodyInfo(cfg),adv=adviceList(cfg),todo=adv.filter(x=>!x.ok).length;
+  return `<section class="sec"><h2>孩子的基本信息</h2><p class="note">先填孩子的情况，网站会按年龄和体型推荐尺码、版型和适合的设计细节。数据只用来生成这件衣服。</p>
+   ${row('性别',seg('sex',[['boy','男孩'],['girl','女孩'],['','先不选']],cfg.sex))}
+   <div class="ages">${[1,2,3,4,5,6].map(a=>`<button data-set="age" data-v="${a}" data-type="num" aria-pressed="${cfg.age===a}"><b>${a}</b><small>岁</small></button>`).join('')}</div>
+   <div class="meas">
+   ${[['height','身高','cm',70,140,1],['weight','体重','kg',7,40,.5]].map(([k,n,u,a,bb,st])=>`<label class="field"><span>${n}<small>${u}</small></span><input type="number" inputmode="decimal" min="${a}" max="${bb}" step="${st}" data-num="meas.${k}" value="${m[k]}"></label>`).join('')}
+   ${[['chest','胸围','cm',44,72],['sleeve','臂长','cm',20,46]].map(([k,n,u,a,bb])=>`<label class="field"><span>${n}<small>${m.auto?'自动估算':'已量'}</small></span><input type="number" inputmode="decimal" min="${a}" max="${bb}" step="1" data-num="meas.${k}" value="${m[k]}"></label>`).join('')}
+   </div>${m.auto?'':`<button class="btn ghost sm" data-act="reest">按身高体重重新估算胸围和臂长</button>`}
+   <div class="kidsum"><div><small>体型</small><b>${b.typeName}</b><span class="mono">BMI ${b.bmi.toFixed(1)}</span></div><div><small>推荐号型</small><b class="mono">${b.code}</b><span>量体 ${b.measured}</span></div><div><small>能穿到</small><b class="mono">${b.fitTo} cm</b><span>${b.grow?'含成长余量':'不留余量'}</span></div></div>
+   <p class="note">体型按同龄孩子的身高体重比例粗略判断，只用来选版型，不代表健康评价。号型按 GB/T 1335.3 身高 10 cm、胸围 4 cm 分档。</p></section>
+  <section class="sec"><h2>版型与余量</h2>
+   ${row('版型',seg('fit',OPTS.fit,cfg.fit),'合体 / 标准 / 宽松')}
+   ${row('成长余量',seg('growth',OPTS.growth,cfg.growth).replace(/data-v="(\d)"/g,'data-v="$1" data-type="num"'),'衣长、袖长和围度一起放')}
+  </section>
+  <section class="sec"><div class="sh"><h2>适合这个孩子的设计</h2>${todo?`<button class="btn sm" data-act="advall">${ic('check')}<span>全部采用（${todo}）</span></button>`:'<span class="tag">都已采用</span>'}</div>
+   <ul class="adv">${adv.map(x=>`<li class="${x.ok?'ok':''}"><div><span class="atag">${x.tag}</span><b>${x.title}</b><p>${x.why}</p></div>${x.ok?`<span class="done">${ic('check')}已采用</span>`:`<button class="btn ghost sm" data-advice="${x.id}">采用</button>`}</li>`).join('')}</ul></section>
   <section class="sec"><div class="sh"><h2>成衣尺寸</h2><span class="tag mono">号型 ${sp.code}</span></div>
-   <table class="spec"><thead><tr><th>部位</th><th>尺寸</th><th>公差</th></tr></thead><tbody>${sp.rows.map(r=>`<tr><td>${r[0]}</td><td class="mono">${r[1]}</td><td class="mono">${r[2]}</td></tr>`).join('')}</tbody></table>
+   <table class="spec"><thead><tr><th>部位</th><th>尺寸 cm</th><th>公差</th></tr></thead><tbody>${sp.rows.map(r=>`<tr><td>${r[0]}</td><td class="mono">${r[1]}</td><td class="mono">${r[2]}</td></tr>`).join('')}</tbody></table>
    <p class="note">按放松量公式推算的参考值，正式生产前请打版师复核并做样衣。</p></section>`;
 }
 function tabMake(){const c=costEstimate(cfg),T=TYPES[cfg.type];
@@ -1432,14 +1518,15 @@ function tabMake(){const c=costEstimate(cfg),T=TYPES[cfg.type];
 
 // ---------- 尺寸与成本 ----------
 function sizeSpec(c){const d=dims(c),T=TYPES[c.type],e=T.ease*(d.H/1.06),m=c.meas;
-  const easeCm={hardshell:18,softshell:15,fleece:16,down:24,vest:16}[c.type];
-  const len=Math.round((d.neckBaseY-(d.crotchY-d.H*.012))*100+(c.hem==='droptail'?3.5:0)+2);
+  const fk={slim:.75,regular:1,roomy:1.3}[c.fit||'regular'],gr=c.growth||0;
+  const easeCm=Math.round({hardshell:18,softshell:15,fleece:16,down:24,vest:16}[c.type]*fk+gr*2);
+  const len=Math.round((d.neckBaseY-(d.crotchY-d.H*.012-gr*d.H*.01))*100+(c.hem==='droptail'?3.5:0)+2);
   const rows=[['后中衣长',len+(c.hem==='droptail'?' (后摆 +3.5)':''),'±1'],['成衣胸围',m.chest+easeCm,'±1.5'],['下摆围',m.chest+easeCm+4,'±1.5'],['肩宽',Math.round(d.shHalf*200+3),'±0.8']];
-  if(c.type!=='vest')rows.push(['袖长（肩点起）',Math.round(m.sleeve+4),'±1'],['袖口围（平量×2）',Math.round(2*Math.PI*(d.wristR+e*.6)*100+4),'±0.5']);
+  if(c.type!=='vest')rows.push(['袖长（肩点起）',Math.round(m.sleeve+4+gr*1.5+(c.growCuff?1:0))+(c.growCuff?'（内藏放长 3）':''),'±1'],['袖口围（平量×2）',Math.round(2*Math.PI*(d.wristR+e*.6)*100+4),'±0.5']);
   else rows.push(['袖窿深',Math.round(d.armR*2*100+6),'±0.8']);
   if(c.collar==='hood')rows.push(['帽高',Math.round(d.hh*1.25*100),'±1'],['帽宽（平量）',Math.round(d.hh*.62*100+4),'±1']);else rows.push(['领高',Math.round(d.hh*.4*100),'±0.5']);
   rows.push(['领围',Math.round(2*Math.PI*(d.neckR+e*.62)*100+2),'±1']);
-  return {code:`${m.height}/${m.chest}`,rows};
+  return {code:bodyInfo(c).code,rows};
 }
 function costEstimate(c){const T=TYPES[c.type];const sf=Math.pow(c.meas.height/106,1.3);const L=[];
   L.push(['基础面料与车工',T.base*sf]);
@@ -1462,6 +1549,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('button,[data-act
   if(D.set){let v=D.v;if(D.type==='num')v=+v;if(getK(D.set)===v&&!D.set.startsWith('logo.'))return;change(D.set,v);return}
   if(D.tg){change(D.tg,!getK(D.tg));return}
   if(D.slot){ui.slot=D.slot;renderPanel();return}
+  if(D.advice){const x=adviceList(cfg).find(a=>a.id===D.advice);if(x){snap();Object.assign(cfg,clone(x.apply));afterChange();toast('已采用：'+x.title)}return}
   if(D.color){change('colors.'+ui.slot,D.color);return}
   if(D.lcolor){change('colors.lining',D.lcolor);return}
   if(D.preset){const p=PRESETS.find(x=>x.id===D.preset);snap();const keep={age:cfg.age,meas:cfg.meas,name:cfg.name,nameLabel:cfg.nameLabel};const pants=cfg.colors.pants;
@@ -1479,6 +1567,8 @@ document.addEventListener('click',e=>{const t=e.target.closest('button,[data-act
     dellogo:()=>{snap();cfg.logos.splice(ui.logo,1);ui.logo=Math.max(0,ui.logo-1);afterChange()},
     techpack:openTechPack,exportjson:()=>saveFile(`${fname()}.json`,JSON.stringify({format:'littlewear.design',version:4,design:strip(cfg)},null,2)),
     closesheet:closeSheet,newdesign:()=>{snap();cfg=normalize(mergeCfg(BASE,{}));ui.docId=null;LS.set('docId',null);$('#dname').value=cfg.name;afterChange();closeSheet();toast('已新建设计')},
+    advall:()=>{const L=adviceList(cfg).filter(x=>!x.ok);snap();L.forEach(x=>Object.assign(cfg,clone(x.apply)));afterChange();toast(`已采用 ${L.length} 项建议`)},
+    reest:()=>{snap();cfg.meas.auto=true;Object.assign(cfg.meas,estimateMeas(cfg.meas,cfg.age));afterChange()},
     feedback:openFeedback,fbcopy:copyFeedback,
     tpdl:()=>dlTechPack(),tppng:()=>dlRenders(),opendoc:()=>openDoc(D.id),deldoc:()=>delDoc(D.id),
   })[a]?.();
@@ -1599,11 +1689,12 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px
 ul{margin:0;padding-left:20px}li{margin:3px 0}.warn{background:#fff6ef;border:1px solid #f3c9ad;border-radius:6px;padding:10px 14px;font-size:13px}.tot td{font-weight:700;border-top:2px solid var(--ink)}
 @media(max-width:640px){.flats{grid-template-columns:1fr}}@media print{body{background:#fff}.pg{padding:0}h2{break-after:avoid}.views,.flats,table{break-inside:avoid}}</style></head><body><div class="pg">
 <div class="hd"><div><h1>童装定制制作单</h1><small>小衣间 LITTLE WEAR · 设计稿，打版前需复核</small></div><div class="m" style="text-align:right">${no}<br><small>${new Date().toLocaleString('zh-CN')}</small></div></div>
-<div class="meta"><div><b>设计名称</b>${esc(c.name)}</div><div><b>款式</b>${T.name} · ${T.sub}</div><div><b>拼色</b>${TEMPLATES[c.template].name}</div><div><b>年龄 / 号型</b>${c.age} 岁 · ${sp.code}</div><div><b>姓名标</b>${esc(c.nameLabel||'—')}</div></div>
+<div class="meta"><div><b>设计名称</b>${esc(c.name)}</div><div><b>款式</b>${T.name} · ${T.sub}</div><div><b>拼色</b>${TEMPLATES[c.template].name}</div><div><b>孩子</b>${c.sex==='boy'?'男孩 · ':c.sex==='girl'?'女孩 · ':''}${c.age} 岁 · ${c.meas.height} cm · ${c.meas.weight} kg</div><div><b>体型 / 号型</b>${bodyInfo(c).typeName} · ${sp.code}</div><div><b>版型 / 余量</b>${OPTS.fit.find(x=>x[0]===c.fit)[1]} · 成长余量${OPTS.growth.find(x=>x[0]===(c.growth||0))[1]}</div><div><b>姓名标</b>${esc(c.nameLabel||'—')}</div></div>
 <h2>1　效果图</h2><div class="views">${imgs.map(([n,u])=>`<figure><img src="${u}" alt="${n}"><figcaption>${n}</figcaption></figure>`).join('')}</div>
 <h2>2　平面款式图</h2><div class="flats"><div>${flatSVG(c,'front',{marks:true})}<p>正面（编号见第 4 节）</p></div><div>${flatSVG(c,'back',{})}<p>背面</p></div></div>
 <h2>3　配色与物料清单</h2><table><thead><tr><th>物料</th><th>规格</th><th>颜色</th><th>使用部位</th></tr></thead><tbody>${bom.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')}</tbody></table>
 <h2>4　部件工艺</h2><table><thead><tr><th style="width:44px">编号</th><th style="width:90px">部位</th><th>做法</th></tr></thead><tbody>${parts.map(p=>`<tr><td>${p[0]==='—'?'—':`<span class="n">${p[0]}</span>`}</td><td>${p[1]}</td><td>${p[2]}</td></tr>`).join('')}</tbody></table>
+<h2>4b　适龄与体型设计</h2><table><tbody>${adviceList(c).map(x=>`<tr><td style="width:70px">${x.ok?'✓ 已采用':'未采用'}</td><td style="width:150px">${x.title}</td><td>${x.why}</td></tr>`).join('')}${c.twoWayZip?'<tr><td>✓</td><td>双头拉链</td><td>门襟用双头开尾拉链</td></tr>':''}${c.detachHood&&c.collar==='hood'?'<tr><td>✓</td><td>可拆卸帽</td><td>帽与领口用拉链 + 按扣连接</td></tr>':''}</tbody></table>
 <h2>5　标志规格</h2>${c.logos.length?`<table><thead><tr><th>图样</th><th>位置</th><th>尺寸</th><th>工艺</th><th>内容</th><th>颜色</th></tr></thead><tbody>${logos}</tbody></table>`:'<p>无</p>'}
 <h2>6　成衣尺寸（cm）</h2><table><thead><tr><th>部位</th><th>尺寸</th><th>公差</th></tr></thead><tbody>${sp.rows.map(r=>`<tr><td>${r[0]}</td><td class="m">${r[1]}</td><td class="m">${r[2]}</td></tr>`).join('')}</tbody></table>
 <p style="font-size:12px;color:var(--mut)">量体：身高 ${c.meas.height}，胸围 ${c.meas.chest}，臂长 ${c.meas.sleeve}。尺寸由放松量公式推算，打版师需按实际面料缩率复核并做样衣确认。</p>
