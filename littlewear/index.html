@@ -260,6 +260,33 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .pcats small{color:var(--muted);font-size:11px}
 .tmpls{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
 
+#cv{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.vtag .temp{display:inline-block;margin-top:4px;font-family:var(--f-mono);font-size:11.5px;color:var(--accent);font-weight:600}
+.vtag .lphint{font-size:11px;color:var(--muted);font-family:var(--f-body);margin-top:2px}
+.bubble{position:absolute;z-index:6;background:var(--card);color:var(--ink);border-radius:14px;box-shadow:0 10px 30px #0003,0 0 0 1px var(--line);padding:10px 12px 8px;max-height:62%;overflow:auto;animation:bin .16s ease-out}
+@keyframes bin{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+.bh{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.bh b{font-size:14px}
+.ib.sm{min-width:28px;height:28px}
+.bg{padding:5px 0}
+.bg small{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+.bchips{display:flex;flex-wrap:wrap;gap:5px}
+.bchip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 10px;font-size:12.5px}
+.bchip[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.bmore{margin-top:6px;border:0;background:transparent;color:var(--accent);font-weight:600;font-size:12.5px;padding:4px 0}
+.bdot{position:absolute;z-index:5;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 30%,transparent);pointer-events:none;animation:bp 1.2s infinite}
+@keyframes bp{50%{box-shadow:0 0 0 9px color-mix(in srgb,var(--accent) 10%,transparent)}}
+.warm{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.warm.mini{margin-top:10px}
+.warm.mini .warm{border:0;padding:0;background:transparent}
+.wt{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.wt span{font-size:12.5px;color:var(--muted)}
+.wt b{font-size:18px}
+.gauge{position:relative;height:12px;border-radius:999px;background:linear-gradient(90deg,#3a6fd8,#7fc4e8 40%,#f2d16b 70%,#f07a4a);margin:4px 0 22px}
+.gauge i{position:absolute;top:-4px;height:20px;border-radius:999px;border:3px solid var(--ink);background:transparent;box-sizing:border-box}
+.gauge em{position:absolute;top:16px;transform:translateX(-50%);font-style:normal;font-size:10.5px;color:var(--muted);font-family:var(--f-mono)}
+.warm .dl{margin-top:6px}
+
 </style>
 <div id="app"></div>
 <script>window.LWS_REPO="coolhjc1987-chao/coolhjc1987-chao.github.io";</script>
@@ -533,7 +560,13 @@ const OPTS = {
   hem:[['straight','平下摆'],['droptail','前短后长']],
   fit:[['slim','合体'],['regular','标准'],['roomy','宽松']],
   growth:[[0,'不留'],[1,'半年'],[2,'一年']],
-  lining:[['mesh','网眼内衬','透气，日常最常见'],['taffeta','光面塔夫绸','顺滑好穿脱'],['fleece','抓绒内衬','秋冬加暖'],['quilted','菱格绗棉','保暖，带一点厚度'],['print','童趣印花','打开就有小惊喜']],
+  lining:[['cotton','纯棉针织','最亲肤，适合 1–3 岁'],['mesh','网眼内衬','透气，日常最常见'],['taffeta','光面塔夫绸','顺滑好穿脱'],['fleece','抓绒内衬','秋冬加暖'],['quilted','菱格绗棉','保暖，带一点厚度'],['print','童趣印花','打开就有小惊喜']],
+  zipLen:[['full','全开拉链'],['half','半拉链套头'],['none','无拉链套头']],
+  zipPos:[['center','居中'],['offset','偏襟']],
+  fill:[['none','无填充','春秋'],['thin','薄棉 80g','初冬'],['mid','中棉 120g','冬季'],['thick','厚棉 160g','严寒'],['down','羽绒 90/10','最轻最暖']],
+  threeInOne:[['none','不要'],['fleece','抓绒内胆'],['down','羽绒内胆']],
+  wpRating:[['dwr','防泼水'],['5k','5000 mm'],['10k','10000 mm'],['20k','20000 mm']],
+  taping:[['none','不压胶'],['key','关键部位'],['full','全压胶']],
   colorRef:[['main','主色'],['acc1','拼色 1'],['acc2','拼色 2']]
 };
 
@@ -599,7 +632,7 @@ function estimateMeas(m,a){const h=m.height;const base=.25*h+28;const md=BMI_REF
 
 const BASE = {
   name:'我的设计',type:'hardshell',template:'yoke',
-  colors:{main:'#3a8fb7',acc1:'#1f3354',acc2:'#f5d33f',trim:'#1f3354',zip:'#23272b',lining:'#eef0ec',pants:'#4a5058'},
+  colors:{main:'#3a8fb7',acc1:'#1f3354',acc2:'#f5d33f',trim:'#1f3354',zip:'#23272b',lining:'#eef0ec',pants:'#4a5058',inner:'#2f5d50'},
   hoodColor:'acc1',collar:'hood',hoodShape:'round',hoodUp:false,hoodBrim:false,hoodDeco:'none',
   zipType:'standard',zipFlap:true,bigPull:true,pullColor:'acc2',
   chestPocket:'zipV',handPocket:'welt',sleevePocket:false,pocketColor:'main',
@@ -608,6 +641,9 @@ const BASE = {
   print:{kind:'none',slot:'main',color:'#eef0ec',scale:1,img:null},
   logos:[{id:'l1',kind:'mark',icon:'mountain',text:'LELE',font:'round',shape:'circle',fg:'#eef0ec',bg:'#1f3354',place:'chestL',size:6,method:'embroidery',img:null}],
   mats:{main:'base',acc1:'base',acc2:'base'},
+  zipLen:'full',zipPos:'center',flapSide:'R',magZip:false,chinGuard:true,
+  pitZips:false,thumbLoops:false,innerCuffs:false,snowSkirt:false,hemAdjust:false,hoodAdjust:true,stowHood:false,innerPocket:false,hangLoop:true,
+  pfcFree:true,wpRating:'10k',taping:'key',fill:'none',threeInOne:'none',
   age:4,sex:'',fit:'regular',growth:1,growCuff:false,twoWayZip:false,detachHood:false,
   meas:{height:106,weight:17,chest:54,sleeve:33,auto:true}
 };
@@ -774,11 +810,32 @@ function parseIdea(text,c){const done=[],t=text.replace(/\s+/g,'');if(!t)return 
     [/熊/,()=>{c.collar='hood';c.hoodDeco='bear';return '小熊耳帽'}],[/兔/,()=>{c.collar='hood';c.hoodDeco='bunny';return '兔耳帽'}],[/恐龙/,()=>{c.collar='hood';c.hoodDeco='dino';return '恐龙背鳍帽'}],[/猫/,()=>{c.collar='hood';c.hoodDeco='cat';return '猫耳帽'}],
     [/袋鼠/,()=>{c.handPocket='kangaroo';return '袋鼠兜'}],[/防水拉链/,()=>{c.zipType='waterproof';return '防水压胶拉链'}],[/立领|不要帽|无帽/,()=>{c.collar='stand';return '立领'}],[/宽松|oversize/i,()=>{c.fit='roomy';return '宽松版型'}],
     [/修身|合体|贴身/,()=>{c.fit='slim';return '合体版型'}],[/大拉片|拉链头大/,()=>{c.bigPull=true;return '大号拉片'}],[/双头/,()=>{c.twoWayZip=true;return '双头拉链'}],[/可拆/,()=>{c.detachHood=true;return '可拆卸帽'}],
-    [/印花内衬|内衬.*印花/,()=>{c.lining='print';return '童趣印花内衬'}],[/抓绒内衬|内衬.*抓绒/,()=>{c.lining='fleece';return '抓绒内衬'}]];
+    [/印花内衬|内衬.*印花/,()=>{c.lining='print';return '童趣印花内衬'}],[/纯棉内衬|棉内衬|亲肤/,()=>{c.lining='cotton';return '纯棉亲肤内衬'}],
+    [/三合一|内胆/,()=>{c.threeInOne=/羽绒内胆|羽绒胆/.test(t)?'down':'fleece';if(!['hardshell','softshell'].includes(c.type))c.type='hardshell';return '三合一：'+(c.threeInOne==='down'?'羽绒内胆':'抓绒内胆')}],
+    [/套头/,()=>{c.zipLen=/半/.test(t)?'half':'none';return c.zipLen==='half'?'半拉链套头':'无拉链套头'}],[/半拉链/,()=>{c.zipLen='half';return '半拉链'}],[/偏襟|斜拉链|侧拉链/,()=>{c.zipPos='offset';return '偏襟拉链'}],
+    [/腋下|透气拉链/,()=>{c.pitZips=true;return '腋下透气拉链'}],[/防雪裙|滑雪/,()=>{c.snowSkirt=true;c.innerCuffs=true;return '防雪裙 + 内防风袖口'}],[/拇指/,()=>{c.thumbLoops=true;return '拇指孔'}],
+    [/厚一点|保暖|加厚|冬天/,()=>{c.fill=c.fill==='none'||!c.fill?'mid':c.fill;return '加中棉填充'}],[/联系卡|走丢|防走失/,()=>{c.innerPocket=true;return '紧急联系卡袋'}],[/磁吸/,()=>{c.zipType=c.zipType;c.magZip=true;return '磁吸拉链头'}],[/抓绒内衬|内衬.*抓绒/,()=>{c.lining='fleece';return '抓绒内衬'}]];
   T.forEach(([r,f])=>{if(r.test(t))say(f())});
   const nm=t.match(/名字(?:叫|是|写)?[“"]?([\u4e00-\u9fa5A-Za-z]{1,8})/);if(nm){c.nameLabel=nm[1];say('姓名标：'+nm[1])}
   return {c,done};
 }
+
+// —— 保暖与防护估算（设计参考，非检测结果） ——
+function warmth(c){const t=c.type;let lo={hardshell:16,softshell:13,fleece:12,down:2,vest:14}[t];const notes=[];
+  lo+={mesh:0,taffeta:0,print:-1,cotton:-1,fleece:-5,quilted:-6}[c.lining]||0;
+  const fl={none:0,thin:-4,mid:-7,thick:-10,down:-12}[c.fill||'none'];if(t!=='down')lo+=fl;
+  const io=(t==='hardshell'||t==='softshell')?(c.threeInOne||'none'):'none';lo+={none:0,fleece:-6,down:-12}[io];
+  if(c.collar==='hood')lo-=1;if(c.innerCuffs)lo-=1;if(c.snowSkirt)lo-=1;if(t==='vest')notes.push('马甲只护躯干，手臂要靠内搭保暖');
+  let hi=lo+11;if(io!=='none'){notes.push('取下内胆后约 '+(lo+({fleece:6,down:12}[io]))+'–'+(lo+({fleece:6,down:12}[io])+11)+' °C')}
+  if(c.pitZips)hi+=2;
+  const shell=t==='hardshell'||(io!=='none'&&t==='hardshell');const wp=c.wpRating||'dwr';
+  let rain=t==='fleece'?'不防水，下雨需外套':t==='hardshell'?(c.taping==='full'&&c.zipType==='waterproof'&&['10k','20k'].includes(wp)?'可应对中雨（需整衣淋雨测试）':c.taping!=='none'&&wp!=='dwr'?'可应对小雨、阵雨':'防泼水，毛毛雨可以'):t==='down'?'面料防泼水，避免淋透':'防泼水，适合毛毛雨';
+  const wind=t==='fleece'?'透风，适合无风天或作中层':t==='vest'?'躯干防风':'防风';
+  const breath=(c.lining==='mesh'||c.pitZips)?'较好':t==='down'||c.fill==='thick'||io==='down'?'一般，活动多易出汗':'中等';
+  return {lo,hi,rain,wind,breath,notes,io}}
+const WARM_SCALE=[-20,30];
+
+const LINING_SPEC={cotton:'100% 棉 · 180g',mesh:'100% 涤纶网眼',taffeta:'尼龙塔夫绸 210T',fleece:'摇粒绒 · 220g',quilted:'塔夫绸夹棉 80g',print:'棉混纺印花'};
 
 // ---- geo.js ----
 // ===== geo.js — 儿童人台 + 参数化服装几何 =====
@@ -998,8 +1055,9 @@ function buildGarment(cfg,d,st){
     out.bits.push({k,g:transformGeo(roundBox(tw,tl,.0022*S,.45),M4.frame(q,tx0,[0,1,0],V3.norm(V3.add(n,[0,-.25,0]))))})};
   // 门襟拉头
   const zv=open>.3?.06:.965; const pa=torsoP(0,zv),pb=torsoP(1,zv);const zp=open>.3?pa:V3.scale(V3.add(pa,pb),.5);
-  puller(zp,[open>.3?.3:0,0,1],cfg.bigPull,'pull');
-  if(cfg.twoWayZip&&open<=.3){const qa=torsoP(0,.035),qb=torsoP(1,.035);puller(V3.add(V3.scale(V3.add(qa,qb),.5),[0,.022*S,0]),[0,0,1],false,'pull')}
+  if(cfg.zipLen!=='none'){if(cfg.zipPos==='offset'){const q=out.surfT(.065,.96);puller(q.p,q.n,cfg.bigPull,'pull')}else puller(zp,[open>.3?.3:0,0,1],cfg.bigPull,'pull')}
+  if(cfg.pitZips&&!vest)for(const u of [.205,.795]){const q=out.surfT(u,.95*vA);puller(q.p,q.n,false,'ppull')}
+  if(cfg.twoWayZip&&open<=.3&&cfg.zipLen==='full'&&cfg.zipPos!=='offset'){const qa=torsoP(0,.035),qb=torsoP(1,.035);puller(V3.add(V3.scale(V3.add(qa,qb),.5),[0,.022*S,0]),[0,0,1],false,'pull')}
   // 口袋拉头
   const fu=f=>f<0?1+f:f;
   const pocketPulls=[];
@@ -1202,7 +1260,7 @@ function paintAll(cfg,g){
   const sleeveColorAt=(side,su,s)=>{let c='main';for(const r of tmpl.S){if(r.band)continue;if(r.side!=='both'&&r.side!==side)continue;if(pointIn(r.pts,su,s))c=r.c}return c};
   C.hood=col(cfg.hoodColor);C.collar=cfg.collar==='hood'?C.hood:col(regionColorAt(tmpl.B,.08,.995,TEMPLATE_COLLAR[cfg.template]));
   if(cfg.collar==='hood')C.collar=col(regionColorAt(tmpl.B,.08,.995,'main'));
-  C.hem=col(regionColorAt(tmpl.B,.1,.005));C.tape=cfg.zipType==='waterproof'?C.main:C.zip;
+  C.hem=col(regionColorAt(tmpl.B,.1,.005));C.tape=cfg.zipType==='waterproof'?C.main:C.zip;C.edge=C.tape;if(cfg.zipLen==='none'||cfg.zipPos==='offset')C.tape=C.edge=col(regionColorAt(tmpl.B,.02,.3));if(cfg.zipLen==='half')C.edge=col(regionColorAt(tmpl.B,.02,.3));
   C.pull=col(cfg.pullColor==='zip'?'zip':cfg.pullColor);C.hoodRim=C.hood;
   C.cuffL=cfg.cuff==='velcro'?col(sleeveColorAt('L',.5,.99)):C.trim;C.cuffR=cfg.cuff==='velcro'?col(sleeveColorAt('R',.5,.99)):C.trim;
   const out={colors:C};
@@ -1222,21 +1280,28 @@ function paintAll(cfg,g){
   if(cfg.type==='down')for(let k=1;k<6;k++){const v=k/6*vA;P.seam([[-.02,v],[1.02,v]],{top:false,w:4})}
   // 下摆
   P.line([[-.02,.012],[1.02,.012]],1.2,'rgba(0,0,0,.3)',{dash:[4,3],h:.6});P.line([[-.02,.004],[1.02,.004]],5,null,{h:.62});
-  // 拉链
+  // 拉链：全开 / 半拉链套头 / 无拉链套头；居中或偏襟
   const zw=.0075/g.torsoM.u, teeth=cfg.zipType==='standard';
+  const offZip=cfg.zipPos==='offset'&&cfg.zipLen!=='none';
+  const zStart=offZip||cfg.zipLen==='none'?2:cfg.zipLen==='half'?vA*.55:-.02;
+  const fabStrip=(u0,u1,v0,v1,side)=>{for(let i=0;i<40;i++){const a=v0+(v1-v0)*i/40,b=v0+(v1-v0)*(i+1)/40;P.fill([[u0,a],[u1,a],[u1,b+.002],[u0,b+.002]],col(regionColorAt(tmpl.B,side?.975:.025,(a+b)/2)))}};
   for(const side of [0,1]){const u0=side?1-zw:0,u1=side?1:zw;
-    P.fill([[u0,-.02],[u1,-.02],[u1,1.02],[u0,1.02]],C.tape,{h:.55,rough:teeth?.6:.25,gloss:teeth?0:.6});
-    if(teeth){const tz=side?1-zw*.45:zw*.45;const rows=Math.round(g.torsoM.v/.0032);for(let i=0;i<rows;i++){if((i+side)%2)continue;const v=i/rows;const hgt=1/rows*.9;
-      P.fill([[side?1:0,v],[tz,v],[tz,v+hgt],[side?1:0,v+hgt]],shade(C.zip,lum(C.zip)<.2?2.2:.82),{h:.85,rough:.35,gloss:.4})}}
-    else P.line([[side?1-zw*.15:zw*.15,-.02],[side?1-zw*.15:zw*.15,1.02]],2,'rgba(0,0,0,.45)',{h:.4});
+    if(zStart>-.02)fabStrip(u0,u1,-.02,Math.min(1.02,zStart),side);
+    if(zStart<1){P.fill([[u0,zStart],[u1,zStart],[u1,1.02],[u0,1.02]],C.tape,{h:.55,rough:teeth?.6:.25,gloss:teeth?0:.6});
+      if(teeth){const tz=side?1-zw*.45:zw*.45;const rows=Math.round(g.torsoM.v/.0032);for(let i=0;i<rows;i++){if((i+side)%2)continue;const v=i/rows;if(v<zStart)continue;const hgt=1/rows*.9;
+        P.fill([[side?1:0,v],[tz,v],[tz,v+hgt],[side?1:0,v+hgt]],shade(C.zip,lum(C.zip)<.2?2.2:.82),{h:.85,rough:.35,gloss:.4})}}
+      else P.line([[side?1-zw*.15:zw*.15,zStart],[side?1-zw*.15:zw*.15,1.02]],2,'rgba(0,0,0,.45)',{h:.4});}
     P.seam([[side?1-zw*1.25:zw*1.25,-.02],[side?1-zw*1.25:zw*1.25,1.02]],{top:false});
   }
-  if(cfg.zipFlap){const fw=.032;const fc=col(regionColorAt(tmpl.B,.97,.5));
-    // 防风门襟按区域分段着色
-    P.fill([[1-fw,-.02],[1,-.02],[1,1.02],[1-fw,1.02]],null,{h:.66});
-    for(let i=0;i<60;i++){const v0=i/60,v1=(i+1)/60;P.fill([[1-fw,v0],[1-zw*.2,v0],[1-zw*.2,v1+.002],[1-fw,v1+.002]],col(regionColorAt(tmpl.B,1-fw/2,(v0+v1)/2)))}
-    P.seam([[1-fw,-.02],[1-fw,1.02]],{one:true});
-    for(let k=.12;k<vA;k+=vA/5){const cx=P.X(1-fw*.5),cy=P.Y(k);for(const o of [-2048,0]){P.x.fillStyle=shade(fc,.8);P.x.beginPath();P.x.arc(cx+o,cy,7,0,7);P.x.fill();P.y.fillStyle=gray(.8);P.y.beginPath();P.y.arc(cx+o,cy,7,0,7);P.y.fill()}}}
+  if(cfg.zipLen==='half'&&!offZip){P.line([[-.01,zStart],[.01,zStart]],8,shade(C.zip,.8),{h:.8});P.line([[.99,zStart],[1.01,zStart]],8,shade(C.zip,.8),{h:.8})}
+  if(offZip){const ou=.065,zs=cfg.zipLen==='half'?vA*.55:.02;const pts=[[ou,zs],[ou,1.01]];P.line(pts,22,null,{h:.36});P.line(pts,16,cfg.zipType==='waterproof'?shade(C.main,.85):C.zip,{h:.6,gloss:teeth?0:.6});if(teeth)P.line(pts,8,shade(C.zip,lum(C.zip)<.2?2.2:.82),{dash:[3,3],h:.85});P.seam(offsetLine(pts,12,P),{top:false});P.seam(offsetLine(pts,-12,P),{top:false})}
+  if(cfg.zipFlap&&zStart<1){const fw=.032,L=cfg.flapSide==='L';const fc=col(regionColorAt(tmpl.B,L?.03:.97,.5));const fx0=L?0:1-fw,fx1=L?fw:1;const v0=Math.max(-.02,zStart);
+    P.fill([[fx0,v0],[fx1,v0],[fx1,1.02],[fx0,1.02]],null,{h:.66});
+    for(let i=0;i<60;i++){const a=v0+(1.02-v0)*i/60,b=v0+(1.02-v0)*(i+1)/60;P.fill([[L?zw*.2:1-fw,a],[L?fw:1-zw*.2,a],[L?fw:1-zw*.2,b+.002],[L?zw*.2:1-fw,b+.002]],col(regionColorAt(tmpl.B,L?fw/2:1-fw/2,(a+b)/2)))}
+    P.seam([[L?fw:1-fw,v0],[L?fw:1-fw,1.02]],{one:true});
+    for(let k=Math.max(.12,v0+.05);k<vA;k+=vA/5){const cx=P.X(L?fw*.5:1-fw*.5),cy=P.Y(k);for(const o of [-2048,0,2048]){P.x.fillStyle=shade(fc,.8);P.x.beginPath();P.x.arc(cx+o,cy,7,0,7);P.x.fill();P.y.fillStyle=gray(.8);P.y.beginPath();P.y.arc(cx+o,cy,7,0,7);P.y.fill()}}}
+  // 腋下透气拉链
+  if(cfg.pitZips&&cfg.type!=='vest')for(const u of [.205,.795]){const pts=[[u,.66*vA],[u,.95*vA]];P.line(pts,14,null,{h:.38});P.line(pts,8,C.zip,{h:.62,gloss:.5});P.seam(offsetLine(pts,8,P),{top:false,w:1.5});P.seam(offsetLine(pts,-8,P),{top:false,w:1.5})}
   // 口袋
   const pc=col(cfg.pocketColor), fu=f=>f<0?1+f:f;
   const zipLine=(pts)=>{const wpx=teeth?7:6;P.line(pts,wpx+8,null,{h:.38});P.line(pts,wpx+6,'rgba(0,0,0,.25)');P.line(pts,wpx,C.zip,{h:.62,rough:teeth?.55:.25,gloss:teeth?.1:.6});
@@ -1266,7 +1331,7 @@ function paintAll(cfg,g){
     const wpx=L.size/100*pxU;drawLogo(P,L,P.X(pos[0]),P.Y(pos[1]),wpx,pxV/pxU,[1,1]);}
   out.torso={map:P.c,hgt:P.hg,pmap:P.pr};
   // 衣身内衬
-  out.torso.lmap=liningCanvas(cfg,2048,1024,{facing:zw*3.4,mainAt:(u,v)=>col(regionColorAt(tmpl.B,u,v)),label:{u:.5,v:vA-.05,pxU,pxV},type:'torso'});
+  out.torso.lmap=liningCanvas(cfg,2048,1024,{vA,pxU,pxV,facing:zw*3.4,mainAt:(u,v)=>col(regionColorAt(tmpl.B,u,v)),label:{u:.5,v:vA-.05,pxU,pxV},type:'torso'});
   // ================= 袖子 =================
   if(g.sleeves){for(const side of ['L','R']){const SP=Part(512,1024,{wrap:true,rough:T.rough});const cap=g.sleeves[side].capFrac;
       const sToT=s=>cap+s*(1-cap); // 区域 s 以全长计
@@ -1297,7 +1362,9 @@ function paintAll(cfg,g){
     }}
   // ================= 领 / 帽 =================
   const CP=Part(512,128,{rough:T.rough});CP.x.fillStyle=C.collar;CP.x.fillRect(0,0,512,128);CP.matAll(matOf(cfg,cfg.collar==='hood'?regionColorAt(tmpl.B,.08,.995,'main'):regionColorAt(tmpl.B,.08,.995,TEMPLATE_COLLAR[cfg.template])));
-  const zwc=.0075/g.collarM.u;for(const side of [0,1]){const u0=side?1-zwc:0,u1=side?1:zwc;CP.fill([[u0,-.1],[u1,-.1],[u1,1.1],[u0,1.1]],C.tape,{h:.55})}
+  const zwc=.0075/g.collarM.u;if(cfg.zipLen!=='none'&&cfg.zipPos!=='offset')for(const side of [0,1]){const u0=side?1-zwc:0,u1=side?1:zwc;CP.fill([[u0,-.1],[u1,-.1],[u1,1.1],[u0,1.1]],C.tape,{h:.55})}
+  if(cfg.zipPos==='offset'&&cfg.zipLen!=='none'){const uc=Math.min(.2,.065*g.torsoM.u/g.collarM.u);CP.line([[uc,-.1],[uc,1.1]],16,cfg.zipType==='waterproof'?shade(C.main,.85):C.zip,{h:.6})}
+  if(cfg.stowHood&&cfg.collar==='stand')CP.line([[.08,.82],[.92,.82]],6,shade(C.zip,1),{h:.7});
   CP.line([[-.02,.88],[1.02,.88]],1.2,'rgba(0,0,0,.3)',{dash:[4,3],h:.6});
   if(cfg.detachHood&&cfg.collar==='hood'){CP.line([[.06,.93],[.94,.93]],5,shade(C.zip,1),{h:.7,gloss:.3});for(let i=1;i<8;i++){const cx=CP.X(i/8),cy=CP.Y(.72);CP.x.fillStyle=shade(C.collar,.75);CP.x.beginPath();CP.x.arc(cx,cy,6,0,7);CP.x.fill();CP.y.fillStyle=gray(.82);CP.y.beginPath();CP.y.arc(cx,cy,6,0,7);CP.y.fill()}}
   for(const L of logos){if(L.place==='backNeck'&&cfg.collar==='stand'){const pxu=512/g.collarM.u,pxv=128/g.collarM.v;drawLogo(CP,L,CP.X(.5),CP.Y(.5),L.size/100*pxu,pxv/pxu,[1,1])}}
@@ -1305,6 +1372,7 @@ function paintAll(cfg,g){
   if(g.hood){const HP=Part(1024,768,{rough:T.rough});HP.x.fillStyle=C.hood;HP.x.fillRect(0,0,1024,768);HP.matAll(matOf(cfg,cfg.hoodColor));if(prOn&&cfg.hoodColor===pr.slot)HP.printOn(null,tileOf(pr.slot));
     for(const a of [.4,.6])HP.seam([[a,.04],[a,1.02]]);
     if(cfg.hoodBrim)for(const a of [.035,.965])HP.line([[a,0],[a,.42]],1.2,'rgba(0,0,0,.3)',{dash:[4,3],h:.6});
+    if(cfg.hoodAdjust){const tab=[[.47,.42],[.53,.42],[.53,.5],[.47,.5]];HP.fill(tab,C.trim,{h:.72});HP.seam(tab.concat([tab[0]]),{off:3})}
     if(cfg.refl.piping){HP.line([[.4,1],[.4,.18]],5,REFL_HEX,{h:.62,refl:1});HP.line([[.6,1],[.6,.18]],5,REFL_HEX,{h:.62,refl:1})}
     out.hood={map:HP.c,hgt:HP.hg,pmap:HP.pr,lmap:liningCanvas(cfg,1024,768,{type:'hood'})};}
   for(const k of ['torso','sleeveL','sleeveR','collar','hood'])if(out[k])out[k].nmap=heightToNormal(out[k].hgt,k==='collar'?2:3.2);
@@ -1313,8 +1381,10 @@ function paintAll(cfg,g){
 
 // —— 内衬贴图 ——
 function liningCanvas(cfg,w,h,o={}){
-  const c=mkCanvas(w,h),x=c.getContext('2d');const L=cfg.colors.lining;x.fillStyle=L;x.fillRect(0,0,w,h);
-  const t=cfg.lining;const r=mulberry(7);
+  const c=mkCanvas(w,h),x=c.getContext('2d');const io=(cfg.type==='hardshell'||cfg.type==='softshell')?(cfg.threeInOne||'none'):'none';
+  const L=io!=='none'?(cfg.colors.inner||cfg.colors.acc1):cfg.colors.lining;x.fillStyle=L;x.fillRect(0,0,w,h);
+  const t=io==='fleece'?'fleece':io==='down'?'quilted':cfg.lining;const r=mulberry(7);
+  if(t==='cotton'){x.strokeStyle='rgba(0,0,0,.05)';x.lineWidth=1;for(let i=0;i<w;i+=4){x.beginPath();x.moveTo(i,0);x.lineTo(i,h);x.stroke()}}
   if(t==='quilted'){x.strokeStyle='rgba(0,0,0,.16)';x.lineWidth=2;const s=w/14;for(let i=-h;i<w+h;i+=s){x.beginPath();x.moveTo(i,0);x.lineTo(i+h,h);x.stroke();x.beginPath();x.moveTo(i,h);x.lineTo(i+h,0);x.stroke()}}
   if(t==='taffeta'){const gr=x.createLinearGradient(0,0,w,0);gr.addColorStop(0,'rgba(255,255,255,.06)');gr.addColorStop(.5,'rgba(0,0,0,.04)');gr.addColorStop(1,'rgba(255,255,255,.06)');x.fillStyle=gr;x.fillRect(0,0,w,h)}
   if(t==='print'){const ic=['star','paw','dino','heart','mountain'];const cols=[cfg.colors.acc1,cfg.colors.acc2,cfg.colors.main];const s=60;
@@ -1329,7 +1399,19 @@ function liningCanvas(cfg,w,h,o={}){
     // 姓名标
     if(cfg.nameLabel){const lw=.05*o.pxU,lh=.024*o.pxV;const cx=o.label.u*w,cy=(1-o.label.v)*h;x.save();x.translate(cx,cy);x.scale(-1,1);x.fillStyle='#fbfaf6';x.shadowColor='rgba(0,0,0,.25)';x.shadowBlur=3;x.fillRect(-lw/2,-lh/2,lw,lh);x.shadowBlur=0;
       x.fillStyle='#2b3440';x.font=`700 ${lh*.42}px "ZCOOL KuaiLe","Noto Sans SC",sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText(cfg.nameLabel.slice(0,8),0,-lh*.08);x.font=`${lh*.18}px "IBM Plex Mono",monospace`;x.fillStyle='#7a8592';x.fillText('LITTLE WEAR · '+cfg.meas.height+'cm',0,lh*.3);x.restore()}}
-  if(o.type==='hood'){x.fillStyle=cfg.colors.lining;}
+  const vy=v=>(1-v)*h;
+  if(o.type==='torso'){
+    if(io!=='none'){x.strokeStyle='rgba(0,0,0,.45)';x.lineWidth=5;for(const u of [.045,.955]){x.beginPath();x.moveTo(u*w,0);x.lineTo(u*w,h);x.stroke()}
+      x.fillStyle='rgba(0,0,0,.15)';for(const u of [.045,.955])for(let y=0;y<h;y+=6)x.fillRect(u*w-3,y,6,3)}
+    if(cfg.snowSkirt){const y0=vy(.17);x.fillStyle=cfg.colors.acc1;x.fillRect(0,y0,w,h-y0);x.fillStyle='rgba(255,255,255,.25)';x.fillRect(0,y0,w,6);
+      x.fillStyle='rgba(255,255,255,.55)';for(let i=0;i<w;i+=14)x.fillRect(i,vy(.05),7,5);x.fillStyle='#fff';x.font=`600 ${h*.022}px "Noto Sans SC",sans-serif`;x.save();x.translate(w*.5,vy(.11));x.scale(-1,1);x.textAlign='center';x.fillText('防雪裙 · 防滑胶条',0,0);x.restore()}
+    if(cfg.innerPocket&&o.pxU){const pw=.09*o.pxU,ph=.075*o.pxV,cx=.86*w,cy=vy(.62*(o.vA||.8));x.fillStyle=shade(L,.9);x.fillRect(cx-pw/2,cy-ph/2,pw,ph);x.strokeStyle='rgba(0,0,0,.35)';x.setLineDash([4,3]);x.strokeRect(cx-pw/2+4,cy-ph/2+4,pw-8,ph-8);x.setLineDash([]);
+      x.fillStyle='rgba(255,255,255,.75)';x.fillRect(cx-pw*.36,cy-ph*.2,pw*.72,ph*.5);x.save();x.translate(cx,cy+ph*.06);x.scale(-1,1);x.fillStyle='#2b3440';x.font=`700 ${ph*.17}px "Noto Sans SC",sans-serif`;x.textAlign='center';x.fillText('紧急联系卡',0,0);x.restore()}
+    if(cfg.hangLoop){x.fillStyle=cfg.colors.trim;x.fillRect(.5*w-14,vy(.995),28,h*.035)}}
+  if(o.type==='sleeve'){if(cfg.innerCuffs){x.fillStyle=cfg.colors.trim;x.fillRect(0,0,w,h*.1);x.fillStyle='rgba(0,0,0,.18)';for(let i=0;i<w;i+=8)x.fillRect(i,0,3,h*.1)}
+    if(cfg.thumbLoops){x.fillStyle=cfg.colors.trim;x.fillRect(w*.42,0,w*.16,h*.035)}}
+  if(o.type==='collar'&&cfg.chinGuard){x.fillStyle=shade(L,1.08);x.fillRect(0,0,w*.08,h);x.fillRect(w*.92,0,w*.08,h)}
+  if(o.type==='hood'&&io!=='none'){x.fillStyle=cfg.colors.lining;x.fillRect(0,0,w,h)}
   return c;
 }
 
@@ -1447,7 +1529,7 @@ function createViewer(canvas){
     // 衣服材质
     const fab=(p,base)=>({map:texOf(p+'.map',paint[p]?.map),nmap:texOf(p+'.n',paint[p]?.nmap),pmap:texOf(p+'.p',paint[p]?.pmap),
       rough:T.rough,spec:T.spec,sheen:T.sheen,sheenTint:[1,1,1],wrap:cfg.type==='fleece'?.45:.28,detail:null,nStr:1.2,...base});
-    const lin=(p,dr)=>{const L=LINING_LOOK[cfg.lining];return {map:texOf(p+'.lmap',paint[p]?.lmap),nmap:texOf(p+'.ln',paint[p]?.lnmap),side:'back',rough:L.rough,spec:L.spec,sheen:L.sheen,wrap:.35,detail:V.detail(L.detail),dRep:dr,dStr:L.dStr}};
+    const lin=(p,dr)=>{const io=(cfg.type==='hardshell'||cfg.type==='softshell')?(cfg.threeInOne||'none'):'none';const L=LINING_LOOK[io==='fleece'?'fleece':io==='down'?'quilted':cfg.lining]||LINING_LOOK.mesh;return {map:texOf(p+'.lmap',paint[p]?.lmap),nmap:texOf(p+'.ln',paint[p]?.lnmap),side:'back',rough:L.rough,spec:L.spec,sheen:L.sheen,wrap:.35,detail:V.detail(L.detail),dRep:dr,dStr:L.dStr}};
     const tm=g.torsoM, rep=(mu,mv,k=1)=>[mu*k*40,mv*k*40];
     add('torso',g.torso,fab('torso',{dRep:rep(tm.u,tm.v)}));
     add('torsoIn',g.torso,lin('torso',rep(tm.u,tm.v)));
@@ -1459,7 +1541,7 @@ function createViewer(canvas){
     const solid=(hex,o={})=>({color:hex,rough:T.rough,spec:T.spec,sheen:T.sheen,wrap:.3,detail:V.detail(T.detail),dRep:[30,30],dStr:.4,...o});
     add('hemRim',g.hemRim,solid(col('hem')));
     add('collarRim',g.collarRim,solid(col('collar')));
-    g.frontEdges.forEach((e,i)=>add('edge'+i,e,solid(col('tape'),{rough:.5})));
+    g.frontEdges.forEach((e,i)=>add('edge'+i,e,solid(col('edge'),{rough:.5})));
     if(g.hoodRim)add('hoodRim',g.hoodRim,solid(col('hoodRim')));
     if(g.brim){add('brim',g.brim,solid(col('hood'),{side:'double'}));add('brimEdge',g.brimEdge,solid(col('hood')))}
     if(g.cuffRims)g.cuffRims.forEach((e,i)=>add('cuffRim'+i,e,solid(col('cuff'+(i?'R':'L')))));
@@ -1499,14 +1581,33 @@ function createViewer(canvas){
   loop();
   V.stop=()=>cancelAnimationFrame(raf);
   V.goView=(yaw,pitch=.08)=>{let y1=yaw;while(y1-V.yaw>Math.PI)y1-=2*Math.PI;while(y1-V.yaw<-Math.PI)y1+=2*Math.PI;V.anim={t0:performance.now(),dur:600,y0:V.yaw,y1,p0:V.pitch,p1:pitch}};
+  // 射线拾取：返回按到的衣服部位与表面坐标
+  V.pick=(cx,cy)=>{if(!V.g)return null;const rc=canvas.getBoundingClientRect();const x=(cx-rc.left)/rc.width*2-1,y=-((cy-rc.top)/rc.height*2-1);
+    const cp=Math.cos(V.pitch),pos=[V.target[0]+Math.sin(V.yaw)*cp*V.dist,V.target[1]+Math.sin(V.pitch)*V.dist,V.target[2]+Math.cos(V.yaw)*cp*V.dist];
+    const f=V3.norm(V3.sub(V.target,pos)),r=V3.norm(V3.cross(f,[0,1,0])),u=V3.cross(r,f),t=Math.tan(V.fov/2),asp=rc.width/rc.height;
+    const dir=V3.norm(V3.add(f,V3.add(V3.scale(r,x*t*asp),V3.scale(u,y*t))));
+    const g=V.g,parts=[['torso',g.torso],['collar',g.collar],['hood',g.hood],['sleeveL',g.sleeves&&g.sleeves.L],['sleeveR',g.sleeves&&g.sleeves.R]];
+    let best=null;
+    for(const [name,G] of parts){if(!G)continue;const P=G.pos,I=G.idx,UV=G.uv;
+      for(let i=0;i<I.length;i+=3){const a=I[i]*3,b=I[i+1]*3,c=I[i+2]*3;
+        const e1=[P[b]-P[a],P[b+1]-P[a+1],P[b+2]-P[a+2]],e2=[P[c]-P[a],P[c+1]-P[a+1],P[c+2]-P[a+2]];const pv=V3.cross(dir,e2);const det=V3.dot(e1,pv);if(Math.abs(det)<1e-12)continue;
+        const inv=1/det,tv=[pos[0]-P[a],pos[1]-P[a+1],pos[2]-P[a+2]];const uu=V3.dot(tv,pv)*inv;if(uu<0||uu>1)continue;const q=V3.cross(tv,e1);const vv=V3.dot(dir,q)*inv;if(vv<0||uu+vv>1)continue;
+        const tt=V3.dot(e2,q)*inv;if(tt<=0||(best&&tt>=best.t))continue;
+        const ia=I[i]*2,ib=I[i+1]*2,ic=I[i+2]*2,w0=1-uu-vv;
+        best={t:tt,part:name,u:UV[ia]*w0+UV[ib]*uu+UV[ic]*vv,v:1-(UV[ia+1]*w0+UV[ib+1]*uu+UV[ic+1]*vv)}}}
+    return best};
   // 指针交互
   let drag=false,lx=0,ly=0,pts=new Map(),pinch0=0,dist0=0;
+  let lpT=0,lpX=0,lpY=0;const lpCancel=()=>{clearTimeout(lpT);lpT=0};
+  canvas.addEventListener('contextmenu',e=>{e.preventDefault();lpCancel();V.onLongPress&&V.onLongPress(e.clientX,e.clientY)});
   canvas.addEventListener('pointerdown',e=>{pts.set(e.pointerId,[e.clientX,e.clientY]);canvas.setPointerCapture(e.pointerId);drag=true;lx=e.clientX;ly=e.clientY;V.anim=null;
+    V.onPress&&V.onPress();lpCancel();if(pts.size===1&&e.button===0){lpX=e.clientX;lpY=e.clientY;lpT=setTimeout(()=>{lpT=0;drag=false;V.onLongPress&&V.onLongPress(lpX,lpY)},480)}
     if(pts.size===2){const [a,b]=[...pts.values()];pinch0=Math.hypot(a[0]-b[0],a[1]-b[1]);dist0=V.dist}});
   canvas.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);
     if(pts.size===2){const [a,b]=[...pts.values()];const p=Math.hypot(a[0]-b[0],a[1]-b[1]);V.dist=Math.max(V.baseDist*.35,Math.min(V.baseDist*1.6,dist0*pinch0/p));V.dirty=true;return}
+    if(lpT&&Math.hypot(e.clientX-lpX,e.clientY-lpY)>8)lpCancel();
     if(!drag)return;V.yaw-=(e.clientX-lx)*.008;V.pitch=Math.max(-.35,Math.min(.9,V.pitch+(e.clientY-ly)*.005));lx=e.clientX;ly=e.clientY;V.dirty=true});
-  const up=e=>{pts.delete(e.pointerId);if(pts.size===0)drag=false};
+  const up=e=>{lpCancel();pts.delete(e.pointerId);if(pts.size===0)drag=false};
   canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);
   canvas.addEventListener('wheel',e=>{e.preventDefault();V.zoom(e.deltaY>0?1.08:.93)},{passive:false});
   V.zoom=f=>{V.dist=Math.max(V.baseDist*.35,Math.min(V.baseDist*1.6,V.dist*f));V.dirty=true};
@@ -1518,7 +1619,7 @@ function createViewer(canvas){
   return V;
 }
 
-const LINING_LOOK={mesh:{rough:.8,spec:.08,sheen:.05,detail:'mesh',dStr:.9},taffeta:{rough:.32,spec:.45,sheen:.05,detail:'nylon',dStr:.25},fleece:{rough:.97,spec:.02,sheen:.6,detail:'fleece',dStr:.9},quilted:{rough:.4,spec:.35,sheen:.05,detail:'nylon',dStr:.3},print:{rough:.75,spec:.08,sheen:.05,detail:'knit',dStr:.4}};
+const LINING_LOOK={cotton:{rough:.88,spec:.04,sheen:.12,detail:'knit',dStr:.35},mesh:{rough:.8,spec:.08,sheen:.05,detail:'mesh',dStr:.9},taffeta:{rough:.32,spec:.45,sheen:.05,detail:'nylon',dStr:.25},fleece:{rough:.97,spec:.02,sheen:.6,detail:'fleece',dStr:.9},quilted:{rough:.4,spec:.35,sheen:.05,detail:'nylon',dStr:.3},print:{rough:.75,spec:.08,sheen:.05,detail:'knit',dStr:.4}};
 
 // 细节法线贴图（平铺）
 function detailCanvas(kind){
@@ -1554,7 +1655,7 @@ const ICON={undo:'M9 14L4 9l5-5 M4 9h10a6 6 0 010 12h-3',redo:'M15 14l5-5-5-5 M2
   body:'M12 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5z M7 22l1-9-3-4 4-1h6l4 1-3 4 1 9',plus:'M12 5v14 M5 12h14',minus:'M5 12h14',doc:'M6 3h9l4 4v14H6z M14 3v5h5 M9 13h7 M9 17h5',dice:'M4 4h16v16H4z M8.5 8.5h.01 M15.5 15.5h.01 M15.5 8.5h.01 M8.5 15.5h.01 M12 12h.01',
   close:'M6 6l12 12 M18 6L6 18',chat:'M4 5h16v11H9l-5 4z',trash:'M4 7h16 M9 7V4h6v3 M6 7l1 14h10l1-14',download:'M12 3v12 M7 10l5 5 5-5 M4 17v4h16v-4',upload:'M12 21V9 M7 14l5-5 5 5 M4 7V3h16v4',copy:'M8 8h12v12H8z M4 16V4h12',check:'M5 12l4 4L19 6'};
 const ic=n=>`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON[n]}"/></svg>`;
-const TABS=[['kid','孩子'],['style','款式'],['color','配色'],['detail','细节'],['lining','内衬'],['logo','图案'],['make','制作单']];
+const TABS=[['kid','孩子'],['style','款式'],['color','配色'],['detail','细节'],['lining','保暖'],['logo','图案'],['make','制作单']];
 
 let cfg=normalize(LS.get('draft',null)||mergeCfg(BASE,{}));
 const ui={tab:(t=>TABS.some(x=>x[0]===t)?t:'kid')(LS.get('tab','kid')),slot:'main',logo:0,hoodUp:false,open:false,night:false,auto:false,body:true,docId:LS.get('docId',null),confirmDel:null};
@@ -1591,6 +1692,7 @@ document.getElementById('app').innerHTML=`
       <div class="tgl" role="group" aria-label="显示">
         <button data-vt="hoodUp" id="t-hood">${ic('hood')}<span>帽子</span></button>
         <button data-vt="open">${ic('open')}<span>敞开</span></button>
+        <button data-vt="inner" id="t-inner" hidden>${ic('body')}<span>内胆</span></button>
         <button data-vt="night">${ic('moon')}<span>夜间</span></button>
         <button data-vt="auto">${ic('rotate')}<span>旋转</span></button>
         <button data-vt="body">${ic('body')}<span>人台</span></button>
@@ -1613,10 +1715,51 @@ function syncBg(){if(V){V.bg=cssColor('--stage');V.dirty=true}}
 syncBg();matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',syncBg);new MutationObserver(syncBg).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 let rt=0;
 function rebuild(delay=20){clearTimeout(rt);rt=setTimeout(()=>{if(!V)return;V.hoodUp=ui.hoodUp;V.showBody=ui.body;
-  const d=dims(cfg);const g=buildGarment(cfg,d,{open:0,hoodUp:ui.hoodUp});V.paint=paintAll(cfg,g);V.build(cfg,V.paint);vtag()},delay)}
-if(V)V.rebuild=()=>{V.hoodUp=ui.hoodUp;V.build(cfg,V.paint)};
-function vtag(){const T=TYPES[cfg.type];$('#vtag').innerHTML=`<b>${T.name}</b><span>${cfg.age} 岁 · ${cfg.meas.height} cm · ${cfg.meas.weight} kg · ${bodyInfo(cfg).typeName}</span>`;
+  const c=viewCfg();V.cfgView=c;const d=dims(c);const g=buildGarment(c,d,{open:0,hoodUp:ui.hoodUp});V.paint=paintAll(c,g);V.build(c,V.paint);vtag()},delay)}
+function viewCfg(force){if(!(force||ui.inner)||warmth(cfg).io==='none')return cfg;const io=cfg.threeInOne;return normalize({...strip(cfg),type:io==='down'?'down':'fleece',collar:'stand',template:'solid',colors:{...cfg.colors,main:cfg.colors.inner,acc1:cfg.colors.inner,acc2:cfg.colors.inner,trim:shade(cfg.colors.inner,.8),zip:shade(cfg.colors.inner,.6),lining:cfg.colors.lining},mats:{main:'base',acc1:'base',acc2:'base'},logos:[],print:{kind:'none',slot:'main',color:'#fff',scale:1},chestPocket:'none',handPocket:'welt',sleevePocket:false,zipFlap:false,zipLen:'full',zipPos:'center',zipType:'standard',refl:{band:false,back:false,piping:false},hoodDeco:'none',cuff:'elastic',lining:'taffeta',threeInOne:'none',pitZips:false,snowSkirt:false,innerPocket:false,fit:'slim',growth:0,hem:'straight'})}
+if(V)V.rebuild=()=>{V.hoodUp=ui.hoodUp;V.build(V.cfgView||cfg,V.paint)};
+function vtag(){const T=TYPES[cfg.type],W=warmth(cfg);$('#vtag').innerHTML=`<b>${ui.inner?'三合一内胆':T.name}${W.io!=='none'&&!ui.inner?' · 三合一':''}</b><span>${cfg.age} 岁 · ${cfg.meas.height} cm · ${cfg.meas.weight} kg · ${bodyInfo(cfg).typeName}</span><span class="temp">约 ${W.lo}–${W.hi} °C</span><span class="lphint">长按衣服任意部位可快速修改</span>`;
+  const it=$('#t-inner');if(it){it.hidden=W.io==='none';it.setAttribute('aria-pressed',!!ui.inner)}
   document.querySelectorAll('[data-vt]').forEach(b=>b.setAttribute('aria-pressed',!!ui[b.dataset.vt]));$('#t-hood').hidden=cfg.collar!=='hood'}
+
+// ---------- 长按气泡 ----------
+const ZONE_NAMES={zip:'门襟拉链',chest:'胸前',pocket:'手袋',hem:'下摆',back:'后背',pit:'腋下侧片',shoulder:'肩部',sleeveL:'左袖',sleeveR:'右袖',cuffL:'左袖口',cuffR:'右袖口',hood:'帽子',collar:'领口'};
+function zoneOf(h){if(!h)return null;const vA=V.g.vA;
+  if(h.part==='hood')return 'hood';if(h.part==='collar')return 'collar';
+  if(h.part.startsWith('sleeve')){const sd=h.part.slice(-1);return (h.v>.86?'cuff':'sleeve')+sd}
+  const f=h.u<.5?h.u:h.u-1,af=Math.abs(f),v=h.v;
+  if(v>vA+.02)return 'shoulder';if(af<.03)return 'zip';if(v<.07)return 'hem';if(af>.3)return 'back';if(Math.abs(af-.25)<.05&&v>.6*vA)return 'pit';return v>.56*vA?'chest':'pocket'}
+const opt=(k,arr)=>arr.map(([v,t])=>({t,on:String(getK(k))===String(v),f:()=>setPath(k,v)}));
+const tg=(k,t,extra)=>({t,on:!!getK(k),f:()=>setPath(k,!getK(k)),...extra});
+function addLogoAt(place,size){if(cfg.logos.some(l=>l.place===place)){cfg.logos=cfg.logos.filter(l=>l.place!==place);return}if(cfg.logos.length>=6)return;cfg.logos.push({...clone(BASE.logos[0]),id:'l'+Date.now().toString(36),place,size,icon:place==='back'?'mountain':'star',text:place==='back'?(cfg.nameLabel||'LELE'):''})}
+function menuFor(z){const vest=cfg.type==='vest';const side=z.slice(-1);
+  const M={
+    zip:{tab:'detail',g:[['形式',opt('zipLen',OPTS.zipLen)],['位置',opt('zipPos',[['center','居中'],['offset','偏襟（偏左）']])],
+      ['细节',[{t:'防水压胶拉链',on:cfg.zipType==='waterproof',f:()=>setPath('zipType',cfg.zipType==='waterproof'?'standard':'waterproof')},tg('zipFlap','防风门襟'),{t:cfg.flapSide==='L'?'门襟在左 → 改右':'门襟在右 → 改左',f:()=>setPath('flapSide',cfg.flapSide==='L'?'R':'L')},tg('twoWayZip','双头拉链'),tg('bigPull','大号拉片'),tg('magZip','磁吸拉链头'),tg('chinGuard','拉链护颚')]]]},
+    chest:{tab:'detail',g:[['胸袋',opt('chestPocket',OPTS.chestPocket)],['标志',[{t:'左胸标志',on:cfg.logos.some(l=>l.place==='chestL'),f:()=>addLogoAt('chestL',6)},{t:'右胸标志',on:cfg.logos.some(l=>l.place==='chestR'),f:()=>addLogoAt('chestR',6)}]],['内侧',[tg('innerPocket','紧急联系卡袋')]]]},
+    pocket:{tab:'detail',g:[['手袋',opt('handPocket',OPTS.handPocket)],['口袋颜色',opt('pocketColor',OPTS.colorRef)]]},
+    hem:{tab:'detail',g:[['下摆',opt('hem',OPTS.hem)],['功能',[tg('hemAdjust','隐藏调节扣'),tg('snowSkirt','防雪裙')]],['配色',[{t:'下摆拼色',on:cfg.template==='hemband',f:()=>{cfg.template='hemband';cfg.hoodColor='main'}}]]]},
+    back:{tab:'logo',g:[['后背',[tg('refl.back','后背反光条'),{t:'后背大标志',on:cfg.logos.some(l=>l.place==='back'),f:()=>addLogoAt('back',12)},tg('hangLoop','挂衣环')]],['满印',[{t:'主色块印星星',on:cfg.print.kind==='stars'&&cfg.print.slot==='main',f:()=>{cfg.print.kind=cfg.print.kind==='stars'?'none':'stars';cfg.print.slot='main'}},{t:'印小动物',on:cfg.print.kind==='animals',f:()=>{cfg.print.kind=cfg.print.kind==='animals'?'none':'animals'}}]]]},
+    pit:{tab:'detail',g:[['腋下',[tg('pitZips','腋下透气拉链')]],['侧片',[{t:'侧片拼色',on:cfg.template==='side',f:()=>{cfg.template='side';cfg.hoodColor='main'}},{t:'侧片弹力针织',on:cfg.template==='side'&&matOf(cfg,'acc1')==='knit',f:()=>{cfg.template='side';cfg.mats.acc1='knit'}}]]]},
+    shoulder:{tab:'color',g:[['拼色',[['yoke','肩部育克'],['classic','经典肩袖'],['raglan','插肩撞色'],['solid','纯色']].map(([k,t])=>({t,on:cfg.template===k,f:()=>{cfg.template=k;cfg.hoodColor=TEMPLATES[k].hood}}))],['肩部面料',[['base','同款式'],['shell','耐磨硬壳'],['fleece','抓绒'],['quilt','绗缝']].map(([m,t])=>({t,on:(cfg.mats.acc1||'base')===m,f:()=>{cfg.mats.acc1=m;if(cfg.template==='solid'){cfg.template='yoke';cfg.hoodColor='acc1'}}}))]]},
+    sleeve:{tab:'detail',g:[['袖子',[...(side==='L'?[tg('sleevePocket','袖袋')]:[]),tg('refl.band','反光袖带'),{t:'撞色袖',on:cfg.template==='sleeves',f:()=>{cfg.template='sleeves';cfg.hoodColor='main'}},{t:'这只袖子放标志',on:cfg.logos.some(l=>l.place==='sleeve'+side),f:()=>addLogoAt('sleeve'+side,5)}]],['袖子面料',[['base','同款式'],['soft','软壳'],['knit','针织']].map(([m,t])=>({t,on:cfg.template==='raglan'&&(cfg.mats.acc1||'base')===m,f:()=>{cfg.template='raglan';cfg.hoodColor='acc1';cfg.mats.acc1=m}}))]]},
+    cuff:{tab:'detail',g:[['袖口',opt('cuff',OPTS.cuff)],['功能',[tg('innerCuffs','内防风袖口'),tg('thumbLoops','拇指孔'),tg('growCuff','可放长 3 cm')]]]},
+    hood:{tab:'detail',g:[['帽型',opt('hoodShape',OPTS.hoodShape)],['帽饰',opt('hoodDeco',OPTS.hoodDeco)],['功能',[tg('hoodBrim','圆弧帽檐'),tg('detachHood','可拆卸'),tg('hoodAdjust','帽后调节'),{t:ui.hoodUp?'放下帽子':'戴上帽子',f:()=>{ui.hoodUp=!ui.hoodUp}},{t:'改成立领',f:()=>setPath('collar','stand')}]]]},
+    collar:{tab:'detail',g:[['领型',opt('collar',OPTS.collar)],['功能',[tg('chinGuard','护颚抓绒'),...(cfg.collar==='stand'?[tg('stowHood','领内收纳帽')]:[])]]]}
+  };
+  const key=z.startsWith('sleeve')?'sleeve':z.startsWith('cuff')?'cuff':z;let m=M[key];if(vest&&(key==='sleeve'||key==='cuff'))m={tab:'detail',g:[['马甲',[{t:'马甲没有袖子，可在“款式”里换成外套',f:()=>{}}]]]};return m}
+let bubbleAt=0;
+function openBubble(x,y){if(!V)return;const h=V.pick(x,y);const z=zoneOf(h);const box=$('.view').getBoundingClientRect();
+  if(!z){closeBubble();toast('长按衣服上的部位，比如拉链、口袋、袖口、帽子');return}
+  ui.bubble={z,x:x-box.left,y:y-box.top};bubbleAt=performance.now();renderBubble();if(navigator.vibrate)try{navigator.vibrate(12)}catch(e){}}
+function renderBubble(){const b=ui.bubble;let el=$('#bubble');if(!b){if(el)el.remove();return}const m=menuFor(b.z);ui.bubbleMenu=m;
+  if(!el){el=document.createElement('div');el.id='bubble';el.className='bubble';$('.view').appendChild(el)}
+  el.innerHTML=`<div class="bh"><b>${ZONE_NAMES[b.z]||''}</b><button class="ib sm" data-act="closebubble" aria-label="关闭">${ic('close')}</button></div>${m.g.map(([gt,items],gi)=>`<div class="bg"><small>${gt}</small><div class="bchips">${items.map((it,ii)=>`<button class="bchip" data-bi="${gi}:${ii}" aria-pressed="${!!it.on}">${it.t}</button>`).join('')}</div></div>`).join('')}<button class="bmore" data-act="bubblemore">更多设置 →</button>`;
+  const vw=$('.view').clientWidth,vh=$('.view').clientHeight,bw=Math.min(300,vw-24);el.style.width=bw+'px';const bhh=el.offsetHeight;
+  let left=b.x-bw/2,top=b.y+18;if(top+bhh>vh-70)top=Math.max(8,b.y-bhh-18);left=Math.max(12,Math.min(vw-bw-12,left));el.style.left=left+'px';el.style.top=top+'px';
+  let dot=$('#bdot');if(!dot){dot=document.createElement('div');dot.id='bdot';dot.className='bdot';$('.view').appendChild(dot)}dot.style.left=b.x+'px';dot.style.top=b.y+'px'}
+function closeBubble(){ui.bubble=null;$('#bubble')?.remove();$('#bdot')?.remove()}
+if(V){V.onLongPress=openBubble;V.onPress=()=>{if(ui.bubble&&performance.now()-bubbleAt>300)closeBubble()}}
 
 // ---------- 状态变更 ----------
 function snap(){hist.push(JSON.stringify(strip(cfg)));if(hist.length>60)hist.shift();fut=[]}
@@ -1692,11 +1835,16 @@ function tabDetail(){const vest=cfg.type==='vest';
    ${cfg.collar==='hood'?row('帽型',seg('hoodShape',OPTS.hoodShape,cfg.hoodShape))+row('帽檐',sw('hoodBrim',cfg.hoodBrim,'圆弧帽檐','挡雨遮阳，戴上帽子时可见'))+row('帽饰',seg('hoodDeco',OPTS.hoodDeco,cfg.hoodDeco),cfg.age<3&&cfg.hoodDeco!=='none'?'3 岁以下建议做软质、缝牢':''):''}
    ${cfg.collar==='hood'?row('可拆卸',sw('detachHood',cfg.detachHood,'帽子可拆','领口拉链 + 按扣')):''}
    <p class="safe">${ic('check')}帽子不设抽绳：7 岁及以下儿童服装头颈部不应有绳带（GB 31701）。</p></section>
-  <section class="sec"><h2>门襟拉链</h2>
+  <section class="sec"><h2>门襟拉链</h2><p class="note">在三维图上长按拉链，也能直接改。</p>
+   ${row('形式',seg('zipLen',OPTS.zipLen,cfg.zipLen),'套头款更挡风，穿脱要大人帮忙')}
+   ${cfg.zipLen!=='none'?row('位置',seg('zipPos',OPTS.zipPos,cfg.zipPos),'偏襟拉链不顶下巴'):''}
    ${row('拉链',seg('zipType',OPTS.zipType,cfg.zipType))}
    ${row('防风门襟',sw('zipFlap',cfg.zipFlap,'外置门襟','带按扣，挡风'))}
    ${row('拉头',sw('bigPull',cfg.bigPull,'大号拉片','小手更好抓'))}
+   ${cfg.zipFlap?row('门襟方向',seg('flapSide',[['R','右片压左（常规）'],['L','左片压右']],cfg.flapSide)):''}
    ${row('双头拉链',sw('twoWayZip',cfg.twoWayZip,'下端也能拉开','1–2 岁换尿布、坐下时方便'))}
+   ${row('磁吸拉链',sw('magZip',cfg.magZip,'拉链头磁吸对位','孩子单手就能对上拉链'))}
+   ${row('拉链护颚',sw('chinGuard',cfg.chinGuard,'顶端软布护片','防止夹到下巴'))}
   </section>
   <section class="sec"><h2>口袋</h2>
    ${row('胸袋',seg('chestPocket',OPTS.chestPocket,cfg.chestPocket))}
@@ -1708,15 +1856,44 @@ function tabDetail(){const vest=cfg.type==='vest';
    ${vest?'':row('可放长',sw('growCuff',cfg.growCuff,'袖口内藏 3 cm','冷天翻下盖手，长个后放长'))}
    ${row('下摆',seg('hem',OPTS.hem,cfg.hem))}
   </section>
+  <section class="sec"><h2>功能细节</h2><p class="note">这些小设计决定穿起来顺不顺手，可以按孩子的使用场景挑。</p>
+   ${vest?'':row('腋下透气',sw('pitZips',cfg.pitZips,'腋下拉链','跑跳出汗时拉开散热'))}
+   ${vest?'':row('内防风袖口',sw('innerCuffs',cfg.innerCuffs,'袖内罗纹','挡风挡雪，适合滑雪、冬天'))}
+   ${vest?'':row('拇指孔',sw('thumbLoops',cfg.thumbLoops,'袖内拇指扣',cfg.age<3?'3 岁以下不建议，容易勾手':'袖子不往上缩，手背更暖'))}
+   ${row('防雪裙',sw('snowSkirt',cfg.snowSkirt,'腰内防雪裙','玩雪时雪进不去，带防滑胶条'))}
+   ${row('下摆调节',sw('hemAdjust',cfg.hemAdjust,'隐藏调节扣','内置弹力绳，无外露绳头'))}
+   ${cfg.collar==='hood'?row('帽后调节',sw('hoodAdjust',cfg.hoodAdjust,'魔术贴调节','帽子大小可调，不用抽绳')):row('收纳帽',sw('stowHood',cfg.stowHood,'领内藏帽','下雨时从领子里拉出来'))}
+   ${row('联系卡袋',sw('innerPocket',cfg.innerPocket,'内侧紧急联系卡袋','放家长电话卡片，走散时有用'))}
+   ${row('挂衣环',sw('hangLoop',cfg.hangLoop,'后领挂环','幼儿园挂钩一挂就行'))}
+  </section>
+  <section class="sec"><h2>面料防护</h2>
+   ${cfg.type==='hardshell'?row('防水指数',seg('wpRating',OPTS.wpRating,cfg.wpRating),'静水压，数值越高越防水，也越硬挺'):''}
+   ${['hardshell','softshell'].includes(cfg.type)?row('压胶',seg('taping',OPTS.taping,cfg.taping),'接缝内侧压防水胶条'):''}
+   ${row('环保防泼水',sw('pfcFree',cfg.pfcFree,'无氟防泼水整理','对孩子和环境更友好'))}
+   <div class="warm mini">${warmCard()}</div>
+  </section>
   <section class="sec"><h2>反光</h2><p class="note">傍晚和雨天更容易被看见。打开左侧“夜间”可以模拟车灯照射的效果。</p>
    ${vest?'':row('袖口反光带',sw('refl.band',cfg.refl.band,'双袖环绕'))}
    ${row('后背反光条',sw('refl.back',cfg.refl.back,'背部横条'))}
    ${row('反光滚边',sw('refl.piping',cfg.refl.piping,'沿拼接线'))}
   </section>`;
 }
-function tabLining(){
-  return `<section class="sec"><h2>内衬</h2><div class="lins">${OPTS.lining.map(([k,n,s])=>`<button class="tcard" data-set="lining" data-v="${k}" aria-pressed="${cfg.lining===k}"><b>${n}</b><small>${s}</small></button>`).join('')}</div>
+function warmCard(){const W=warmth(cfg),[a,b]=WARM_SCALE,pc=t=>Math.max(0,Math.min(100,(t-a)/(b-a)*100));
+  return `<div class="warm"><div class="wt"><span>适穿温度参考</span><b class="mono">约 ${W.lo}–${W.hi} °C</b></div>
+   <div class="gauge"><i style="left:${pc(W.lo)}%;width:${pc(W.hi)-pc(W.lo)}%"></i>${[-20,-10,0,10,20,30].map(t=>`<em style="left:${pc(t)}%">${t}</em>`).join('')}</div>
+   <dl class="dl"><dt>防雨</dt><dd>${W.rain}</dd><dt>防风</dt><dd>${W.wind}</dd><dt>透气</dt><dd>${W.breath}</dd></dl>
+   ${W.notes.map(n=>`<p class="note">${n}</p>`).join('')}
+   <p class="note">按静止或轻度活动、内搭一件长袖估算；跑跳时可以再低 3–5 °C。这是设计参考，不是检测结果，实际保暖要看面料批次、填充和成衣测试。</p></div>`}
+function tabLining(){const io=cfg.type==='hardshell'||cfg.type==='softshell';const down=cfg.type==='down';
+  return `<section class="sec"><h2>保暖参考</h2>${warmCard()}</section>
+  ${io?`<section class="sec"><h2>三合一内胆</h2><p class="note">外套 + 可拆卸内胆：内胆通过门襟内拉链和袖口按扣连接，冷天合穿，春秋单穿外套，内胆也能单独当外套。</p>
+   ${row('内胆',seg('threeInOne',OPTS.threeInOne,cfg.threeInOne))}
+   ${cfg.threeInOne!=='none'?row('内胆颜色',`<div class="mini">${PALETTE.map(([c,n,h])=>`<button class="swc s" style="--c:${h}" data-set="colors.inner" data-v="${h}" aria-label="${n}" aria-pressed="${cfg.colors.inner===h}"></button>`).join('')}</div>`)+`<div class="two"><button class="btn ghost" data-vt="inner" aria-pressed="${!!ui.inner}">${ic('body')}<span>${ui.inner?'回到外套':'单独看内胆'}</span></button><button class="btn ghost" data-vt="open" aria-pressed="${ui.open}">${ic('open')}<span>${ui.open?'合上':'敞开看内胆'}</span></button></div>`:''}</section>`:''}
+  <section class="sec"><h2>内衬面料</h2><div class="lins">${OPTS.lining.map(([k,n,s])=>`<button class="tcard" data-set="lining" data-v="${k}" aria-pressed="${cfg.lining===k}"><b>${n}</b><small>${s}</small><small class="mono">${LINING_SPEC[k]}</small></button>`).join('')}</div>
+   ${cfg.threeInOne!=='none'&&io?'<p class="note">已选三合一：敞开时看到的是内胆，内衬在内胆后面。</p>':''}
    <button class="btn wide ghost" data-vt="open" aria-pressed="${ui.open}">${ic('open')}<span>${ui.open?'合上外套':'敞开外套看内衬'}</span></button></section>
+  <section class="sec"><h2>保暖填充</h2>${down?'<p class="note">羽绒服本身有羽绒填充，下面的选项决定充绒量。</p>':'<p class="note">夹在面料和内衬之间的保暖层，越厚越暖，也越不方便活动。</p>'}
+   <div class="lins">${OPTS.fill.map(([k,n,s])=>`<button class="tcard" data-set="fill" data-v="${k}" aria-pressed="${(cfg.fill||'none')===k}"><b>${down&&k!=='none'?{thin:'轻薄 60g 绒',mid:'常规 100g 绒',thick:'加厚 140g 绒',down:'加厚 160g 绒'}[k]:n}</b><small>${s}</small></button>`).join('')}</div></section>
   <section class="sec"><h2>内衬颜色</h2><div class="pal">${PALETTE.map(([c,n,h])=>`<button class="swc" style="--c:${h}" data-lcolor="${h}" aria-label="${n}" aria-pressed="${cfg.colors.lining===h}"></button>`).join('')}</div></section>
   <section class="sec"><h2>姓名标</h2><p class="note">缝在后领内侧，敞开外套能看到。也会写进制作单。</p>
    <label class="field"><span>宝贝的名字</span><input data-in="nameLabel" maxlength="8" value="${esc(cfg.nameLabel)}" placeholder="例如：乐乐"></label></section>`;
@@ -1799,6 +1976,10 @@ function costEstimate(c){const T=TYPES[c.type];const sf=Math.pow(c.meas.height/1
   L.push(['基础面料与车工',T.base*sf]);
   const tp={solid:0,yoke:10,classic:12,diagonal:18,tri:16,side:14,raglan:14,chevron:16,pop:6}[c.template];if(tp)L.push(['拼色裁片',tp]);
   if(c.print&&c.print.kind!=='none')L.push(['满印工艺',20*sf]);
+  if((c.fill||'none')!=='none')L.push(['保暖填充',({thin:18,mid:26,thick:34,down:80}[c.fill])*sf]);
+  if(warmth(c).io!=='none')L.push(['三合一内胆',(c.threeInOne==='down'?160:85)*sf]);
+  const fxc=[['pitZips',16],['innerCuffs',8],['thumbLoops',4],['snowSkirt',22],['hemAdjust',6],['innerPocket',6],['magZip',18]].filter(([k])=>c[k]).reduce((a,[,v])=>a+v,0);if(fxc)L.push(['功能细节',fxc]);
+  if(c.type==='hardshell'){const wp={dwr:0,'5k':0,'10k':20,'20k':45}[c.wpRating];if(wp)L.push(['高防水面料',wp*sf]);if(c.taping==='full')L.push(['全压胶',30]);if(c.taping==='key')L.push(['关键部位压胶',14])}
   const mx=new Set(['main','acc1','acc2'].filter(k=>usedSlots().has(k)).map(k=>matOf(c,k))).size;if(mx>1)L.push(['软硬拼接面料',(mx-1)*15]);
   L.push(['内衬',({mesh:18,taffeta:15,fleece:28,quilted:36,print:24})[c.lining]*sf]);
   if(c.zipType==='waterproof')L.push(['防水拉链',25]);if(c.zipFlap)L.push(['防风门襟',8]);if(c.bigPull)L.push(['大号拉片',3]);
@@ -1813,10 +1994,14 @@ function costEstimate(c){const T=TYPES[c.type];const sf=Math.pow(c.meas.height/1
 }
 
 // ---------- 事件 ----------
-document.addEventListener('click',e=>{const t=e.target.closest('button,[data-act]');if(!t)return;const D=t.dataset;
+document.addEventListener('click',e=>{if(ui.bubble&&!e.target.closest('#bubble')&&performance.now()-bubbleAt>400)closeBubble();const t=e.target.closest('button,[data-act]');if(!t)return;const D=t.dataset;
   if(D.tab){ui.tab=D.tab;LS.set('tab',ui.tab);renderPanel();$('.panel').scrollTop=0;return}
   if(D.set){let v=D.v;if(D.type==='num')v=+v;if((D.set==='hoodDeco'&&v!=='none'||D.set==='hoodShape')&&!ui.hoodUp){ui.hoodUp=true}if(getK(D.set)===v&&!D.set.startsWith('logo.'))return;change(D.set,v);return}
   if(D.tg){if(D.tg==='hoodBrim'&&!cfg.hoodBrim)ui.hoodUp=true;change(D.tg,!getK(D.tg));return}
+  if(D.bi&&ui.bubbleMenu){const [gi,ii]=D.bi.split(':').map(Number);const it=ui.bubbleMenu.g[gi][1][ii];snap();const hu=ui.hoodUp;it.f();if(ui.hoodUp!==hu&&V){V.hoodUp=ui.hoodUp}
+    if(cfg.hoodDeco!=='none'&&ui.bubble.z==='hood'&&!ui.hoodUp&&/帽饰|帽型/.test(ui.bubbleMenu.g[gi][0])){ui.hoodUp=true}
+    if(cfg.zipLen!=='full'||cfg.zipPos==='offset'){ui.open=false;if(V)V.openTarget=0}
+    afterChange();renderBubble();return}
   if(D.pcat){ui.pcat=D.pcat;renderPanel();return}
   if(D.slot){ui.slot=D.slot;renderPanel();return}
   if(D.harm){snap();Object.assign(cfg.colors,harmonize(cfg.colors.main,D.harm));if(cfg.template==='solid'){cfg.template='yoke';cfg.hoodColor='acc1'}afterChange();toast('已按「'+HARMONY.find(x=>x[0]===D.harm)[1]+'」生成配色');return}
@@ -1830,9 +2015,10 @@ document.addEventListener('click',e=>{const t=e.target.closest('button,[data-act
   if(D.lsel){ui.logo=+D.lsel;renderPanel();return}
   if(D.view&&V){const m={front:[0,.06],q:[-.62,.1],side:[-Math.PI/2,.06],back:[Math.PI,.06]}[D.view];ui.auto=false;V.auto=false;V.goView(m[0],m[1]);vtag();return}
   if(D.vt&&V){const k=D.vt;ui[k]=!ui[k];
-    if(k==='open'){V.openTarget=ui.open?1:0;if(ui.open&&ui.hoodUp){ui.hoodUp=false;V.hoodUp=false}}
+    if(k==='open'){if(ui.open&&(cfg.zipLen!=='full'||cfg.zipPos==='offset')){ui.open=false;toast('套头或偏襟款不能敞开，可在“细节”里改回全开拉链');return}V.openTarget=ui.open?1:0;if(ui.open&&ui.hoodUp){ui.hoodUp=false;V.hoodUp=false}}
+    if(k==='inner'){rebuild(0);toast(ui.inner?'正在看可拆卸内胆':'回到外套');renderPanel()}
     if(k==='hoodUp'){V.hoodUp=ui.hoodUp;V.rebuild()} if(k==='night'){V.night=ui.night?1:0;V.dirty=true} if(k==='auto')V.auto=ui.auto;
-    if(k==='body'){V.showBody=ui.body;V.build(cfg,V.paint)}
+    if(k==='body'){V.showBody=ui.body;V.build(V.cfgView||cfg,V.paint)}
     vtag();if(k==='open'&&ui.tab==='lining')renderPanel();return}
   const a=D.act;if(!a)return;
   ({undo,redo,save:()=>saveDesign(),mine:openMine,zoomin:()=>V&&V.zoom(.88),zoomout:()=>V&&V.zoom(1.12),random:randomize,
@@ -1843,6 +2029,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('button,[data-act
     advall:()=>{const L=adviceList(cfg).filter(x=>!x.ok);snap();L.forEach(x=>Object.assign(cfg,clone(x.apply)));afterChange();toast(`已采用 ${L.length} 项建议`)},
     reest:()=>{snap();cfg.meas.auto=true;Object.assign(cfg.meas,estimateMeas(cfg.meas,cfg.age));afterChange()},
     idea:()=>{const t=($('#ideatxt')?.value||'').trim();ui.idea=t;if(!t){toast('先写一句你的想法');return}const r=parseIdea(t,strip(cfg));ui.ideaDone=r.done;if(r.done.length){snap();if(r.c.hoodDeco!=='none'&&r.c.hoodDeco!==cfg.hoodDeco)ui.hoodUp=true;const imgs=cfg.logos.map(l=>l._im);cfg=normalize(r.c);cfg.logos.forEach((l,i)=>{if(imgs[i])l._im=imgs[i]});afterChange();toast(`按你的想法改了 ${r.done.length} 处`)}else renderPanel()},
+    closebubble:closeBubble,bubblemore:()=>{const t=ui.bubbleMenu?.tab;closeBubble();if(t){ui.tab=t;LS.set('tab',t);renderPanel();$('.panel').scrollTop=0}},
     feedback:openFeedback,fbcopy:copyFeedback,
     tpdl:()=>dlTechPack(),tppng:()=>dlRenders(),opendoc:()=>openDoc(D.id),deldoc:()=>delDoc(D.id),
   })[a]?.();
@@ -1862,7 +2049,7 @@ document.addEventListener('change',e=>{const t=e.target,D=t.dataset;
   if(D.act==='importjson'&&t.files[0])importJSON(t.files[0]);
 });
 $('#dname').value=cfg.name;
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();if((e.metaKey||e.ctrlKey)&&e.key==='z'&&!e.target.matches('input,textarea')){e.preventDefault();e.shiftKey?redo():undo()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheet();closeBubble()}if((e.metaKey||e.ctrlKey)&&e.key==='z'&&!e.target.matches('input,textarea')){e.preventDefault();e.shiftKey?redo():undo()}});
 
 function loadLogoImg(file){if(!file.type.startsWith('image/')){toast('请选择图片文件');return}
   const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,320/Math.max(im.width,im.height));const c=mkCanvas(Math.round(im.width*s),Math.round(im.height*s));c.getContext('2d').drawImage(im,0,0,c.width,c.height);
@@ -1927,10 +2114,12 @@ async function saveFile(name,data){if(dl){try{await dl.save({filename:name,data}
 let tpCache=null;
 function renders(){if(!V)return [];const saveOpen=V.open,saveHood=V.hoodUp;const out=[];
   const shots=[['正面',0,.05],['¾ 侧前',-.62,.1],['侧面',-Math.PI/2,.05],['背面',Math.PI,.05]];
-  V.open=0;V.hoodUp=ui.hoodUp;V.build(cfg,V.paint);for(const [n,y,p] of shots)out.push([n,V.snapshot(y,p,600,740)]);
-  V.open=1;V.hoodUp=false;V.build(cfg,V.paint);out.push(['敞开 · 内衬',V.snapshot(-.25,.06,600,740)]);
-  if(cfg.collar==='hood'&&!ui.hoodUp){V.open=0;V.hoodUp=true;V.build(cfg,V.paint);out.push(['戴帽',V.snapshot(-.5,.08,600,740)])}
-  V.open=saveOpen;V.hoodUp=saveHood;V.build(cfg,V.paint);return out}
+  const P0=V.paint,C0=V.cfgView||cfg;const pOf=c=>paintAll(c,buildGarment(c,dims(c),{open:0,hoodUp:false}));const PO=C0===cfg?P0:pOf(cfg);
+  V.open=0;V.hoodUp=ui.hoodUp;V.build(cfg,PO);for(const [n,y,p] of shots)out.push([n,V.snapshot(y,p,600,740)]);
+  if(cfg.zipLen==='full'&&cfg.zipPos!=='offset'){V.open=1;V.hoodUp=false;V.build(cfg,PO);out.push([warmth(cfg).io!=='none'?'敞开 · 内胆':'敞开 · 内衬',V.snapshot(-.25,.06,600,740)])}
+  if(cfg.collar==='hood'&&!ui.hoodUp){V.open=0;V.hoodUp=true;V.build(cfg,PO);out.push(['戴帽',V.snapshot(-.5,.08,600,740)])}
+  if(warmth(cfg).io!=='none'){const ic=viewCfg(true);V.open=0;V.hoodUp=false;V.build(ic,pOf(ic));out.push(['可拆卸内胆',V.snapshot(-.45,.08,600,740)])}
+  V.open=saveOpen;V.hoodUp=saveHood;V.build(C0,P0);return out}
 function techPackHTML(imgs){const c=cfg,T=TYPES[c.type],C=c.colors,sp=sizeSpec(c),cost=costEstimate(c);
   const no='LW-'+c.type.slice(0,2).toUpperCase()+'-'+new Date().toISOString().slice(2,10).replace(/-/g,'')+'-'+(Math.abs([...JSON.stringify(strip(c))].reduce((h,ch)=>h*31+ch.charCodeAt(0)|0,7))%10000).toString().padStart(4,'0');
   const ci=h=>{const x=colorInfo(h);return `<span class="cc"><i style="background:${h}"></i>${x.name}<em>${x.code} · ${h.toUpperCase()}</em></span>`};
@@ -1940,7 +2129,10 @@ function techPackHTML(imgs){const c=cfg,T=TYPES[c.type],C=c.colors,sp=sizeSpec(c
   if(used.has('acc1'))bom.push(['面料 · 拼色 1',matOf(c,'acc1')===matOf(c,'main')?'同主面料':fab('acc1'),ci(C.acc1),TEMPLATES[c.template].name+(c.hoodColor==='acc1'?'、帽子':'')+(c.pocketColor==='acc1'?'、口袋':'')]);
   if(used.has('acc2'))bom.push(['面料 · 拼色 2',matOf(c,'acc2')===matOf(c,'main')?'同主面料':fab('acc2'),ci(C.acc2),'细拼条 / 点缀'+(c.hoodDeco!=='none'?'、帽饰':'')+(c.pocketColor==='acc2'?'、口袋':'')]);
   if(c.print&&c.print.kind!=='none')bom.push(['满印图案',PRINTS.find(x=>x[0]===c.print.kind)[1]+(c.print.kind==='custom'?'（客户图片，数码印花）':'（数码印花 / 热转印）')+`，循环宽约 ${Math.round(c.print.scale*6)} cm`,c.print.kind==='custom'?'按图':ci(c.print.color),{main:'主色块',acc1:'拼色 1 块',acc2:'拼色 2 块'}[c.print.slot]]);
-  bom.push(['内衬',OPTS.lining.find(l=>l[0]===c.lining)[1],ci(C.lining),'衣身、袖、帽内里；门襟内贴边用面料']);
+  bom.push(['内衬',OPTS.lining.find(l=>l[0]===c.lining)[1]+'（'+LINING_SPEC[c.lining]+'）',ci(C.lining),'衣身、袖、帽内里；门襟内贴边用面料']);
+  if((c.fill||'none')!=='none')bom.push(['保暖填充',c.type==='down'?{thin:'羽绒 60g',mid:'羽绒 100g',thick:'羽绒 140g',down:'羽绒 160g'}[c.fill]+'（90/10）':OPTS.fill.find(x=>x[0]===c.fill)[1]+(c.fill==='down'?'（含绒量 90%）':' 仿丝棉'),'—','衣身、袖子']);
+  if(warmth(c).io!=='none')bom.push(['三合一内胆',c.threeInOne==='down'?'羽绒内胆（立领，90/10）':'抓绒内胆（立领，摇粒绒 280g）',ci(C.inner),'门襟内拉链 + 袖口按扣与外套连接']);
+  if(c.type==='hardshell')bom.push(['面料防护',`静水压 ${OPTS.wpRating.find(x=>x[0]===c.wpRating)[1]}${c.pfcFree?'，无氟防泼水整理（PFC-free）':''}`,'—','外层面料，需供应商检测报告']);
   bom.push(['门襟拉链',c.zipType==='waterproof'?'5 号防水压胶拉链（开尾）':'5 号树脂齿拉链（开尾）',ci(c.zipType==='waterproof'?C.main:C.zip),'前中，顶端加防夹下巴护片']);
   if(pocketDefs(c).some(p=>p.kind==='zip')||c.sleevePocket)bom.push(['口袋拉链',c.zipType==='waterproof'?'3 号防水拉链':'3 号树脂齿拉链',ci(C.zip),'胸袋 / 手袋 / 袖袋']);
   bom.push(['拉头',c.bigPull?'加长拉片（便于儿童抓握）':'标准拉片',ci(C[c.pullColor==='zip'?'zip':c.pullColor]),'门襟']);
@@ -1949,11 +2141,13 @@ function techPackHTML(imgs){const c=cfg,T=TYPES[c.type],C=c.colors,sp=sizeSpec(c
   const rf=[c.refl.band&&'袖口环绕反光带 1.5 cm',c.refl.back&&'后背反光条 2 × 16 cm',c.refl.piping&&'拼接线反光滚边 3 mm'].filter(Boolean);if(rf.length)bom.push(['反光材料',rf.join('；'),'银灰','见款式图']);
   if(c.nameLabel)bom.push(['姓名标','织唛 5 × 2.4 cm，内容：'+esc(c.nameLabel),'白底','后领内侧']);
   const parts=[[1,'帽 / 领',c.collar==='hood'?`连帽（三片式），${c.hoodBrim?'帽檐内衬硬衬，':''}帽口包边，无抽绳；帽饰：${OPTS.hoodDeco.find(x=>x[0]===c.hoodDeco)[1]}`:'立领，内侧贴抓绒护颈'],
-    [2,'门襟',`${OPTS.zipType.find(x=>x[0]===c.zipType)[1]}${c.zipFlap?'，外置防风门襟（右前片）带按扣':''}，拉链顶端防夹护片`],
+    [2,'门襟',`${OPTS.zipLen.find(x=>x[0]===c.zipLen)[1]}${c.zipLen!=='none'?'，'+(c.zipPos==='offset'?'偏襟（左前片竖向）':'居中')+'，'+OPTS.zipType.find(x=>x[0]===c.zipType)[1]:''}${c.zipFlap&&c.zipLen!=='none'?'，外置防风门襟（'+(c.flapSide==='L'?'左片压右':'右片压左')+'）带按扣':''}${c.chinGuard?'，拉链顶端防夹护片':''}${c.magZip?'，磁吸对位拉链头':''}${c.twoWayZip?'，双头拉链':''}`],
     [3,'胸袋',OPTS.chestPocket.find(x=>x[0]===c.chestPocket)[1]],[4,'手袋',OPTS.handPocket.find(x=>x[0]===c.handPocket)[1]+(c.sleevePocket&&c.type!=='vest'?'；左袖拉链袋':'')],
     [5,'袖口',c.type==='vest'?'袖窿包边':OPTS.cuff.find(x=>x[0]===c.cuff)[1]],[6,'下摆',OPTS.hem.find(x=>x[0]===c.hem)[1]+'，内折明线'],
     ['—','反光',rf.length?rf.join('；'):'无'],['—','内衬',`${OPTS.lining.find(l=>l[0]===c.lining)[1]}，门襟与下摆内贴边用面料`]];
-  if(c.type==='hardshell')parts.push(['—','接缝','主要接缝内侧压防水胶条（肩、袖窿、帽）']);if(c.type==='down')parts.push(['—','绗缝','横向绗缝 6 格，防跑绒处理']);
+  const fx=[c.pitZips&&c.type!=='vest'&&'腋下透气拉链（两侧，长约 '+Math.round(c.meas.height*.11)+' cm）',c.innerCuffs&&'袖内防风罗纹',c.thumbLoops&&'袖内拇指扣',c.snowSkirt&&'腰内可拆防雪裙（带防滑胶条）',c.hemAdjust&&'下摆内置弹力绳 + 调节扣，无外露绳头',c.collar==='hood'&&c.hoodAdjust&&'帽后魔术贴大小调节',c.collar==='stand'&&c.stowHood&&'领内拉链收纳帽',c.innerPocket&&'左内侧紧急联系卡袋（透明窗）',c.hangLoop&&'后领挂衣环',c.chinGuard&&'护颚抓绒'].filter(Boolean);
+  if(fx.length)parts.push(['—','功能细节',fx.join('；')]);
+  if(['hardshell','softshell'].includes(c.type))parts.push(['—','接缝',{none:'不压胶',key:'肩、袖窿、帽等关键接缝压防水胶条',full:'全部接缝压防水胶条'}[c.taping]]);if(c.type==='down')parts.push(['—','绗缝','横向绗缝 6 格，防跑绒处理']);
   const logos=c.logos.map(L=>`<tr><td><img class="lg" src="${logoCanvas(L,300).toDataURL()}" alt=""></td><td>${PLACES[L.place]}</td><td class="m">${L.size} cm 宽</td><td>${METHODS[L.method][0]}</td><td>${L.kind==='image'?'客户图片':esc((ICONS[L.icon]?.name||'')+(L.text?' + “'+L.text+'”':''))}</td><td>${ci(L.method==='reflective'?REFL_HEX:L.fg)}${L.shape!=='none'?' 底 '+ci(L.bg):''}</td></tr>`).join('');
   return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>制作单 ${no}</title>
 <style>:root{--ink:#1c2626;--mut:#5f6a66;--line:#d5d9d1;--acc:#ff6a2b}*{box-sizing:border-box}body{margin:0;background:#f3f4f0;color:var(--ink);font:14px/1.6 "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
@@ -1973,6 +2167,7 @@ ul{margin:0;padding-left:20px}li{margin:3px 0}.warn{background:#fff6ef;border:1p
 <h2>2　平面款式图</h2><div class="flats"><div>${flatSVG(c,'front',{marks:true})}<p>正面（编号见第 4 节）</p></div><div>${flatSVG(c,'back',{})}<p>背面</p></div></div>
 <h2>3　配色与物料清单</h2><table><thead><tr><th>物料</th><th>规格</th><th>颜色</th><th>使用部位</th></tr></thead><tbody>${bom.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')}</tbody></table>
 <h2>4　部件工艺</h2><table><thead><tr><th style="width:44px">编号</th><th style="width:90px">部位</th><th>做法</th></tr></thead><tbody>${parts.map(p=>`<tr><td>${p[0]==='—'?'—':`<span class="n">${p[0]}</span>`}</td><td>${p[1]}</td><td>${p[2]}</td></tr>`).join('')}</tbody></table>
+<h2>4a　保暖与防护（设计参考）</h2>${(()=>{const W=warmth(c);return `<table><tbody><tr><td style="width:110px">适穿温度</td><td>约 ${W.lo}–${W.hi} °C（静止或轻度活动，内搭长袖）${W.notes.length?'；'+W.notes.join('；'):''}</td></tr><tr><td>防雨</td><td>${W.rain}</td></tr><tr><td>防风</td><td>${W.wind}</td></tr><tr><td>透气</td><td>${W.breath}</td></tr></tbody></table><p style="font-size:12px;color:var(--mut)">以上为设计估算，不是检测结论。防水、保暖需按面料检测报告与成衣测试确认。</p>`})()}
 <h2>4b　适龄与体型设计</h2><table><tbody>${adviceList(c).map(x=>`<tr><td style="width:70px">${x.ok?'✓ 已采用':'未采用'}</td><td style="width:150px">${x.title}</td><td>${x.why}</td></tr>`).join('')}${c.twoWayZip?'<tr><td>✓</td><td>双头拉链</td><td>门襟用双头开尾拉链</td></tr>':''}${c.detachHood&&c.collar==='hood'?'<tr><td>✓</td><td>可拆卸帽</td><td>帽与领口用拉链 + 按扣连接</td></tr>':''}</tbody></table>
 <h2>5　标志规格</h2>${c.logos.length?`<table><thead><tr><th>图样</th><th>位置</th><th>尺寸</th><th>工艺</th><th>内容</th><th>颜色</th></tr></thead><tbody>${logos}</tbody></table>`:'<p>无</p>'}
 <h2>6　成衣尺寸（cm）</h2><table><thead><tr><th>部位</th><th>尺寸</th><th>公差</th></tr></thead><tbody>${sp.rows.map(r=>`<tr><td>${r[0]}</td><td class="m">${r[1]}</td><td class="m">${r[2]}</td></tr>`).join('')}</tbody></table>
