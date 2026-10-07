@@ -232,6 +232,21 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .done{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--ok);white-space:nowrap}
 .done .ic{width:14px;height:14px}
 
+.idea textarea{width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:var(--r);padding:10px 12px;font:15px/1.5 var(--f-body);resize:vertical}
+.ideabar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.chipbtn{border:1px dashed var(--line);background:transparent;border-radius:999px;padding:5px 10px;font-size:12.5px;color:var(--muted)}
+.chipbtn:hover{border-color:var(--muted);color:var(--ink)}
+.ideares{margin-top:10px;font-size:13px;background:var(--soft);border-radius:var(--r);padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ideares span{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:12.5px}
+.harm{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:8px}
+.hm{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:var(--r);padding:9px 10px}
+.hm:hover{border-color:var(--muted)}
+.hm .dots{display:flex}
+.hm .dots i{width:20px;height:20px;border-radius:50%;box-shadow:0 0 0 2px var(--card);margin-right:-5px}
+.hm small{font-size:11.5px;color:var(--muted)}
+.mdot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;box-shadow:inset 0 0 0 1px #0003}
+.mixq{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+
 </style>
 <div id="app"></div>
 <script>window.LWS_REPO="coolhjc1987-chao/coolhjc1987-chao.github.io";</script>
@@ -272,6 +287,7 @@ uniform int uHasMap, uHasN, uHasP, uHasDetail, uGround, uFlip;
 uniform vec3 uColor, uCam, uBg, uSky, uGnd, uL1, uL2, uL3, uC1, uC2, uC3, uSheenTint;
 uniform float uRough, uSpec, uSheen, uNStr, uDStr, uWrap, uNight, uOpacity, uShadowOn;
 uniform vec2 uDRep;
+uniform vec4 uClipA; uniform vec4 uClipB; uniform int uClip;
 out vec4 frag;
 mat3 cotFrame(vec3 N, vec3 p, vec2 uv){
   vec3 dp1=dFdx(p), dp2=dFdy(p); vec2 du1=dFdx(uv), du2=dFdy(uv);
@@ -288,6 +304,11 @@ float shadowAt(vec3 N, vec3 L){
 }
 vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14),0.0,1.0); }
 void main(){
+  if(uClip==1){ // 裁掉伸进衣身内部的袖山
+    float t=clamp((vPos.y-uClipA.z)/(uClipA.w-uClipA.z),0.0,1.0);
+    float a=mix(uClipA.x,uClipB.x,t), b=mix(uClipA.y,uClipB.y,t);
+    if(vPos.y<uClipA.w && (vPos.x*vPos.x)/(a*a)+(vPos.z*vPos.z)/(b*b)<1.0) discard;
+  }
   vec3 N=normalize(vNrm); if(uFlip==1) N=-N; if(!gl_FrontFacing) N=-N;
   vec3 V=normalize(uCam-vPos);
   if(uGround==1){
@@ -389,7 +410,7 @@ function createRenderer(canvas){
       gl.uniform3fv(u.uColor,m.color||[1,1,1]);gl.uniform3fv(u.uSheenTint,m.sheenTint||[1,1,1]);
       gl.uniform1f(u.uRough,m.rough??.7);gl.uniform1f(u.uSpec,m.spec??.2);gl.uniform1f(u.uSheen,m.sheen??0);gl.uniform1f(u.uNStr,m.nStr??1);
       gl.uniform1f(u.uDStr,m.dStr??.5);gl.uniform1f(u.uWrap,m.wrap??.25);gl.uniform2fv(u.uDRep,m.dRep||[1,1]);
-      gl.uniform1i(u.uGround,m.ground?1:0);gl.uniform1i(u.uFlip,m.flip?1:0);gl.uniform1f(u.uOpacity,1);
+      gl.uniform1i(u.uGround,m.ground?1:0);gl.uniform1i(u.uClip,m.clip?1:0);if(m.clip){gl.uniform4fv(u.uClipA,m.clip[0]);gl.uniform4fv(u.uClipB,m.clip[1])}gl.uniform1i(u.uFlip,m.flip?1:0);gl.uniform1f(u.uOpacity,1);
       if(m.side==='back'){gl.enable(gl.CULL_FACE);gl.cullFace(gl.FRONT)}else if(m.side==='double'){gl.disable(gl.CULL_FACE)}else{gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK)}
       gl.bindVertexArray(it.mesh.vao);gl.drawElements(gl.TRIANGLES,it.mesh.count,gl.UNSIGNED_INT,0);};
     for(const it of items) if(!it.hidden) draw(it);
@@ -463,6 +484,9 @@ const TYPES = {
   vest:{name:'马甲',sub:'无袖背心',fabric:'防泼水尼龙 + 轻量填充',ease:.03,rough:.42,spec:.4,sheen:.08,detail:'nylon',base:118,meters:.8}
 };
 
+const MATS={shell:['硬壳','防水尼龙格子布',.5],soft:['软壳','弹力梭织复合',.72],fleece:['抓绒','摇粒绒',.96],knit:['弹力针织','罗纹 / 针织弹力布',.85],quilt:['菱格绗缝','夹棉绗缝',.45],cord:['灯芯绒','细条灯芯绒',.9],nylon:['光面尼龙','防泼水尼龙',.38]};
+const TYPE_MAT={hardshell:'shell',softshell:'soft',fleece:'fleece',down:'nylon',vest:'nylon'};
+const matOf=(c,slot)=>{const m=c.mats&&c.mats[slot];return m&&m!=='base'&&MATS[m]?m:TYPE_MAT[c.type]};
 const TEMPLATES = {
   solid:{name:'纯色',sub:'一色到底，最耐看',hood:'main'},
   yoke:{name:'肩部育克',sub:'肩背一块拼色',hood:'acc1'},
@@ -532,6 +556,7 @@ const BASE = {
   cuff:'velcro',hem:'straight',refl:{band:true,back:false,piping:false},
   lining:'mesh',nameLabel:'乐乐',
   logos:[{id:'l1',kind:'mark',icon:'mountain',text:'LELE',font:'round',shape:'circle',fg:'#eef0ec',bg:'#1f3354',place:'chestL',size:6,method:'embroidery',img:null}],
+  mats:{main:'base',acc1:'base',acc2:'base'},
   age:4,sex:'',fit:'regular',growth:1,growCuff:false,twoWayZip:false,detachHood:false,
   meas:{height:106,weight:17,chest:54,sleeve:33,auto:true}
 };
@@ -599,6 +624,57 @@ function adviceList(c){const A=[];const a=c.age,b=bodyInfo(c),hood=c.collar==='h
   }
   if(b.type==='slim')add('slimfit','合体版型','偏瘦的孩子穿标准版容易空荡，合体版更精神，衣长仍按身高定。',c.fit==='slim',{fit:'slim'},'体型 · 偏瘦');
   return A.sort((x,y)=>x.ok-y.ok);
+}
+
+// —— 配色思路：由主色生成拼色 ——
+function hex2hsl(h){let [r,g,b]=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let H=0,S=0,L=(mx+mn)/2;
+  if(mx!==mn){const d=mx-mn;S=L>.5?d/(2-mx-mn):d/(mx+mn);H=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;H*=60}return [H,S,L]}
+function hsl2hex(H,S,L){H=((H%360)+360)%360;S=Math.max(0,Math.min(1,S));L=Math.max(0,Math.min(1,L));const k=n=>(n+H/30)%12,a=S*Math.min(L,1-L),f=n=>L-a*Math.max(-1,Math.min(k(n)-3,9-k(n),1));
+  return '#'+[f(0),f(8),f(4)].map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('')}
+const HARMONY=[['analog','协调色','相邻色相，柔和不跳'],['mono','同色深浅','一个颜色的深浅变化'],['contrast','撞色','三角对比，活泼醒目'],['comp','互补色','对面色相，最强对比'],['neutral','黑白灰 + 一点亮色','耐脏耐看，亮色点睛']];
+function harmonize(main,kind){const [h,s,l]=hex2hsl(main);let a1,a2,m=main;
+  if(kind==='analog'){a1=hsl2hex(h+32,s*.9,Math.max(.22,l*.72));a2=hsl2hex(h-30,Math.min(1,s*1.05),Math.min(.82,l*1.18))}
+  if(kind==='mono'){a1=hsl2hex(h,s*.9,Math.max(.16,l*.5));a2=hsl2hex(h,s*.7,Math.min(.88,l+.28))}
+  if(kind==='contrast'){a1=hsl2hex(h+120,Math.max(.55,s),.42);a2=hsl2hex(h+240,Math.max(.6,s),.58)}
+  if(kind==='comp'){a1=hsl2hex(h+180,Math.max(.5,s),Math.max(.3,Math.min(.55,1-l)));a2=l>.5?'#23272b':'#eef0ec'}
+  if(kind==='neutral'){a2=main;m=l>.6?'#4a5058':'#9aa2a6';a1='#23272b'}
+  const dark=[a1,a2,m].sort((x,y)=>hex2hsl(x)[2]-hex2hsl(y)[2])[0];
+  return {main:m,acc1:a1,acc2:a2,trim:dark,zip:hex2hsl(dark)[2]<.3?dark:'#23272b'}}
+
+// —— 说说你的想法：本地规则解析 ——
+const IDEA_COLORS=[['酒红','#7a2232'],['大红','#c9283b'],['红','#c9283b'],['橙','#ff6a2b'],['橘','#ff6a2b'],['柠檬黄','#f5d33f'],['芥末','#d4a72c'],['姜黄','#d4a72c'],['黄','#f5d33f'],['墨绿','#2f5d50'],['深绿','#2f5d50'],['军绿','#5f7148'],['薄荷','#8fd1bd'],['浅绿','#8fd1bd'],['绿','#5f7148'],
+  ['藏青','#1f3354'],['海军蓝','#1f3354'],['深蓝','#1f3354'],['宝蓝','#2d55c8'],['天蓝','#9cc9e0'],['浅蓝','#9cc9e0'],['蓝','#3a8fb7'],['香芋','#a594d6'],['浅紫','#a594d6'],['紫','#5a3d82'],['珊瑚','#f08a7a'],['桃','#f08a7a'],['粉','#f3b3c2'],
+  ['黑','#23272b'],['白','#eef0ec'],['深灰','#4a5058'],['灰','#9aa2a6'],['米','#d9cdb4'],['燕麦','#d9cdb4'],['奶','#d9cdb4'],['卡其','#b39a72'],['咖啡','#8b5a3c'],['棕','#8b5a3c'],['杏','#f2a65a']];
+const IDEA_MATS=[['抓绒','fleece'],['摇粒绒','fleece'],['软壳','soft'],['针织','knit'],['罗纹','knit'],['绗缝','quilt'],['菱格','quilt'],['夹棉','quilt'],['灯芯绒','cord'],['硬壳','shell'],['防水面料','shell']];
+function parseIdea(text,c){const done=[],t=text.replace(/\s+/g,'');if(!t)return {c,done};c=clone(c);const say=m=>done.push(m);
+  const setType=(k,w)=>{c.type=k;say('款式：'+TYPES[k].name)};
+  if(/羽绒|面包服/.test(t))setType('down');else if(/马甲|背心/.test(t))setType('vest');else if(/抓绒外套|抓绒衣/.test(t))setType('fleece');else if(/软壳外套|软壳衣/.test(t))setType('softshell');else if(/冲锋衣/.test(t))setType('hardshell');
+  const hm=[[/协调|和谐|邻近|柔和/,'analog'],[/同色|深浅|同一个色/,'mono'],[/撞色|对比|跳色|鲜艳/,'contrast'],[/互补/,'comp'],[/黑白灰|低调|耐脏/,'neutral']].find(([r])=>r.test(t));
+  const colorIn=s=>{for(const [n,h] of [...PALETTE.map(p=>[p[1],p[2]]),...IDEA_COLORS])if(s.includes(n))return [n,h];return null};
+  const clauses=t.split(/[，,。；;、\n]|和|跟|再|然后/).filter(Boolean);let order=0;let usedHarm=false;
+  for(const cl of clauses){const col=colorIn(cl);const mat=IDEA_MATS.find(([w])=>cl.includes(w));
+    const part=/袖口|滚边|包边/.test(cl)?'trim':/袖/.test(cl)?'sleeve':/帽/.test(cl)?'hood':/口袋|袋盖|兜/.test(cl)?'pocket':/内衬|里布|里子/.test(cl)?'lining':/拉链/.test(cl)?'zip':/肩|上半|拼色|拼接/.test(cl)?'acc1':/衣身|大身|主色|整体|底色/.test(cl)?'main':null;
+    if(col){const [n,h]=col;
+      if(part==='sleeve'){if(!['raglan','classic'].includes(c.template)){c.template='raglan';c.hoodColor=TEMPLATES.raglan.hood}c.colors.acc1=h;say('袖子：'+n)}
+      else if(part==='hood'){c.hoodColor='acc2';c.colors.acc2=h;say('帽子：'+n)}
+      else if(part==='pocket'){c.pocketColor='acc2';c.colors.acc2=h;say('口袋：'+n)}
+      else if(part==='lining'){c.colors.lining=h;say('内衬：'+n)}else if(part==='zip'){c.colors.zip=h;say('拉链：'+n)}else if(part==='trim'){c.colors.trim=h;say('袖口滚边：'+n)}
+      else if(part==='acc1'){if(c.template==='solid'){c.template='yoke';c.hoodColor='acc1'}c.colors.acc1=h;say('拼色：'+n)}
+      else{const slot=part==='main'?'main':['main','acc1','acc2'][Math.min(order++,2)];if(slot!=='main'&&c.template==='solid'){c.template='yoke';c.hoodColor='acc1'}c.colors[slot]=h;say((slot==='main'?'主色':slot==='acc1'?'拼色 1':'拼色 2')+'：'+n)}}
+    if(mat){const slot=part==='sleeve'?'acc1':part==='hood'?c.hoodColor:part==='pocket'?c.pocketColor:part==='main'?'main':part==='acc1'?'acc1':null;
+      if(slot){if(part==='sleeve'&&!['raglan','classic'].includes(c.template)){c.template='raglan'}c.mats[slot]=mat[1];say((part==='sleeve'?'袖子':slot==='main'?'衣身':'拼色')+'面料：'+MATS[mat[1]][0])}
+      else if(!/软硬/.test(cl)){c.mats.acc1=mat[1];if(c.template==='solid')c.template='side';say('拼色面料：'+MATS[mat[1]][0])}}}
+  if(/软硬/.test(t)){const hard=TYPE_MAT[c.type]==='shell'||c.type==='down'?TYPE_MAT[c.type]:'shell';c.mats.main=hard;if(!c.mats.acc1||c.mats.acc1==='base'||c.mats.acc1===hard)c.mats.acc1=/抓绒/.test(t)?'fleece':/针织|罗纹/.test(t)?'knit':'soft';
+    if(c.template==='solid'){c.template='side';c.hoodColor='main'}say(`软硬拼接：衣身${MATS[c.mats.main][0]} + 拼色${MATS[c.mats.acc1][0]}`)}
+  if(hm){const H=harmonize(c.colors.main,hm[1]);Object.assign(c.colors,H);if(c.template==='solid'){c.template='yoke';c.hoodColor='acc1'}say('配色思路：'+HARMONY.find(x=>x[0]===hm[1])[1])}
+  const T=[[/反光/,()=>{c.refl={band:true,back:true,piping:c.refl.piping};return '加反光带和后背反光条'}],[/帽檐/,()=>{c.hoodBrim=true;return '硬挺帽檐'}],
+    [/熊/,()=>{c.collar='hood';c.hoodDeco='bear';return '小熊耳帽'}],[/兔/,()=>{c.collar='hood';c.hoodDeco='bunny';return '兔耳帽'}],[/恐龙/,()=>{c.collar='hood';c.hoodDeco='dino';return '恐龙背鳍帽'}],[/猫/,()=>{c.collar='hood';c.hoodDeco='cat';return '猫耳帽'}],
+    [/袋鼠/,()=>{c.handPocket='kangaroo';return '袋鼠兜'}],[/防水拉链/,()=>{c.zipType='waterproof';return '防水压胶拉链'}],[/立领|不要帽|无帽/,()=>{c.collar='stand';return '立领'}],[/宽松|oversize/i,()=>{c.fit='roomy';return '宽松版型'}],
+    [/修身|合体|贴身/,()=>{c.fit='slim';return '合体版型'}],[/大拉片|拉链头大/,()=>{c.bigPull=true;return '大号拉片'}],[/双头/,()=>{c.twoWayZip=true;return '双头拉链'}],[/可拆/,()=>{c.detachHood=true;return '可拆卸帽'}],
+    [/印花内衬|内衬.*印花/,()=>{c.lining='print';return '童趣印花内衬'}],[/抓绒内衬|内衬.*抓绒/,()=>{c.lining='fleece';return '抓绒内衬'}]];
+  T.forEach(([r,f])=>{if(r.test(t))say(f())});
+  const nm=t.match(/名字(?:叫|是|写)?[“"]?([\u4e00-\u9fa5A-Za-z]{1,8})/);if(nm){c.nameLabel=nm[1];say('姓名标：'+nm[1])}
+  return {c,done};
 }
 
 // ---- geo.js ----
@@ -726,6 +802,7 @@ function buildGarment(cfg,d,st){
     return [x,y,z];
   }
   out.torsoP=torsoP;
+  out.clip=[[gSh*.965,gRz*.84*.96,y0,collarY+.004],[nRx*.95,nRz*.95,0,0]];
   const torso=surface(120,72,(u,v)=>torsoP(u,v));
   out.torso=torso;
   // 衣身展开尺寸（米）用于贴图比例
@@ -797,11 +874,11 @@ function buildGarment(cfg,d,st){
       return tube(ring,()=>.005*(H/1.06),{nu:10})});
   }
   // 下摆 / 门襟 / 领口滚边
-  const hemPts=[];for(let i=0;i<=96;i++)hemPts.push(torsoP(i/96,0));out.hemRim=tube(hemPts,()=>.0032*(H/1.06),{nu:8});
+  const hemPts=[];for(let i=0;i<=96;i++)hemPts.push(torsoP(i/96,0));out.hemRim=tube(hemPts,()=>.0024*(H/1.06),{nu:8});
   const topPts=[];for(let i=0;i<=64;i++)topPts.push(collarP(i/64,1));out.collarRim=tube(topPts,()=>.003*(H/1.06),{nu:8});
   const edgeL=[],edgeR=[];for(let i=0;i<=40;i++){edgeL.push(torsoP(0,i/40));edgeR.push(torsoP(1,i/40))}
   for(let i=0;i<=6;i++){edgeL.push(collarP(0,i/6));edgeR.push(collarP(1,i/6))}
-  out.frontEdges=[tube(edgeL,()=>.0034*(H/1.06),{nu:8}),tube(edgeR,()=>.0034*(H/1.06),{nu:8})];
+  out.frontEdges=[tube(edgeL,()=>.0021*(H/1.06),{nu:8}),tube(edgeR,()=>.0021*(H/1.06),{nu:8})];
   // ---- 小部件：拉头、帽饰、反光等 ----
   out.bits=[];
   const place=(geo,p,n,t,k)=>{n=V3.norm(n);let tx=V3.norm(V3.sub(t,V3.scale(n,V3.dot(t,n))));const ty=V3.cross(n,tx);out.bits.push({k,g:transformGeo(geo,M4.frame(p,tx,ty,n))})};
@@ -880,6 +957,20 @@ const TEMPLATE_COLLAR={solid:'main',yoke:'acc1',classic:'acc1',diagonal:'acc1',t
 function pointIn(pts,x,y){let c=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){const [xi,yi]=pts[i],[xj,yj]=pts[j];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))c=!c}return c}
 function regionColorAt(regs,u,v,fallback='main'){let c=fallback;for(const r of regs){if(r.pts&&pointIn(r.pts,u,v))c=r.c}return c}
 
+// —— 面料纹理（高度图平铺，约 2 px/mm） ——
+const matTiles={};
+function matTile(k){if(matTiles[k])return matTiles[k];const N=k==='quilt'?96:48,c=mkCanvas(N,N),x=c.getContext('2d');const r=mulberry(k.length*131);
+  x.fillStyle=gray(.5);x.fillRect(0,0,N,N);
+  if(k==='shell'){x.fillStyle=gray(.49);for(let i=0;i<N;i+=3)x.fillRect(0,i,N,1);x.fillStyle=gray(.555);x.fillRect(0,0,N,2);x.fillRect(0,0,2,N);x.fillRect(0,24,N,2);x.fillRect(24,0,2,N)}
+  if(k==='soft'){x.strokeStyle=gray(.56);x.lineWidth=1.2;for(let i=-N;i<2*N;i+=4){x.beginPath();x.moveTo(i,0);x.lineTo(i+N,N);x.stroke()}}
+  if(k==='fleece'){const id=x.getImageData(0,0,N,N);for(let i=0;i<id.data.length;i+=4){const v=128+(r()-.5)*110;id.data[i]=id.data[i+1]=id.data[i+2]=v}x.putImageData(id,0,0);const t=mkCanvas(N,N);t.getContext('2d').filter='blur(.8px)';t.getContext('2d').drawImage(c,0,0);x.drawImage(t,0,0)}
+  if(k==='knit'){for(let i=0;i<N;i++){x.fillStyle=gray(.5+.09*Math.sin(i/6*2*Math.PI));x.fillRect(i,0,1,N)}}
+  if(k==='cord'){for(let i=0;i<N;i++){x.fillStyle=gray(.5+.16*Math.pow(Math.abs(Math.sin(i/8*Math.PI)),.6)-.08);x.fillRect(i,0,1,N)}}
+  if(k==='quilt'){const g=x.createRadialGradient(N/2,N/2,4,N/2,N/2,N*.62);g.addColorStop(0,gray(.66));g.addColorStop(1,gray(.4));x.fillStyle=g;x.fillRect(0,0,N,N);
+    x.strokeStyle=gray(.22);x.lineWidth=3;x.beginPath();x.moveTo(0,0);x.lineTo(N,N);x.moveTo(N,0);x.lineTo(0,N);x.stroke()}
+  if(k==='nylon'){x.fillStyle=gray(.49);for(let i=0;i<N;i+=2)x.fillRect(0,i,N,1)}
+  return matTiles[k]=c}
+
 // —— 画布工具 ——
 function mkCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d',{willReadFrequently:true});return c}
 function Part(w,h,{wrap=false,rough=.6,lining=false}={}){
@@ -895,6 +986,8 @@ function Part(w,h,{wrap=false,rough=.6,lining=false}={}){
   P.line=(pts,width,col,o={})=>{const p=P.open(pts);const set=(ctx,st)=>{ctx.lineWidth=width;ctx.lineCap=o.cap||'butt';ctx.lineJoin='round';ctx.setLineDash(o.dash||[]);ctx.strokeStyle=st;ctx.stroke(p);ctx.setLineDash([])};
     if(col){P.x.globalAlpha=o.alpha??1;set(P.x,col);P.x.globalAlpha=1}if(o.h!=null)set(P.y,gray(o.h));if(o.rough!=null||o.refl||o.gloss)set(P.z,pcol(o.rough??P.base,o.refl||0,o.gloss||0))};
   // 缝线：凹槽 + 两侧明线
+  P.matAll=k=>{P.y.fillStyle=P.y.createPattern(matTile(k),'repeat');P.y.fillRect(0,0,w,h);P.z.fillStyle=`rgb(${MATS[k][2]*255|0},0,0)`;P.z.fillRect(0,0,w,h);P.base=MATS[k][2]};
+  P.mat=(pts,k)=>{const p=P.path(pts);P.y.fillStyle=P.y.createPattern(matTile(k),'repeat');P.y.fill(p);P.z.fillStyle=`rgb(${MATS[k][2]*255|0},0,0)`;P.z.fill(p)};
   P.seam=(pts,o={})=>{P.line(pts,o.w||3,null,{h:.28});P.line(pts,1.4,'rgba(0,0,0,.28)',{});
     if(o.top!==false){const off=o.off||5;for(const s of [-1,1]){if(o.one&&s<0)continue;P.line(offsetLine(pts,s*off,P),1.1,'rgba(0,0,0,.30)',{dash:[4,3],h:.58})}}};
   P.img=(src,cx,cy,wpx,hpx,tf=[1,1],o={})=>{const draw=(ctx,im)=>{const offs=wrap?[-w,0,w]:[0];for(const of of offs){ctx.save();ctx.translate(cx+of,cy);ctx.scale(tf[0],tf[1]);ctx.drawImage(im,-wpx/2,-hpx/2,wpx,hpx);ctx.restore()}};
@@ -972,8 +1065,8 @@ function paintAll(cfg,g){
   const pxU=2048/g.torsoM.u,pxV=1024/g.torsoM.v; // 像素 / 米
   // ================= 衣身 =================
   const P=Part(2048,1024,{wrap:true,rough:T.rough});
-  P.x.fillStyle=C.main;P.x.fillRect(0,0,2048,1024);
-  tmpl.B.forEach(r=>P.fill(r.pts,col(r.c)));
+  P.x.fillStyle=C.main;P.x.fillRect(0,0,2048,1024);P.matAll(matOf(cfg,'main'));
+  tmpl.B.forEach(r=>{P.fill(r.pts,col(r.c));P.mat(r.pts,matOf(cfg,r.c))});
   if(cfg.template==='pop'){} // 点缀色体现在部件
   // 分割线缝线
   tmpl.lines.forEach(l=>{if(Array.isArray(l))P.seam(l)});
@@ -1032,14 +1125,14 @@ function paintAll(cfg,g){
   if(g.sleeves){for(const side of ['L','R']){const SP=Part(512,1024,{wrap:true,rough:T.rough});const cap=g.sleeves[side].capFrac;
       const sToT=s=>cap+s*(1-cap); // 区域 s 以全长计
       const sx=su=>su, sy=s=>1-s; // 袖子画布：v=1-s
-      SP.x.fillStyle=C.main;SP.x.fillRect(0,0,512,1024);
+      SP.x.fillStyle=C.main;SP.x.fillRect(0,0,512,1024);SP.matAll(matOf(cfg,'main'));
       const conv=pts=>pts;
       for(const r of tmpl.S){
         if(r.band){ // 按高度匹配衣身横向色带
           const ys=s=>g.sleeves[side].surf(.25,Math.max(0,(s-cap)/(1-cap))).p[1];const vOf=y=>{let best=0,bd=1e9;for(let i=0;i<=60;i++){const v=i/60*vA;const yy=g.torsoP(.25,v)[1];if(Math.abs(yy-y)<bd){bd=Math.abs(yy-y);best=v}}return best};
-          let prev=null,start=0;for(let i=0;i<=40;i++){const s=i/40;const c=i<40?regionColorAt(tmpl.B,.25,vOf(ys(s))):null;if(c!==prev){if(prev&&prev!=='main'){SP.fill(conv([[-.02,start],[1.02,start],[1.02,s],[-.02,s]]),col(prev))}if(prev&&i<40&&i>0)SP.seam(conv([[-.02,s],[1.02,s]]));prev=c;start=s}}
+          let prev=null,start=0;for(let i=0;i<=40;i++){const s=i/40;const c=i<40?regionColorAt(tmpl.B,.25,vOf(ys(s))):null;if(c!==prev){if(prev&&prev!=='main'){const bp=conv([[-.02,start],[1.02,start],[1.02,s],[-.02,s]]);SP.fill(bp,col(prev));SP.mat(bp,matOf(cfg,prev))}if(prev&&i<40&&i>0)SP.seam(conv([[-.02,s],[1.02,s]]));prev=c;start=s}}
           continue}
-        if(r.side!=='both'&&r.side!==side)continue;SP.fill(conv(r.pts),col(r.c))}
+        if(r.side!=='both'&&r.side!==side)continue;SP.fill(conv(r.pts),col(r.c));SP.mat(conv(r.pts),matOf(cfg,r.c))}
       tmpl.lines.forEach(l=>{if(l.sleeve&&(l.sleeve==='both'||l.sleeve===side)){SP.seam(conv(l.pts));if(cfg.refl.piping)SP.line(conv(l.pts),5,REFL_HEX,{h:.62,refl:1,rough:.35})}});
       SP.seam(conv([[-.02,cap+.01],[1.02,cap+.01]]),{top:true});
       SP.seam(conv([[.5,cap],[.5,1]]),{top:false});
@@ -1054,20 +1147,20 @@ function paintAll(cfg,g){
       if(cfg.refl.band){const b=[[-.02,.8],[1.02,.8],[1.02,.835],[-.02,.835]];SP.fill(conv(b),REFL_HEX,{h:.6,refl:1,rough:.35})}
       if(side==='L'&&cfg.sleevePocket){const s0=sToT(.26),s1=sToT(.45);const pts=conv([[.06,s0],[.06,s1]]);const wpx=6;SP.line(pts,wpx+8,null,{h:.38});SP.line(pts,wpx,C.zip,{h:.62,gloss:.4});SP.seam(offsetLine(pts,9,SP),{top:false,w:1.5});SP.seam(offsetLine(pts,-9,SP),{top:false,w:1.5})}
       for(const L of logos){if(L.place!=='sleeve'+side)continue;const pxu=512/g.sleeveM.u,pxv=1024/g.sleeveM.v;drawLogo(SP,L,SP.X(.0),SP.Y(sToT(.3)),L.size/100*pxu,pxv/pxu,side==='L'?[-1,-1]:[1,-1])}
-      out['sleeve'+side]={map:SP.c,hgt:SP.hg,pmap:SP.pr,lmap:liningCanvas(cfg,256,512,{type:'sleeve'})};
+      out['sleeve'+side]={map:SP.c,hgt:SP.hg,pmap:SP.pr,lmap:liningCanvas(cfg,512,1024,{type:'sleeve'})};
     }}
   // ================= 领 / 帽 =================
-  const CP=Part(512,128,{rough:T.rough});CP.x.fillStyle=C.collar;CP.x.fillRect(0,0,512,128);
+  const CP=Part(512,128,{rough:T.rough});CP.x.fillStyle=C.collar;CP.x.fillRect(0,0,512,128);CP.matAll(matOf(cfg,cfg.collar==='hood'?regionColorAt(tmpl.B,.08,.995,'main'):regionColorAt(tmpl.B,.08,.995,TEMPLATE_COLLAR[cfg.template])));
   const zwc=.0075/g.collarM.u;for(const side of [0,1]){const u0=side?1-zwc:0,u1=side?1:zwc;CP.fill([[u0,-.1],[u1,-.1],[u1,1.1],[u0,1.1]],C.tape,{h:.55})}
   CP.line([[-.02,.88],[1.02,.88]],1.2,'rgba(0,0,0,.3)',{dash:[4,3],h:.6});
   if(cfg.detachHood&&cfg.collar==='hood'){CP.line([[.06,.93],[.94,.93]],5,shade(C.zip,1),{h:.7,gloss:.3});for(let i=1;i<8;i++){const cx=CP.X(i/8),cy=CP.Y(.72);CP.x.fillStyle=shade(C.collar,.75);CP.x.beginPath();CP.x.arc(cx,cy,6,0,7);CP.x.fill();CP.y.fillStyle=gray(.82);CP.y.beginPath();CP.y.arc(cx,cy,6,0,7);CP.y.fill()}}
   for(const L of logos){if(L.place==='backNeck'&&cfg.collar==='stand'){const pxu=512/g.collarM.u,pxv=128/g.collarM.v;drawLogo(CP,L,CP.X(.5),CP.Y(.5),L.size/100*pxu,pxv/pxu,[1,1])}}
   out.collar={map:CP.c,hgt:CP.hg,pmap:CP.pr,lmap:liningCanvas(cfg,256,64,{type:'collar'})};
-  if(g.hood){const HP=Part(1024,768,{rough:T.rough});HP.x.fillStyle=C.hood;HP.x.fillRect(0,0,1024,768);
+  if(g.hood){const HP=Part(1024,768,{rough:T.rough});HP.x.fillStyle=C.hood;HP.x.fillRect(0,0,1024,768);HP.matAll(matOf(cfg,cfg.hoodColor));
     for(const a of [.4,.6])HP.seam([[a,.04],[a,1.02]]);
     if(cfg.hoodBrim)for(const a of [.035,.965])HP.line([[a,0],[a,.42]],1.2,'rgba(0,0,0,.3)',{dash:[4,3],h:.6});
     if(cfg.refl.piping){HP.line([[.4,1],[.4,.18]],5,REFL_HEX,{h:.62,refl:1});HP.line([[.6,1],[.6,.18]],5,REFL_HEX,{h:.62,refl:1})}
-    out.hood={map:HP.c,hgt:HP.hg,pmap:HP.pr,lmap:liningCanvas(cfg,512,384,{type:'hood'})};}
+    out.hood={map:HP.c,hgt:HP.hg,pmap:HP.pr,lmap:liningCanvas(cfg,1024,768,{type:'hood'})};}
   for(const k of ['torso','sleeveL','sleeveR','collar','hood'])if(out[k])out[k].nmap=heightToNormal(out[k].hgt,k==='collar'?2:3.2);
   return out;
 }
@@ -1078,7 +1171,7 @@ function liningCanvas(cfg,w,h,o={}){
   const t=cfg.lining;const r=mulberry(7);
   if(t==='quilted'){x.strokeStyle='rgba(0,0,0,.16)';x.lineWidth=2;const s=w/14;for(let i=-h;i<w+h;i+=s){x.beginPath();x.moveTo(i,0);x.lineTo(i+h,h);x.stroke();x.beginPath();x.moveTo(i,h);x.lineTo(i+h,0);x.stroke()}}
   if(t==='taffeta'){const gr=x.createLinearGradient(0,0,w,0);gr.addColorStop(0,'rgba(255,255,255,.06)');gr.addColorStop(.5,'rgba(0,0,0,.04)');gr.addColorStop(1,'rgba(255,255,255,.06)');x.fillStyle=gr;x.fillRect(0,0,w,h)}
-  if(t==='print'){const ic=['star','paw','dino','heart','mountain'];const cols=[cfg.colors.acc1,cfg.colors.acc2,cfg.colors.main];const s=Math.max(22,w/26);
+  if(t==='print'){const ic=['star','paw','dino','heart','mountain'];const cols=[cfg.colors.acc1,cfg.colors.acc2,cfg.colors.main];const s=60;
     for(let j=0;j<h/s+1;j++)for(let i=0;i<w/s+1;i++){if(r()<.35)continue;const k=ic[(i*3+j*7)%ic.length];x.save();x.translate(i*s+(j%2)*s/2,j*s);x.rotate((r()-.5)*.8);x.scale(s/180,s/180);x.translate(-50,-50);x.fillStyle=cols[(i+j)%3];x.globalAlpha=.8;x.fill(new Path2D(ICONS[k].d));x.restore()}}
   if(t==='mesh'){x.fillStyle='rgba(0,0,0,.08)';for(let j=0;j<h;j+=6)for(let i=0;i<w;i+=6){x.beginPath();x.arc(i+(j/6%2)*3,j,1.3,0,7);x.fill()}}
   if(t==='fleece'){const id=x.getImageData(0,0,w,h);for(let i=0;i<id.data.length;i+=4){const n=(r()-.5)*18;id.data[i]+=n;id.data[i+1]+=n;id.data[i+2]+=n}x.putImageData(id,0,0)}
@@ -1200,10 +1293,10 @@ function createViewer(canvas){
     if(!V.bodyKey||V.bodyKey!==JSON.stringify([cfg.age,cfg.meas])){V.bodyParts=buildBody(d);V.bodyKey=JSON.stringify([cfg.age,cfg.meas]);V.bodyGeo=null}
     const bodyMats={skin:{color:hex2lin('#dcd2c6'),rough:.78,spec:.06,wrap:.35},tee:{color:hex2lin('#f1efe8'),rough:.9,spec:.03,wrap:.4,detail:V.detail('knit'),dRep:[60,60],dStr:.3},
       pants:{color:hex2lin(cfg.colors.pants),rough:.85,spec:.05,wrap:.3,detail:V.detail('twill'),dRep:[40,40],dStr:.5},shoe:{color:hex2lin('#f2f1ec'),rough:.6,spec:.15},sole:{color:hex2lin('#3d4249'),rough:.7,spec:.1}};
-    V.bodyParts.forEach((p,i)=>{if(!V.showBody&&p.k!=='tee'&&p.k!=='skin')return;if(!V.showBody)return;add('body'+i,p.g,bodyMats[p.k])});
+    V.bodyParts.forEach((p,i)=>{if(V.showBody===false)return;add('body'+i,p.g,bodyMats[p.k])});
     // 衣服材质
     const fab=(p,base)=>({map:texOf(p+'.map',paint[p]?.map),nmap:texOf(p+'.n',paint[p]?.nmap),pmap:texOf(p+'.p',paint[p]?.pmap),
-      rough:T.rough,spec:T.spec,sheen:T.sheen,sheenTint:[1,1,1],wrap:cfg.type==='fleece'?.45:.28,detail:V.detail(T.detail),dStr:cfg.type==='fleece'?.9:.55,nStr:1.2,...base});
+      rough:T.rough,spec:T.spec,sheen:T.sheen,sheenTint:[1,1,1],wrap:cfg.type==='fleece'?.45:.28,detail:null,nStr:1.2,...base});
     const lin=(p,dr)=>{const L=LINING_LOOK[cfg.lining];return {map:texOf(p+'.lmap',paint[p]?.lmap),nmap:texOf(p+'.ln',paint[p]?.lnmap),side:'back',rough:L.rough,spec:L.spec,sheen:L.sheen,wrap:.35,detail:V.detail(L.detail),dRep:dr,dStr:L.dStr}};
     const tm=g.torsoM, rep=(mu,mv,k=1)=>[mu*k*40,mv*k*40];
     add('torso',g.torso,fab('torso',{dRep:rep(tm.u,tm.v)}));
@@ -1211,7 +1304,7 @@ function createViewer(canvas){
     add('collar',g.collar,fab('collar',{dRep:rep(g.collarM.u,g.collarM.v)}));
     add('collarIn',g.collar,lin('collar',rep(g.collarM.u,g.collarM.v)));
     if(g.hood){add('hood',g.hood,fab('hood',{dRep:rep(g.hoodM.u,g.hoodM.v)}));add('hoodIn',g.hood,lin('hood',rep(g.hoodM.u,g.hoodM.v)));}
-    if(g.sleeves){for(const k of ['L','R']){add('sleeve'+k,g.sleeves[k],fab('sleeve'+k,{dRep:rep(g.sleeveM.u,g.sleeveM.v)}));add('sleeveIn'+k,g.sleeves[k],lin('sleeve'+k,rep(g.sleeveM.u,g.sleeveM.v)))}}
+    if(g.sleeves){for(const k of ['L','R']){add('sleeve'+k,g.sleeves[k],fab('sleeve'+k,{dRep:rep(g.sleeveM.u,g.sleeveM.v),clip:g.clip}));add('sleeveIn'+k,g.sleeves[k],{...lin('sleeve'+k,rep(g.sleeveM.u,g.sleeveM.v)),clip:g.clip})}}
     const col=k=>hex2lin(paint.colors[k]);
     const solid=(hex,o={})=>({color:hex,rough:T.rough,spec:T.spec,sheen:T.sheen,wrap:.3,detail:V.detail(T.detail),dRep:[30,30],dStr:.4,...o});
     add('hemRim',g.hemRim,solid(col('hem')));
@@ -1406,7 +1499,11 @@ function renderPanel(){const top=$('.panel').scrollTop, ws=window.scrollY;
   if(ui.tab==='logo')drawLogoPreview();vtag();}
 
 function tabStyle(){
-  return `<section class="sec"><h2>从哪一件开始</h2>
+  return `<section class="sec idea"><h2>说说你的想法</h2><p class="note">用一句话描述，比如“衣身军绿，袖子用抓绒做软硬拼接，帽子要小熊耳，配色协调一点”。能看懂的部分会直接改到衣服上。</p>
+   <textarea id="ideatxt" rows="3" placeholder="写下你想要的样子…">${esc(ui.idea||'')}</textarea>
+   <div class="ideabar"><button class="btn" data-act="idea">${ic('check')}<span>按我的想法改</span></button>${['配色协调一点，衣身燕麦色','软硬拼接，肩部抓绒','撞色，帽子要恐龙','黑白灰耐脏，加反光'].map(x=>`<button class="chipbtn" data-ideaex="${x}">${x}</button>`).join('')}</div>
+   ${ui.ideaDone?`<div class="ideares">${ui.ideaDone.length?`<b>已改：</b>${ui.ideaDone.map(x=>`<span>${esc(x)}</span>`).join('')}`:'<b>没看懂这句话。</b>可以写颜色、部位（衣身、袖子、帽子、口袋、内衬）、面料（硬壳、软壳、抓绒、针织、绗缝）或配色思路（协调、撞色、同色深浅）。'}</div>`:''}</section>
+  <section class="sec"><h2>从哪一件开始</h2>
   <div class="types">${Object.entries(TYPES).map(([k,t])=>`<button class="tcard" data-set="type" data-v="${k}" aria-pressed="${cfg.type===k}"><b>${t.name}</b><small>${t.sub}</small></button>`).join('')}</div></section>
   <section class="sec"><div class="sh"><h2>风格灵感</h2><button class="btn ghost sm" data-act="random">${ic('dice')}<span>随机配色</span></button></div>
   <p class="note">点一下套用整套设计，之后每个细节都还能改。灵感款只借鉴设计语言（分割、配色、功能布局），不复制任何品牌标识或专有图案。</p>
@@ -1418,6 +1515,8 @@ function tabColor(){
   const cur=cfg.colors[ui.slot];
   return `<section class="sec"><h2>拼色方式</h2>
   <div class="tmpls">${Object.entries(TEMPLATES).map(([k,t])=>`<button class="tm" data-set="template" data-v="${k}" aria-pressed="${cfg.template===k}"><span class="pf">${flatSVG(mergeCfg(cfg,{template:k,hoodColor:t.hood,logos:[]}),'front',{mini:true})}</span><b>${t.name}</b><small>${t.sub}</small></button>`).join('')}</div></section>
+  <section class="sec"><h2>配色思路</h2><p class="note">选好主色后，按一种思路自动生成拼色、辅料和拉链颜色，之后还能逐个微调。</p>
+  <div class="harm">${HARMONY.map(([k,n,d])=>{const H=harmonize(cfg.colors.main,k);return `<button class="hm" data-harm="${k}"><span class="dots">${[H.main,H.acc1,H.acc2].map(c=>`<i style="background:${c}"></i>`).join('')}</span><b>${n}</b><small>${d}</small></button>`}).join('')}</div></section>
   <section class="sec"><h2>颜色</h2>
   <div class="slots">${slots.map(([k,n,s])=>`<button class="slot" data-slot="${k}" aria-pressed="${ui.slot===k}"><i style="background:${cfg.colors[k]}"></i><span><b>${n}</b><small>${s||colorInfo(cfg.colors[k]).name}${used.has(k)||k==='pants'?'':' · 未使用'}</small></span></button>`).join('')}</div>
   <div class="pal">${PALETTE.map(([code,n,h])=>`<button class="swc" style="--c:${h}" data-color="${h}" title="${n} ${'LW-'+code}" aria-label="${n}" aria-pressed="${cur===h}"></button>`).join('')}
@@ -1426,6 +1525,10 @@ function tabColor(){
   ${row('帽子颜色',seg('hoodColor',OPTS.colorRef,cfg.hoodColor))}
   ${row('口袋 / 袋盖',seg('pocketColor',OPTS.colorRef,cfg.pocketColor))}
   ${row('拉头颜色',seg('pullColor',[['zip','同拉链'],['acc1','拼色 1'],['acc2','拼色 2']],cfg.pullColor))}
+  </section>
+  <section class="sec"><h2>面料拼接（软硬拼接）</h2><p class="note">每个颜色块可以用不同面料。比如衣身用硬壳挡风雨，肩部或侧片用软壳、针织，活动更自在；也可以拼一块抓绒或绗缝，暖和又有质感。</p>
+   ${[['main','主色块'],['acc1','拼色 1 块'],['acc2','拼色 2 块']].map(([k,n])=>row(`<span class="mdot" style="background:${cfg.colors[k]}"></span>${n}`,`<div class="seg">${[['base','同款式'],...Object.entries(MATS).filter(([m])=>m!=='nylon').map(([m,v])=>[m,v[0]])].map(([m,l])=>`<button data-set="mats.${k}" data-v="${m}" aria-pressed="${(cfg.mats?.[k]||'base')===m}">${l}</button>`).join('')}</div>`,k==='main'?'同款式 = '+MATS[TYPE_MAT[cfg.type]][0]:used.has(k)?'':'当前拼色方式没用到')).join('')}
+   <div class="mixq">${[['硬壳 + 软壳侧片',{template:'side',mats:{main:'shell',acc1:'soft',acc2:'base'}}],['硬壳 + 抓绒肩部',{template:'yoke',mats:{main:'shell',acc1:'fleece',acc2:'base'}}],['软壳 + 针织袖',{template:'raglan',mats:{main:'soft',acc1:'knit',acc2:'base'}}],['硬壳 + 绗缝育克',{template:'yoke',mats:{main:'shell',acc1:'quilt',acc2:'base'}}]].map(([n,o])=>`<button class="chipbtn" data-mix='${JSON.stringify(o)}'>${n}</button>`).join('')}</div>
   </section>`;
 }
 function usedSlots(){const s=new Set(['main','zip','lining']);const t=templateRegions(cfg.template,.8);[...t.B,...t.S].forEach(r=>r.c&&s.add(r.c));if(cfg.template==='tri'){s.add('acc1');s.add('acc2')}
@@ -1532,6 +1635,7 @@ function sizeSpec(c){const d=dims(c),T=TYPES[c.type],e=T.ease*(d.H/1.06),m=c.mea
 function costEstimate(c){const T=TYPES[c.type];const sf=Math.pow(c.meas.height/106,1.3);const L=[];
   L.push(['基础面料与车工',T.base*sf]);
   const tp={solid:0,yoke:10,classic:12,diagonal:18,tri:16,side:14,raglan:14,chevron:16,pop:6}[c.template];if(tp)L.push(['拼色裁片',tp]);
+  const mx=new Set(['main','acc1','acc2'].filter(k=>usedSlots().has(k)).map(k=>matOf(c,k))).size;if(mx>1)L.push(['软硬拼接面料',(mx-1)*15]);
   L.push(['内衬',({mesh:18,taffeta:15,fleece:28,quilted:36,print:24})[c.lining]*sf]);
   if(c.zipType==='waterproof')L.push(['防水拉链',25]);if(c.zipFlap)L.push(['防风门襟',8]);if(c.bigPull)L.push(['大号拉片',3]);
   const pk={none:0,welt:20,high:20,flap:16,kangaroo:14}[c.handPocket];if(pk)L.push(['手袋',pk]);
@@ -1547,9 +1651,12 @@ function costEstimate(c){const T=TYPES[c.type];const sf=Math.pow(c.meas.height/1
 // ---------- 事件 ----------
 document.addEventListener('click',e=>{const t=e.target.closest('button,[data-act]');if(!t)return;const D=t.dataset;
   if(D.tab){ui.tab=D.tab;LS.set('tab',ui.tab);renderPanel();$('.panel').scrollTop=0;return}
-  if(D.set){let v=D.v;if(D.type==='num')v=+v;if(getK(D.set)===v&&!D.set.startsWith('logo.'))return;change(D.set,v);return}
+  if(D.set){let v=D.v;if(D.type==='num')v=+v;if(D.set==='hoodDeco'&&v!=='none'&&!ui.hoodUp){ui.hoodUp=true}if(getK(D.set)===v&&!D.set.startsWith('logo.'))return;change(D.set,v);return}
   if(D.tg){change(D.tg,!getK(D.tg));return}
   if(D.slot){ui.slot=D.slot;renderPanel();return}
+  if(D.harm){snap();Object.assign(cfg.colors,harmonize(cfg.colors.main,D.harm));if(cfg.template==='solid'){cfg.template='yoke';cfg.hoodColor='acc1'}afterChange();toast('已按「'+HARMONY.find(x=>x[0]===D.harm)[1]+'」生成配色');return}
+  if(D.mix){snap();const o=JSON.parse(D.mix);cfg.template=o.template;cfg.hoodColor=TEMPLATES[o.template].hood;cfg.mats=o.mats;afterChange();toast('已换成软硬拼接');return}
+  if(D.ideaex){ui.idea=D.ideaex;const t=$('#ideatxt');if(t)t.value=D.ideaex;return}
   if(D.advice){const x=adviceList(cfg).find(a=>a.id===D.advice);if(x){snap();Object.assign(cfg,clone(x.apply));afterChange();toast('已采用：'+x.title)}return}
   if(D.color){change('colors.'+ui.slot,D.color);return}
   if(D.lcolor){change('colors.lining',D.lcolor);return}
@@ -1570,11 +1677,13 @@ document.addEventListener('click',e=>{const t=e.target.closest('button,[data-act
     closesheet:closeSheet,newdesign:()=>{snap();cfg=normalize(mergeCfg(BASE,{}));ui.docId=null;LS.set('docId',null);$('#dname').value=cfg.name;afterChange();closeSheet();toast('已新建设计')},
     advall:()=>{const L=adviceList(cfg).filter(x=>!x.ok);snap();L.forEach(x=>Object.assign(cfg,clone(x.apply)));afterChange();toast(`已采用 ${L.length} 项建议`)},
     reest:()=>{snap();cfg.meas.auto=true;Object.assign(cfg.meas,estimateMeas(cfg.meas,cfg.age));afterChange()},
+    idea:()=>{const t=($('#ideatxt')?.value||'').trim();ui.idea=t;if(!t){toast('先写一句你的想法');return}const r=parseIdea(t,strip(cfg));ui.ideaDone=r.done;if(r.done.length){snap();if(r.c.hoodDeco!=='none'&&r.c.hoodDeco!==cfg.hoodDeco)ui.hoodUp=true;const imgs=cfg.logos.map(l=>l._im);cfg=normalize(r.c);cfg.logos.forEach((l,i)=>{if(imgs[i])l._im=imgs[i]});afterChange();toast(`按你的想法改了 ${r.done.length} 处`)}else renderPanel()},
     feedback:openFeedback,fbcopy:copyFeedback,
     tpdl:()=>dlTechPack(),tppng:()=>dlRenders(),opendoc:()=>openDoc(D.id),deldoc:()=>delDoc(D.id),
   })[a]?.();
 });
 document.addEventListener('input',e=>{const t=e.target,D=t.dataset;
+  if(t.id==='ideatxt'){ui.idea=t.value;return}
   if(t.id==='dname'){cfg.name=t.value||'我的设计';LS.set('draft',strip(cfg));return}
   if(t.id==='cpick'){setPath('colors.'+ui.slot,t.value);afterChange(false,80);return}
   if(D.in){setPath(D.in,t.value);afterChange(false,120);if(D.in.startsWith('logo.'))drawLogoPreview();return}
@@ -1659,9 +1768,10 @@ function techPackHTML(imgs){const c=cfg,T=TYPES[c.type],C=c.colors,sp=sizeSpec(c
   const no='LW-'+c.type.slice(0,2).toUpperCase()+'-'+new Date().toISOString().slice(2,10).replace(/-/g,'')+'-'+(Math.abs([...JSON.stringify(strip(c))].reduce((h,ch)=>h*31+ch.charCodeAt(0)|0,7))%10000).toString().padStart(4,'0');
   const ci=h=>{const x=colorInfo(h);return `<span class="cc"><i style="background:${h}"></i>${x.name}<em>${x.code} · ${h.toUpperCase()}</em></span>`};
   const tm=templateRegions(c.template,.8);const used=usedSlots();
-  const bom=[['面料 · 主色',T.fabric,ci(C.main),'衣身主体'+(c.type!=='vest'?'、袖子':'')]];
-  if(used.has('acc1'))bom.push(['面料 · 拼色 1','同主面料',ci(C.acc1),TEMPLATES[c.template].name+(c.hoodColor==='acc1'?'、帽子':'')+(c.pocketColor==='acc1'?'、口袋':'')]);
-  if(used.has('acc2'))bom.push(['面料 · 拼色 2','同主面料',ci(C.acc2),'细拼条 / 点缀'+(c.hoodDeco!=='none'?'、帽饰':'')+(c.pocketColor==='acc2'?'、口袋':'')]);
+  const fab=k=>{const m=matOf(c,k);return m===TYPE_MAT[c.type]?T.fabric:MATS[m][0]+'（'+MATS[m][1]+'）'};
+  const bom=[['面料 · 主色',fab('main'),ci(C.main),'衣身主体'+(c.type!=='vest'?'、袖子':'')]];
+  if(used.has('acc1'))bom.push(['面料 · 拼色 1',matOf(c,'acc1')===matOf(c,'main')?'同主面料':fab('acc1'),ci(C.acc1),TEMPLATES[c.template].name+(c.hoodColor==='acc1'?'、帽子':'')+(c.pocketColor==='acc1'?'、口袋':'')]);
+  if(used.has('acc2'))bom.push(['面料 · 拼色 2',matOf(c,'acc2')===matOf(c,'main')?'同主面料':fab('acc2'),ci(C.acc2),'细拼条 / 点缀'+(c.hoodDeco!=='none'?'、帽饰':'')+(c.pocketColor==='acc2'?'、口袋':'')]);
   bom.push(['内衬',OPTS.lining.find(l=>l[0]===c.lining)[1],ci(C.lining),'衣身、袖、帽内里；门襟内贴边用面料']);
   bom.push(['门襟拉链',c.zipType==='waterproof'?'5 号防水压胶拉链（开尾）':'5 号树脂齿拉链（开尾）',ci(c.zipType==='waterproof'?C.main:C.zip),'前中，顶端加防夹下巴护片']);
   if(pocketDefs(c).some(p=>p.kind==='zip')||c.sleevePocket)bom.push(['口袋拉链',c.zipType==='waterproof'?'3 号防水拉链':'3 号树脂齿拉链',ci(C.zip),'胸袋 / 手袋 / 袖袋']);
