@@ -287,6 +287,9 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .gauge em{position:absolute;top:16px;transform:translateX(-50%);font-style:normal;font-size:10.5px;color:var(--muted);font-family:var(--f-mono)}
 .warm .dl{margin-top:6px}
 
+.fmts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:2px 0 4px}
+.fmts .fl{font-size:12.5px;font-weight:600}
+
 </style>
 <div id="app"></div>
 <script>window.LWS_REPO="coolhjc1987-chao/coolhjc1987-chao.github.io";</script>
@@ -1649,6 +1652,30 @@ function heightToNormal(src,str=2){
   ox.putImageData(od,0,0);return out;
 }
 
+// ---- pdfw.js ----
+// ===== pdfw.js — 零依赖 PDF 生成：每页一张 JPEG，A4 竖版 =====
+function makePdf(pages){
+  const enc=new TextEncoder();const chunks=[];let off=0;const offs=[];
+  const put=x=>{const b=typeof x==='string'?enc.encode(x):x;chunks.push(b);off+=b.length};
+  const b64=u=>{const s=atob(u.split(',')[1]);const a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return a};
+  const W=595.28,H=841.89;const n=pages.length;
+  // 对象编号：1 目录，2 页面树，之后每页 3 个对象（页、图、内容）
+  put('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  const obj=(id,body)=>{offs[id]=off;put(`${id} 0 obj\n`);if(typeof body==='function')body();else put(body);put('\nendobj\n')};
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  const kids=[];for(let i=0;i<n;i++)kids.push(`${3+i*3} 0 R`);
+  obj(2,`<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${n} >>`);
+  pages.forEach((cv,i)=>{const pid=3+i*3,iid=pid+1,cid=pid+2;const jpg=b64(cv.toDataURL('image/jpeg',.9));
+    obj(pid,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /Im0 ${iid} 0 R >> >> /Contents ${cid} 0 R >>`);
+    obj(iid,()=>{put(`<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);put(jpg);put('\nendstream')});
+    const cs=`q ${W} 0 0 ${H} 0 0 cm /Im0 Do Q`;obj(cid,`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`)});
+  const total=3+n*3;const xref=off;let x=`xref\n0 ${total}\n0000000000 65535 f \n`;for(let i=1;i<total;i++)x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+  put(x);put(`trailer\n<< /Size ${total} /Root 1 0 R /Info << /Producer (Little Wear Studio) >> >>\nstartxref\n${xref}\n%%EOF`);
+  const out=new Uint8Array(off);let p=0;for(const c of chunks){out.set(c,p);p+=c.length}return out;
+}
+function svgToImage(svg){return new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)})}
+function loadImg(src){return new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src})}
+
 // ---- app.js ----
 // ===== app.js — 界面与流程 =====
 (function(){
@@ -2007,6 +2034,7 @@ document.addEventListener('click',e=>{if(ui.bubble&&!e.target.closest('#bubble')
     if(cfg.hoodDeco!=='none'&&ui.bubble.z==='hood'&&!ui.hoodUp&&/帽饰|帽型/.test(ui.bubbleMenu.g[gi][0])){ui.hoodUp=true}
     if(cfg.zipLen!=='full'||cfg.zipPos==='offset'){ui.open=false;if(V)V.openTarget=0}
     afterChange();renderBubble();return}
+  if(D.fmt){ui.fmt=D.fmt;document.querySelectorAll('[data-fmt]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.fmt===ui.fmt));const n=$('#fmtnote');if(n)n.textContent=FMT_NOTE[ui.fmt];return}
   if(D.pcat){ui.pcat=D.pcat;renderPanel();return}
   if(D.slot){ui.slot=D.slot;renderPanel();return}
   if(D.harm){snap();Object.assign(cfg.colors,harmonize(cfg.colors.main,D.harm));if(cfg.template==='solid'){cfg.template='yoke';cfg.hoodColor='acc1'}afterChange();toast('已按「'+HARMONY.find(x=>x[0]===D.harm)[1]+'」生成配色');return}
@@ -2036,7 +2064,7 @@ document.addEventListener('click',e=>{if(ui.bubble&&!e.target.closest('#bubble')
     idea:()=>{const t=($('#ideatxt')?.value||'').trim();ui.idea=t;if(!t){toast('先写一句你的想法');return}const r=parseIdea(t,strip(cfg));ui.ideaDone=r.done;if(r.done.length){snap();if(r.c.hoodDeco!=='none'&&r.c.hoodDeco!==cfg.hoodDeco)ui.hoodUp=true;const imgs=cfg.logos.map(l=>l._im);cfg=normalize(r.c);cfg.logos.forEach((l,i)=>{if(imgs[i])l._im=imgs[i]});afterChange();toast(`按你的想法改了 ${r.done.length} 处`)}else renderPanel()},
     closebubble:closeBubble,bubblemore:()=>{const t=ui.bubbleMenu?.tab;closeBubble();if(t){ui.tab=t;LS.set('tab',t);renderPanel();$('.panel').scrollTop=0}},
     feedback:openFeedback,fbcopy:copyFeedback,
-    tpdl:()=>dlTechPack(),tppng:()=>dlRenders(),opendoc:()=>openDoc(D.id),deldoc:()=>delDoc(D.id),
+    tpdl:()=>dlTechPack(),tpexport:()=>exportTech(ui.fmt||'pdf'),tppng:()=>dlRenders(),opendoc:()=>openDoc(D.id),deldoc:()=>delDoc(D.id),
   })[a]?.();
 });
 document.addEventListener('input',e=>{const t=e.target,D=t.dataset;
@@ -2092,6 +2120,7 @@ async function delDoc(id){if(ui.confirmDel!==id){ui.confirmDel=id;openMine(true)
   if(ui.docId===id){ui.docId=null;LS.set('docId',null)}openMine(true);toast('已删除')}
 
 // ---------- 提意见 ----------
+const FMT_NOTE={pdf:'A4 竖版分页 PDF，可以直接打印或发给商家。',png:'所有页面拼成一张长图，适合发微信。',html:'网页文件，用浏览器打开查看，内容与 PDF 相同。',csv:'物料、尺寸、工艺和成本表格，Excel 或 WPS 可直接打开。',json:'设计文件，商家端导入后能还原三维效果。'};
 const FEEDBACK_REPO=window.LWS_REPO||'';
 function fbText(){const n=$('#fbname')?.value.trim()||'家人',t=$('#fbtext')?.value.trim()||'';
   return `【小衣间意见】来自：${n}\n设计：${cfg.name}（${TYPES[cfg.type].name} · ${TEMPLATES[cfg.template].name} · ${cfg.age}岁）\n主色 ${colorInfo(cfg.colors.main).name}，拼色 ${colorInfo(cfg.colors.acc1).name} / ${colorInfo(cfg.colors.acc2).name}\n意见：${t}`}
@@ -2125,9 +2154,10 @@ function renders(){if(!V)return [];const saveOpen=V.open,saveHood=V.hoodUp;const
   if(cfg.collar==='hood'&&!ui.hoodUp){V.open=0;V.hoodUp=true;V.build(cfg,PO);out.push(['戴帽',V.snapshot(-.5,.08,600,740)])}
   if(warmth(cfg).io!=='none'){const ic=viewCfg(true);V.open=0;V.hoodUp=false;V.build(ic,pOf(ic));out.push(['可拆卸内胆',V.snapshot(-.45,.08,600,740)])}
   V.open=saveOpen;V.hoodUp=saveHood;V.build(C0,P0);return out}
-function techPackHTML(imgs){const c=cfg,T=TYPES[c.type],C=c.colors,sp=sizeSpec(c),cost=costEstimate(c);
+function safetyList(c,T){return [`按 GB 31701《婴幼儿及儿童纺织产品安全技术规范》执行：36 个月及以下婴幼儿产品按 A 类，其他直接接触皮肤的儿童产品不低于 B 类。`,`7 岁及以下儿童服装头部和颈部不设任何绳带；本款帽子无抽绳。下摆如需调节，用内置调节扣，不留外露绳头。`,`拉头、按扣、魔术贴、帽饰${c.hoodDeco!=='none'?'（'+OPTS.hoodDeco.find(x=>x[0]===c.hoodDeco)[1]+'）':''}等附件需做抗拉强力测试，防止脱落后被误吞。`,`前中拉链顶端加防夹下巴护片；所有拉链头可拆卸部件需固定牢靠。`,`${T.fabric}：防水、透湿、保暖等性能以供应商面料检测报告和成衣测试为准，本单不作性能承诺。`,`标准以最新有效版本为准；出口或电商销售另按目标市场要求检测。`]}
+function techPackHTML(imgs,raw){const c=cfg,T=TYPES[c.type],C=c.colors,sp=sizeSpec(c),cost=costEstimate(c);
   const no='LW-'+c.type.slice(0,2).toUpperCase()+'-'+new Date().toISOString().slice(2,10).replace(/-/g,'')+'-'+(Math.abs([...JSON.stringify(strip(c))].reduce((h,ch)=>h*31+ch.charCodeAt(0)|0,7))%10000).toString().padStart(4,'0');
-  const ci=h=>{const x=colorInfo(h);return `<span class="cc"><i style="background:${h}"></i>${x.name}<em>${x.code} · ${h.toUpperCase()}</em></span>`};
+  const ci=h=>{if(raw)return '§'+h;const x=colorInfo(h);return `<span class="cc"><i style="background:${h}"></i>${x.name}<em>${x.code} · ${h.toUpperCase()}</em></span>`};
   const tm=templateRegions(c.template,.8);const used=usedSlots();
   const fab=k=>{const m=matOf(c,k);return m===TYPE_MAT[c.type]?T.fabric:MATS[m][0]+'（'+MATS[m][1]+'）'};
   const bom=[['面料 · 主色',fab('main'),ci(C.main),'衣身主体'+(c.type!=='vest'?'、袖子':'')]];
@@ -2154,6 +2184,7 @@ function techPackHTML(imgs){const c=cfg,T=TYPES[c.type],C=c.colors,sp=sizeSpec(c
   if(fx.length)parts.push(['—','功能细节',fx.join('；')]);
   if(['hardshell','softshell'].includes(c.type))parts.push(['—','接缝',{none:'不压胶',key:'肩、袖窿、帽等关键接缝压防水胶条',full:'全部接缝压防水胶条'}[c.taping]]);if(c.type==='down')parts.push(['—','绗缝','横向绗缝 6 格，防跑绒处理']);
   const logos=c.logos.map(L=>`<tr><td><img class="lg" src="${logoCanvas(L,300).toDataURL()}" alt=""></td><td>${PLACES[L.place]}</td><td class="m">${L.size} cm 宽</td><td>${METHODS[L.method][0]}</td><td>${L.kind==='image'?'客户图片':esc((ICONS[L.icon]?.name||'')+(L.text?' + “'+L.text+'”':''))}</td><td>${ci(L.method==='reflective'?REFL_HEX:L.fg)}${L.shape!=='none'?' 底 '+ci(L.bg):''}</td></tr>`).join('');
+  if(raw)return {no,bom,parts,sp,cost,T,c};
   return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>制作单 ${no}</title>
 <style>:root{--ink:#1c2626;--mut:#5f6a66;--line:#d5d9d1;--acc:#ff6a2b}*{box-sizing:border-box}body{margin:0;background:#f3f4f0;color:var(--ink);font:14px/1.6 "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
 .pg{max-width:1040px;margin:0 auto;padding:28px 20px 60px;background:#fff}h1{font-size:24px;margin:0}h2{font-size:15px;margin:30px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--ink);letter-spacing:.04em}
@@ -2177,22 +2208,86 @@ ul{margin:0;padding-left:20px}li{margin:3px 0}.warn{background:#fff6ef;border:1p
 <h2>5　标志规格</h2>${c.logos.length?`<table><thead><tr><th>图样</th><th>位置</th><th>尺寸</th><th>工艺</th><th>内容</th><th>颜色</th></tr></thead><tbody>${logos}</tbody></table>`:'<p>无</p>'}
 <h2>6　成衣尺寸（cm）</h2><table><thead><tr><th>部位</th><th>尺寸</th><th>公差</th></tr></thead><tbody>${sp.rows.map(r=>`<tr><td>${r[0]}</td><td class="m">${r[1]}</td><td class="m">${r[2]}</td></tr>`).join('')}</tbody></table>
 <p style="font-size:12px;color:var(--mut)">量体：身高 ${c.meas.height}，胸围 ${c.meas.chest}，臂长 ${c.meas.sleeve}。尺寸由放松量公式推算，打版师需按实际面料缩率复核并做样衣确认。</p>
-<h2>7　安全与质量要求</h2><div class="warn"><ul>
-<li>按 GB 31701《婴幼儿及儿童纺织产品安全技术规范》执行：36 个月及以下婴幼儿产品按 A 类，其他直接接触皮肤的儿童产品不低于 B 类。</li>
-<li>7 岁及以下儿童服装头部和颈部不设任何绳带；本款帽子无抽绳。下摆如需调节，用内置调节扣，不留外露绳头。</li>
-<li>拉头、按扣、魔术贴、帽饰${c.hoodDeco!=='none'?'（'+OPTS.hoodDeco.find(x=>x[0]===c.hoodDeco)[1]+'）':''}等附件需做抗拉强力测试，防止脱落后被误吞。</li>
-<li>前中拉链顶端加防夹下巴护片；所有拉链头可拆卸部件需固定牢靠。</li>
-<li>${T.fabric}：防水、透湿、保暖等性能以供应商面料检测报告和成衣测试为准，本单不作性能承诺。</li>
-<li>标准以最新有效版本为准；出口或电商销售另按目标市场要求检测。</li></ul></div>
+<h2>7　安全与质量要求</h2><div class="warn"><ul>${safetyList(c,T).map(x=>`<li>${x}</li>`).join('')}</ul></div>
 <h2>8　参考制作成本（估算）</h2><table><tbody>${cost.lines.map(l=>`<tr><td>${l[0]}</td><td class="m" style="text-align:right">¥${l[1].toFixed(0)}</td></tr>`).join('')}<tr class="tot"><td>合计</td><td class="m" style="text-align:right">¥${cost.total.toFixed(0)}</td></tr></tbody></table>
 <p style="font-size:12px;color:var(--mut)">按尺码系数估算的示意价格，不含利润、物流和打样费，以商家报价为准。</p>
 </div></body></html>`;
 }
 function openTechPack(){toast('正在生成制作单…');setTimeout(()=>{const imgs=renders();tpCache={imgs,html:techPackHTML(imgs)};
-  sheet(`<div class="tp"><div class="sh tpbar"><h2>制作单</h2><div class="acts"><button class="btn sm" data-act="tpdl">${ic('download')}<span>下载制作单</span></button><button class="btn ghost sm" data-act="tppng">${ic('download')}<span>效果图 PNG</span></button><button class="ib" data-act="closesheet" aria-label="关闭">${ic('close')}</button></div></div>
-   <p class="note">下载的是一个网页文件（.html），用浏览器打开即可查看或打印成 PDF 发给商家。</p><iframe class="tpf" title="制作单预览" sandbox="allow-same-origin"></iframe></div>`);
+  sheet(`<div class="tp"><div class="sh tpbar"><h2>制作单</h2><button class="ib" data-act="closesheet" aria-label="关闭">${ic('close')}</button></div>
+   <div class="fmts"><span class="fl">导出格式</span><div class="seg">${[['pdf','PDF'],['png','长图'],['html','网页'],['csv','物料表'],['json','设计文件']].map(([k,n])=>`<button data-fmt="${k}" aria-pressed="${(ui.fmt||'pdf')===k}">${n}</button>`).join('')}</div>
+   <button class="btn sm" data-act="tpexport">${ic('download')}<span>下载</span></button></div>
+   <p class="note" id="fmtnote">${FMT_NOTE[ui.fmt||'pdf']}</p><iframe class="tpf" title="制作单预览" sandbox="allow-same-origin"></iframe></div>`);
   const f=document.querySelector('.tpf');f.srcdoc=tpCache.html;},60)}
 function dlTechPack(){if(!tpCache)return;saveFile(`制作单-${fname()}.html`,tpCache.html)}
+// —— 制作单 A4 分页（PDF / 长图共用） ——
+async function techPackPages(imgs){
+  const D=techPackHTML(imgs,true),c=cfg,W=1240,H=1754,M=72,CW=W-2*M;const F='"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif',MONO='"IBM Plex Mono",Menlo,monospace';
+  const pages=[];let x,y;const ink='#1c2626',mut='#5f6a66',line='#d5d9d1',acc='#ff6a2b';
+  const newPage=()=>{const cv=mkCanvas(W,H);x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,W,H);pages.push(cv);y=M};
+  const ensure=h=>{if(y+h>H-M-36)newPage()};
+  const T=(t,px,py,size,o={})=>{x.font=`${o.w||400} ${size}px ${o.f||F}`;x.fillStyle=o.c||ink;x.textAlign=o.a||'left';x.textBaseline='alphabetic';x.fillText(t,px,py)};
+  const clean=h=>String(h??'').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+  const wrap=(t,w,size,wt=400)=>{x.font=`${wt} ${size}px ${F}`;const out=[];for(const para of clean(t).split('\n')){let ln='';for(const ch of para){if(x.measureText(ln+ch).width>w&&ln){out.push(ln);ln=ch}else ln+=ch}out.push(ln)}return out};
+  const h2=(t,need=140)=>{ensure(90+need);y+=24;T(t,M,y+26,26,{w:700});y+=38;x.fillStyle=ink;x.fillRect(M,y,CW,3);y+=16};
+  const para=(t,size=18,col=mut,indent=0,bullet='')=>{const L=wrap(t,CW-indent,size);L.forEach((l,i)=>{ensure(size*1.65);if(i===0&&bullet)T(bullet,M,y+size,size,{c:acc,w:700});T(l,M+indent,y+size,size,{c:col});y+=size*1.65})};
+  const swatch=(hex,cx,cy,w)=>{const ci=colorInfo(hex);x.fillStyle=hex;x.fillRect(cx,cy+4,22,22);x.strokeStyle='#0003';x.strokeRect(cx+.5,cy+4.5,21,21);T(ci.name,cx+30,cy+20,17);T(ci.code+' · '+hex.toUpperCase(),cx+30,cy+42,13,{f:MONO,c:mut})};
+  const table=(cols,head,rows,o={})=>{const ws=cols.map(f=>f*CW),pad=10,fs=17,lh=26;
+    const row=(cells,hd)=>{const L=cells.map((cell,i)=>(cell&&cell.img)||(typeof cell==='string'&&cell.startsWith('§'))||(cell&&cell.num)?null:wrap(cell,ws[i]-2*pad,fs,hd?600:400));
+      const rh=Math.max(...cells.map((cell,i)=>L[i]?L[i].length*lh:cell&&cell.img?64:typeof cell==='string'&&cell.startsWith('§')?cell.split('§').filter(Boolean).length*50:lh))+2*pad;
+      ensure(rh);if(hd){x.fillStyle='#f3f4f0';x.fillRect(M,y,CW,rh)}let cx=M;
+      cells.forEach((cell,i)=>{if(cell&&cell.img){const im=cell.img,bw=ws[i]-2*pad;const sc=Math.min(bw/im.width,56/im.height);x.fillStyle='#eceee8';x.fillRect(cx+pad,y+pad,bw,64);x.drawImage(im,cx+pad+(bw-im.width*sc)/2,y+pad+4+(56-im.height*sc)/2,im.width*sc,im.height*sc)}
+        else if(cell&&cell.num){x.fillStyle=acc;x.beginPath();x.arc(cx+pad+13,y+pad+13,13,0,7);x.fill();T(String(cell.num),cx+pad+13,y+pad+19,15,{c:'#fff',w:700,a:'center'})}
+        else if(typeof cell==='string'&&cell.startsWith('§'))cell.split('§').filter(Boolean).forEach((h,k)=>swatch(h.trim(),cx+pad,y+pad+k*50,ws[i]));
+        else L[i].forEach((l,k)=>T(l,cx+pad,y+pad+fs+k*lh,fs,{w:hd?600:400,c:hd?mut:ink}));cx+=ws[i]});
+      y+=rh;x.fillStyle=line;x.fillRect(M,y-1,CW,1)};
+    if(head)row(head,true);rows.forEach(r=>row(r,false));y+=6};
+  newPage();
+  // 抬头
+  T('童装定制制作单',M,y+38,38,{w:700});T('小衣间 LITTLE WEAR · 设计稿，打版前需复核',M,y+70,17,{c:mut});
+  T(D.no,W-M,y+34,20,{f:MONO,a:'right'});T(new Date().toLocaleString('zh-CN'),W-M,y+62,15,{f:MONO,c:mut,a:'right'});y+=92;x.fillStyle=line;x.fillRect(M,y,CW,1);y+=18;
+  const B=bodyInfo(c);const meta=[['设计名称',c.name],['款式',`${D.T.name} · ${D.T.sub}`],['拼色',TEMPLATES[c.template].name],['孩子',`${c.sex==='boy'?'男孩 · ':c.sex==='girl'?'女孩 · ':''}${c.age} 岁 · ${c.meas.height} cm · ${c.meas.weight} kg`],['体型 / 号型',`${B.typeName} · ${D.sp.code}`],['版型 / 余量',`${OPTS.fit.find(z=>z[0]===c.fit)[1]} · 成长余量${OPTS.growth.find(z=>z[0]===(c.growth||0))[1]}`],['姓名标',c.nameLabel||'—'],['适穿温度',`约 ${warmth(c).lo}–${warmth(c).hi} °C`]];
+  const mw=CW/4;meta.forEach(([k,v],i)=>{const cx=M+(i%4)*mw,cy=y+Math.floor(i/4)*66;x.fillStyle=acc;x.fillRect(cx,cy,4,54);T(k,cx+14,cy+20,14,{c:mut});wrap(v,mw-24,18,500).slice(0,2).forEach((l,j)=>T(l,cx+14,cy+44+j*22,18,{w:500}))});y+=Math.ceil(meta.length/4)*66+6;
+  // 1 效果图
+  h2('1　效果图',(CW-42)/4*740/600+40);const ims=await Promise.all(imgs.map(([,u])=>loadImg(u)));const per=4,gap=14,cw=(CW-gap*(per-1))/per,chh=cw*740/600;
+  for(let i=0;i<ims.length;i+=per){ensure(chh+34);ims.slice(i,i+per).forEach((im,k)=>{const cx=M+k*(cw+gap);x.fillStyle='#eceee8';x.fillRect(cx,y,cw,chh);if(im)x.drawImage(im,cx,y,cw,chh);T(imgs[i+k][0],cx+8,y+chh+24,15,{c:mut})});y+=chh+38}
+  // 2 平面款式图
+  h2('2　平面款式图',(CW-20)/2*435/400+40);const [ff,fb]=await Promise.all([svgToImage(flatSVG(c,'front',{marks:true})),svgToImage(flatSVG(c,'back',{}))]);const fw=(CW-20)/2,fh=fw*435/400;ensure(fh+36);
+  [[ff,'正面（编号见第 4 节）'],[fb,'背面']].forEach(([im,cap],k)=>{const cx=M+k*(fw+20);x.strokeStyle=line;x.strokeRect(cx+.5,y+.5,fw-1,fh-1);if(im)x.drawImage(im,cx+10,y+10,fw-20,fh-20);T(cap,cx+fw/2,y+fh+24,15,{c:mut,a:'center'})});y+=fh+36;
+  // 3 物料
+  h2('3　配色与物料清单');table([.17,.37,.22,.24],['物料','规格','颜色','使用部位'],D.bom.map(r=>[r[0],r[1],r[2],r[3]]));
+  // 4 部件工艺
+  h2('4　部件工艺');table([.09,.14,.77],['编号','部位','做法'],D.parts.map(p=>[p[0]==='—'?'—':{num:p[0]},p[1],p[2]]));
+  const Wm=warmth(c);h2('4a　保暖与防护（设计参考）');table([.18,.82],null,[['适穿温度',`约 ${Wm.lo}–${Wm.hi} °C（静止或轻度活动，内搭长袖）${Wm.notes.length?'；'+Wm.notes.join('；'):''}`],['防雨',Wm.rain],['防风',Wm.wind],['透气',Wm.breath]]);
+  para('以上为设计估算，不是检测结论。防水、保暖需按面料检测报告与成衣测试确认。',15);
+  h2('4b　适龄与体型设计');table([.13,.25,.62],['状态','设计','原因'],adviceList(c).map(a=>[a.ok?'✓ 已采用':'未采用',a.title,a.why]));
+  // 5 标志
+  h2('5　标志规格',170);if(c.logos.length){const lim=await Promise.all(c.logos.map(L=>loadImg(logoCanvas(L,300).toDataURL())));
+    table([.15,.12,.12,.11,.22,.28],['图样','位置','尺寸','工艺','内容','颜色'],c.logos.map((L,i)=>[{img:lim[i]},PLACES[L.place],L.size+' cm 宽',METHODS[L.method][0],L.kind==='image'?'客户图片':(ICONS[L.icon]?.name||'')+(L.text?' + “'+L.text+'”':''),'§'+(L.method==='reflective'?REFL_HEX:L.fg)+(L.shape!=='none'?'§'+L.bg:'')]))}else para('无');
+  // 6 尺寸
+  h2('6　成衣尺寸（cm）');table([.5,.3,.2],['部位','尺寸','公差'],D.sp.rows.map(r=>[r[0],String(r[1]),r[2]]));
+  para(`量体：身高 ${c.meas.height}，胸围 ${c.meas.chest}，臂长 ${c.meas.sleeve}，体重 ${c.meas.weight} kg。尺寸由放松量公式推算，打版师需按实际面料缩率复核并做样衣确认。`,15);
+  // 7 安全
+  h2('7　安全与质量要求');safetyList(c,D.T).forEach(t=>para(t,17,ink,26,'•'));
+  // 8 成本
+  h2('8　参考制作成本（估算）');table([.75,.25],null,[...D.cost.lines.map(l=>[l[0],'¥'+l[1].toFixed(0)]),['合计','¥'+D.cost.total.toFixed(0)]]);
+  para('按尺码系数估算的示意价格，不含利润、物流和打样费，以商家报价为准。',15);
+  // 页脚
+  pages.forEach((cv,i)=>{const g=cv.getContext('2d');g.fillStyle=line;g.fillRect(M,H-M+6,CW,1);g.font=`14px ${F}`;g.fillStyle=mut;g.textAlign='left';g.fillText('小衣间 LITTLE WEAR · 制作单 '+D.no,M,H-M+30);g.textAlign='right';g.fillText(`第 ${i+1} / ${pages.length} 页`,W-M,H-M+30)});
+  return pages;
+}
+function csvOf(){const D=techPackHTML(tpCache.imgs,true),c=cfg;const q=v=>{v=String(v??'').replace(/<[^>]+>/g,'');if(v.startsWith('§'))v=v.split('§').filter(Boolean).map(h=>{const i=colorInfo(h);return `${i.name} ${i.code} ${h.toUpperCase()}`}).join(' / ');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const R=[['小衣间制作单',D.no],['设计名称',c.name],['款式',D.T.name+' · '+TEMPLATES[c.template].name],['号型',D.sp.code],[],['物料','规格','颜色','使用部位'],...D.bom,[],['部位','尺寸 cm','公差'],...D.sp.rows,[],['编号','部位','做法'],...D.parts,[],['成本项','估算 ¥'],...D.cost.lines.map(l=>[l[0],l[1].toFixed(0)]),['合计',D.cost.total.toFixed(0)]];
+  return '\ufeff'+R.map(r=>r.map(q).join(',')).join('\r\n')}
+async function exportTech(fmt){if(!tpCache)return;const name=`制作单-${fname()}`;
+  if(fmt==='html')return saveFile(name+'.html',tpCache.html);
+  if(fmt==='json')return saveFile(`${fname()}.json`,JSON.stringify({format:'littlewear.design',version:4,design:strip(cfg)},null,2));
+  if(fmt==='csv')return saveFile(name+'-物料尺寸表.csv',csvOf());
+  toast(fmt==='pdf'?'正在排版 PDF…':'正在生成长图…');await new Promise(r=>setTimeout(r,30));
+  const pages=await techPackPages(tpCache.imgs);
+  if(fmt==='pdf'){const bytes=makePdf(pages);return saveFile(name+'.pdf',new Blob([bytes],{type:'application/pdf'}))}
+  if(fmt==='png'){const gap=24,cv=mkCanvas(pages[0].width,pages.length*pages[0].height+(pages.length-1)*gap);const g=cv.getContext('2d');g.fillStyle='#e9ece6';g.fillRect(0,0,cv.width,cv.height);pages.forEach((p,i)=>g.drawImage(p,0,i*(p.height+gap)));
+    cv.toBlob(b=>saveFile(name+'-长图.png',b),'image/png')}}
 function dlRenders(){if(!tpCache)return;const ims=tpCache.imgs;const W=600,H=740,cols=3,rows=Math.ceil(ims.length/cols);const c=mkCanvas(W*cols,H*rows+60);const x=c.getContext('2d');x.fillStyle='#eceee8';x.fillRect(0,0,c.width,c.height);
   let n=0;ims.forEach(([name,u],i)=>{const im=new Image();im.onload=()=>{x.drawImage(im,(i%cols)*W,Math.floor(i/cols)*H);x.fillStyle='#1c2626';x.font='600 22px "Noto Sans SC",sans-serif';x.fillText(name,(i%cols)*W+20,Math.floor(i/cols)*H+40);
     if(++n===ims.length){x.font='18px "IBM Plex Mono",monospace';x.fillStyle='#5f6a66';x.fillText(`小衣间 LITTLE WEAR · ${cfg.name} · ${TYPES[cfg.type].name} · ${cfg.age}岁 ${sizeSpec(cfg).code}`,20,H*rows+38);c.toBlob(b=>saveFile(`效果图-${fname()}.png`,b),'image/png')}};im.src=u})}
