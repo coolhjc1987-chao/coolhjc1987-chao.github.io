@@ -861,7 +861,7 @@ function dims(cfg){
   d.armLen=(m.sleeve||AGES[a].s)/100;
   d.thighR=d.chestRx*.5*Math.pow(d.bk,.3); d.ankleR=d.thighR*.5; d.hipX=d.chestRx*.46;
   const side=s=>{ // 手臂路径（A 字站姿，肘部微屈）
-    const ang=.40, J=[s*(d.shHalf-d.armR*.8),d.shoulderY-d.armR*.85,0];
+    const ang=.40, J=[s*(d.shHalf-d.armR*.85),d.shoulderY-d.armR*1.05,0];
     const T1=[s*Math.sin(ang),-Math.cos(ang),0];
     const E=V3.add(J,V3.scale(T1,d.armLen*.47));
     const T2=V3.norm([s*Math.sin(ang-.06),-Math.cos(ang-.06),.17]);
@@ -895,7 +895,7 @@ function armTube(d,s,radius,{cap=true,ext=0,reverseU=false,nu=40,n=64,wr=null}={
   // v 坐标改为按弧长
   for(let j=0;j<pts.length;j++)for(let i=0;i<=nu;i++)g.uv[(j*(nu+1)+i)*2+1]=1-L[j]/tot;
   g.len=tot;g.circ=2*Math.PI*r0;g.capFrac=capLen/tot;
-  g.surf=(u,t)=>{const l=capLen+t*coreLen;let i=L.findIndex(x=>x>=l);if(i<0)i=pts.length-1;const p=at(u,i),q=at(u,Math.min(pts.length-1,i+1)),c=pts[i];return {p,n:V3.norm(V3.sub(p,c)),t:V3.norm(V3.sub(q,p))}};
+  g.surf=(u,t)=>{const l=capLen+t*coreLen;let i=L.findIndex(x=>x>=l);if(i<0)i=pts.length-1;const i0=Math.max(0,i-1),f=i===i0?0:(l-L[i0])/Math.max(1e-9,L[i]-L[i0]);const p=V3.lerp(at(u,i0),at(u,i),f),q=at(u,Math.min(pts.length-1,i+1)),c=V3.lerp(pts[i0],pts[i],f);return {p,n:V3.norm(V3.sub(p,c)),t:V3.norm(V3.sub(q,p))}};
   g.endRing=()=>{const i=pts.length-1;const out=[];for(let k=0;k<=32;k++)out.push(at(k/32,i));return out};
   return g;
 }
@@ -933,7 +933,7 @@ function buildGarment(cfg,d,st){
   const open=st.open||0, puffy=cfg.type==='down', vest=cfg.type==='vest';
   const out={};
   const hemY=d.crotchY-H*.012-gr*H*.01, drop=cfg.hem==='droptail'?H*.035:0;
-  const gRx=d.chestRx+e, gRz=d.chestRz+e*.9, gSh=d.shHalf+e*.75, y0=d.shoulderY-d.armR*.75;
+  const gRx=d.chestRx+e, gRz=d.chestRz+e*.9, gSh=vest?d.shHalf+e*.75:d.shHalf*.96+e*.45, y0=d.shoulderY-d.armR*.75;
   const collarY=d.neckBaseY+e*.25, nRx=d.neckR+e*.62, nRz=d.neckR*.96+e*.58;
   const P0=[gSh,y0],P1=[gSh*.97,d.shoulderY+e*.35],P2=[nRx,collarY];
   const bez=(t,a,b,c)=>(1-t)*(1-t)*a+2*(1-t)*t*b+t*t*c;
@@ -1022,8 +1022,8 @@ function buildGarment(cfg,d,st){
     const es=e*.62; const cuffK=cfg.cuff==='velcro'?1:.86;
     out.sleeves={};
     for(const s of [1,-1]){
-      const g=armTube(d,s,t=>{let r=lerp(d.armR+es,d.wristR+es*.95,Math.pow(t,1.1));if(t>.93)r*=lerp(1,cuffK,smooth((t-.93)/.03));return r},
-        {cap:true,ext:hh*.06+gr*H*.008+(cfg.growCuff?H*.008:0),reverseU:s<0,nu:44,n:70,wr:(t,u)=>{let w=0;
+      const g=armTube(d,s,t=>{let r=lerp(d.armR+es,d.wristR+es*.95,Math.pow(t,1.1));if(t<.12)r*=lerp(.8,1,smooth(t/.12));if(t>.93)r*=lerp(1,cuffK,smooth((t-.93)/.03));return r},
+        {cap:false,ext:hh*.06+gr*H*.008+(cfg.growCuff?H*.008:0),reverseU:s<0,nu:44,n:70,wr:(t,u)=>{let w=0;
           const el=Math.exp(-Math.pow((t-.47)/.08,2));w+=el*.0022*Math.sin(t*140+u*6.3)*(.5+.5*Math.cos(u*6.283));
           if(t>.84&&cfg.cuff!=='velcro')w+=.0014*Math.sin(u*2*Math.PI*14)*smooth((t-.86)/.06);
           if(puffy){const f=(t*7)%1;w+=puffAmp*.75*Math.pow(Math.sin(Math.PI*f),.6)}
@@ -1109,7 +1109,7 @@ function templateRegions(id,vA){
   const sAbove=(fn,c,side='both')=>{const pts=curve(fn,0,1,30).map(([u,s])=>[u,s]);S.push({c,side,pts:[[0,-.1],...pts,[1,-.1]]});lines.push({sleeve:side,pts})};
   const vv=f=>f*vA; // 以肩线以下的比例表示
   switch(id){
-    case 'yoke': above(u=>vv(.86)+.025*Math.cos(2*Math.PI*u),'acc1'); sAbove(u=>.2+.025*Math.cos(2*Math.PI*u),'acc1'); break;
+    case 'yoke': above(u=>vv(.86)+.025*Math.cos(2*Math.PI*u),'acc1'); S.push({band:true}); break;
     case 'classic': above(()=>vv(.74),'acc1'); sAbove(()=>.5,'acc1'); break;
     case 'diagonal':{const f=u=>{u=((u%1)+1)%1;if(u<=.25)return vv(.74+1.05*u);if(u>=.75)return vv(.74+1.05*(u-1));return vv(.74+1.05*.25-1.05*(u-.25))};
       above(f,'acc1');const pts=curve(f,-.03,1.03,120);B.push({c:'acc2',pts:[...pts,...pts.map(([u,v])=>[u,v-.016]).reverse()]});
@@ -1118,11 +1118,10 @@ function templateRegions(id,vA){
       lines.push([[-.03,vv(.84)],[1.03,vv(.84)]],[[-.03,vv(.56)],[1.03,vv(.56)]]);S.push({band:true});break;
     case 'side': for(const c0 of [.25,.75]){const w=.055;const pts=[[c0-w,-.05],[c0+w,-.05],[c0+w,vv(.9)],[c0,vv(1.0)],[c0-w,vv(.9)]];B.push({c:'acc1',pts});lines.push([[c0-w,-.05],[c0-w,vv(.9)],[c0,vv(1.0)],[c0+w,vv(.9)],[c0+w,-.05]])}
       S.push({c:'acc1',side:'both',pts:[[.37,0],[.63,0],[.63,1.1],[.37,1.1]]});lines.push({sleeve:'both',pts:[[.37,0],[.37,1]]},{sleeve:'both',pts:[[.63,0],[.63,1]]});break;
-    case 'raglan': for(const m of [0,1]){const mk=u=>m?1-u:u;const pts=[[.075,1.1],[.075,1.0],[.215,vv(.98)],[.25,vv(.97)],[.285,vv(.98)],[.425,1.0],[.425,1.1]].map(([u,v])=>[mk(u),v]);B.push({c:'acc1',pts});lines.push(pts.slice(1,-1))}
+    case 'raglan': for(const m of [0,1]){const mk=u=>m?1-u:u;const pts=[[.075,1.1],[.075,1.0],[.2,vv(.86)],[.25,vv(.8)],[.3,vv(.86)],[.425,1.0],[.425,1.1]].map(([u,v])=>[mk(u),v]);B.push({c:'acc1',pts});lines.push(pts.slice(1,-1))}
       S.push({c:'acc1',side:'both',pts:[[0,-.1],[1,-.1],[1,1.1],[0,1.1]]});break;
     case 'chestband': B.push({c:'acc1',pts:[[-.03,vv(.8)],[1.03,vv(.8)],[1.03,vv(.64)],[-.03,vv(.64)]]},{c:'acc2',pts:[[-.03,vv(.84)],[1.03,vv(.84)],[1.03,vv(.8)],[-.03,vv(.8)]]});
-      lines.push([[-.03,vv(.84)],[1.03,vv(.84)]],[[-.03,vv(.64)],[1.03,vv(.64)]]);S.push({c:'acc1',side:'both',pts:[[0,.32],[1,.32],[1,.46],[0,.46]]},{c:'acc2',side:'both',pts:[[0,.29],[1,.29],[1,.32],[0,.32]]});
-      lines.push({sleeve:'both',pts:[[0,.29],[1,.29]]},{sleeve:'both',pts:[[0,.46],[1,.46]]});break;
+      lines.push([[-.03,vv(.84)],[1.03,vv(.84)]],[[-.03,vv(.64)],[1.03,vv(.64)]]);S.push({band:true});break;
     case 'hemband': B.push({c:'acc1',pts:[[-.03,-.1],[1.03,-.1],[1.03,vv(.24)],[-.03,vv(.24)]]});lines.push([[-.03,vv(.24)],[1.03,vv(.24)]]);
       S.push({c:'acc1',side:'both',pts:[[0,.76],[1,.76],[1,.93],[0,.93]]});lines.push({sleeve:'both',pts:[[0,.76],[1,.76]]});break;
     case 'halfsplit': B.push({c:'acc1',pts:[[.004,-.1],[.5,-.1],[.5,1.1],[.004,1.1]]});lines.push([[.5,-.02],[.5,1.02]]);S.push({c:'acc1',side:'L',pts:[[0,-.1],[1,-.1],[1,1.1],[0,1.1]]});break;
@@ -1339,9 +1338,15 @@ function paintAll(cfg,g){
       SP.x.fillStyle=C.main;SP.x.fillRect(0,0,512,1024);SP.matAll(matOf(cfg,'main'));if(prOn&&pr.slot==='main')SP.printOn(null,tileOf('main'));
       const conv=pts=>pts;
       for(const r of tmpl.S){
-        if(r.band){ // 按高度匹配衣身横向色带
-          const ys=s=>g.sleeves[side].surf(.25,Math.max(0,(s-cap)/(1-cap))).p[1];const vOf=y=>{let best=0,bd=1e9;for(let i=0;i<=60;i++){const v=i/60*vA;const yy=g.torsoP(.25,v)[1];if(Math.abs(yy-y)<bd){bd=Math.abs(yy-y);best=v}}return best};
-          let prev=null,start=0;for(let i=0;i<=40;i++){const s=i/40;const c=i<40?regionColorAt(tmpl.B,.25,vOf(ys(s))):null;if(c!==prev){if(prev&&prev!=='main'){const bp=conv([[-.02,start],[1.02,start],[1.02,s],[-.02,s]]);SP.fill(bp,col(prev));SP.mat(bp,matOf(cfg,prev));if(prOn&&prev===pr.slot)SP.printOn(bp,tileOf(prev))}if(prev&&i<40&&i>0)SP.seam(conv([[-.02,s],[1.02,s]]));prev=c;start=s}}
+        if(r.band){ // 按真实高度把衣身横向分割线延续到袖子上（逐格取色）
+          const SG=g.sleeves[side];const yT=[];for(let i=0;i<=120;i++){const v=i/120;yT.push([g.torsoP(side==='L'?.25:.75,v,0)[1],v])}
+          const vOfY=y=>{if(y<=yT[0][0])return 0;for(let i=1;i<yT.length;i++)if(yT[i][0]>=y){const [y0,v0]=yT[i-1],[y1,v1]=yT[i];return v0+(v1-v0)*(y-y0)/Math.max(1e-6,y1-y0)}return 1};
+          const NU=128,NS=360,cw=1/NU;const bnd={};
+          for(let i=0;i<=NU;i++){const su=Math.min(1,i/NU);let prev=null,s0=0;const ci=Math.min(NU-1,i);
+            for(let j=0;j<=NS;j++){const s=j/NS,t=Math.max(0,(s-cap)/(1-cap));const c=j<NS?regionColorAt(tmpl.B,side==='L'?.25:.75,vOfY(SG.surf(su,Math.min(1,t)).p[1])):'__end';
+              if(c!==prev){if(prev!==null){if(i<NU&&prev!=='main'){const cell=[[ci*cw-.001,s0],[(ci+1)*cw+.001,s0],[(ci+1)*cw+.001,s+.0015],[ci*cw-.001,s+.0015]];SP.fill(cell,col(prev));SP.mat(cell,matOf(cfg,prev));if(prOn&&prev===pr.slot)SP.printOn(cell,tileOf(prev))}
+                  if(c!=='__end'){const k=prev+'>'+c;(bnd[k]=bnd[k]||[]).push([su,s])}}prev=c;s0=s}}}
+          for(const k in bnd){const pts=bnd[k].sort((p,q)=>p[0]-q[0]);if(pts.length>4)SP.seam(pts,{top:true,off:4})}
           continue}
         if(r.side!=='both'&&r.side!==side)continue;SP.fill(conv(r.pts),col(r.c));SP.mat(conv(r.pts),matOf(cfg,r.c));if(prOn&&r.c===pr.slot)SP.printOn(conv(r.pts),tileOf(r.c))}
       tmpl.lines.forEach(l=>{if(l.sleeve&&(l.sleeve==='both'||l.sleeve===side)){SP.seam(conv(l.pts));if(cfg.refl.piping)SP.line(conv(l.pts),5,REFL_HEX,{h:.62,refl:1,rough:.35})}});
@@ -1491,7 +1496,7 @@ function flatSVG(cfg,side='front',o={}){
       const quad=`M${P([Q.TO,Q.BO,Q.BI,Q.TI])}Z`;defs+=`<clipPath id="${id}s${s}"><path d="${quad}"/></clipPath>`;
       let g=`<rect x="0" y="0" width="400" height="480" fill="${C.main}"/>`;
       const mapSU=su=>F?su/.5:(1-su)/.5;
-      for(const r of tm.S){if(r.band){for(const [c,s0,s1] of [['acc1',0,.34],['acc2',.34,.6]]){const pts=[sp(Q,-.1,s0),sp(Q,1.1,s0),sp(Q,1.1,s1),sp(Q,-.1,s1)];g+=`<path d="M${P(pts)}Z" fill="${col(c)}"/>`}continue}
+      for(const r of tm.S){if(r.band){const vOf=y=>y>=shY?(hemY-y)/(hemY-shY)*vA:vA+(shY-y)/(shY-neckY+6)*(1-vA);let prev=null,s0=0;for(let j=0;j<=60;j++){const ss=j/60;const c=j<60?regionColorAt(tm.B,.25,vOf(sp(Q,.5,ss)[1])):'__e';if(c!==prev){if(prev&&prev!=='main'){const pts=[sp(Q,-.1,s0),sp(Q,1.1,s0),sp(Q,1.1,ss),sp(Q,-.1,ss)];g+=`<path d="M${P(pts)}Z" fill="${col(prev)}"/>`}prev=c;s0=ss}}continue}
         if(r.side!=='both'&&r.side!==sideKey)continue;const pts=r.pts.map(([su,ss])=>sp(Q,mapSU(su),ss));g+=`<path d="M${P(pts)}Z" fill="${col(r.c)}"/>`}
       if(cfg.refl.band){const pts=[sp(Q,-.1,.8),sp(Q,1.1,.8),sp(Q,1.1,.84),sp(Q,-.1,.84)];g+=`<path d="M${P(pts)}Z" fill="${REFL_HEX}"/>`}
       const cuffC=cfg.cuff==='velcro'?col(regionColorAt(tm.S.filter(r=>!r.band&&(r.side==='both'||r.side===sideKey)),.25,.99)):C.trim;
