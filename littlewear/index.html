@@ -256,6 +256,10 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .icn[aria-pressed="true"] svg .hole{fill:var(--ink)}
 .icons{grid-template-columns:repeat(auto-fill,minmax(44px,1fr))}
 
+.pcats{margin-bottom:10px}
+.pcats small{color:var(--muted);font-size:11px}
+.tmpls{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+
 </style>
 <div id="app"></div>
 <script>window.LWS_REPO="coolhjc1987-chao/coolhjc1987-chao.github.io";</script>
@@ -481,7 +485,12 @@ const PALETTE = [
   ['C09','薄荷绿','#8fd1bd'],['C10','湖水蓝','#3a8fb7'],['C11','冰川蓝','#9cc9e0'],['C12','海军蓝','#1f3354'],
   ['C13','宝石蓝','#2d55c8'],['C14','薰衣紫','#a594d6'],['C15','葡萄紫','#5a3d82'],['C16','樱花粉','#f3b3c2'],
   ['C17','珊瑚粉','#f08a7a'],['C18','樱桃红','#c9283b'],['C19','火山橙','#ff6a2b'],['C20','杏桃','#f2a65a'],
-  ['C21','柠檬黄','#f5d33f'],['C22','芥末黄','#d4a72c'],['C23','焦糖棕','#8b5a3c'],['C24','酒红','#7a2232']
+  ['C21','柠檬黄','#f5d33f'],['C22','芥末黄','#d4a72c'],['C23','焦糖棕','#8b5a3c'],['C24','酒红','#7a2232'],
+  ['C25','奶油白','#f6efe0'],['C26','银灰','#c4c8cc'],['C27','炭黑','#33363a'],['C28','驼色','#c19a6b'],
+  ['C29','巧克力','#5b3a29'],['C30','橄榄绿','#7a7a3a'],['C31','孔雀蓝','#0f6e7a'],['C32','薄荷蓝','#6fd0d6'],
+  ['C33','雾霭蓝','#6f8fa6'],['C34','牛仔蓝','#3f5f8a'],['C35','克莱因蓝','#1f3fbf'],['C36','丁香紫','#c3a6d8'],
+  ['C37','雾粉','#e9c6c6'],['C38','玫红','#d63c7a'],['C39','西瓜红','#f0505a'],['C40','荧光橙','#ff8a1f'],
+  ['C41','荧光黄','#e3f23b'],['C42','青柠绿','#b5d33a'],['C43','极光绿','#3fbf8a'],['C44','浅卡其','#cbb994']
 ];
 const colorInfo = hex => { const h=hex.toLowerCase(); const p=PALETTE.find(c=>c[2]===h); return p?{code:'LW-'+p[0],name:p[1],hex:h}:{code:'自定义',name:'自定义色',hex:h}; };
 
@@ -505,7 +514,12 @@ const TEMPLATES = {
   side:{name:'侧片腋下拼',sub:'侧缝到袖底的功能拼片',hood:'main'},
   raglan:{name:'插肩撞色',sub:'从领口斜到腋下',hood:'acc1'},
   chevron:{name:'V 形胸拼',sub:'胸前一道 V 带',hood:'main'},
-  pop:{name:'童趣点缀',sub:'帽子、袋盖、袖口跳色',hood:'acc1'}
+  pop:{name:'童趣点缀',sub:'帽子、袋盖、袖口跳色',hood:'acc1'},
+  chestband:{name:'胸前横带',sub:'滑雪服常见的胸部宽条',hood:'main'},
+  hemband:{name:'下摆拼色',sub:'下摆和袖口上方一圈深色',hood:'main'},
+  halfsplit:{name:'左右撞色',sub:'左半身和左袖换色，最吸睛',hood:'main'},
+  sleeves:{name:'撞色袖',sub:'衣身一色，两袖另一色',hood:'main'},
+  armstripe:{name:'袖侧运动条',sub:'袖外侧和侧缝的双色条',hood:'main'}
 };
 
 const OPTS = {
@@ -547,9 +561,22 @@ const ICONS = {
   crown:{name:'皇冠',d:'M8 30 L28 52 L50 18 L72 52 L92 30 L84 80 H16 Z'},
   ball:{name:'足球',d:'M50 6 a44 44 0 1 0 .1 0 Z',hole:'M50 32 L66 44 L60 63 L40 63 L34 44 Z'},
   bear:{name:'熊脸',d:'M50 26 a33 31 0 1 0 .1 0 Z M24 14 a13 13 0 1 0 .1 0 Z M76 14 a13 13 0 1 0 .1 0 Z',hole:'M37 48 a5 5 0 1 0 .1 0 Z M63 48 a5 5 0 1 0 .1 0 Z M50 60 a7 5 0 1 0 .1 0 Z'},
+  cat:{name:'小猫',d:'M50 30 a34 30 0 1 0 .1 0 Z M17 48 L19 10 L43 30 Z M83 48 L81 10 L57 30 Z',hole:'M36 52 a5 6 0 1 0 .1 0 Z M64 52 a5 6 0 1 0 .1 0 Z M50 70 L45 65 H55 Z'},
+  rabbit:{name:'小兔',d:'M50 40 a27 25 0 1 0 .1 0 Z M30 4 C20 4 20 40 33 47 C42 44 42 6 30 4 Z M70 4 C80 4 80 40 67 47 C58 44 58 6 70 4 Z',hole:'M40 60 a4 4.5 0 1 0 .1 0 Z M60 60 a4 4.5 0 1 0 .1 0 Z M50 72 L46 68 H54 Z'},
+  panda:{name:'熊猫',d:'M50 24 a36 33 0 1 0 .1 0 Z M20 12 a12 12 0 1 0 .1 0 Z M80 12 a12 12 0 1 0 .1 0 Z',d2:'M36 44 a8 11 0 1 0 .1 0 Z M64 44 a8 11 0 1 0 .1 0 Z M50 68 a6 4 0 1 0 .1 0 Z',hole:'M36 52 a3 3 0 1 0 .1 0 Z M64 52 a3 3 0 1 0 .1 0 Z'},
+  fox:{name:'小狐狸',d:'M50 92 L18 52 L12 8 L38 32 H62 L88 8 L82 52 Z',d2:'M50 92 L26 58 L42 62 L50 74 L58 62 L74 58 Z',hole:'M35 48 a4 4.5 0 1 0 .1 0 Z M65 48 a4 4.5 0 1 0 .1 0 Z'},
+  dog:{name:'小狗',d:'M50 28 a30 30 0 1 0 .1 0 Z M24 26 C8 30 6 62 14 72 C24 72 30 52 30 38 Z M76 26 C92 30 94 62 86 72 C76 72 70 52 70 38 Z',d2:'M50 64 a7 5 0 1 0 .1 0 Z',hole:'M40 50 a4 5 0 1 0 .1 0 Z M60 50 a4 5 0 1 0 .1 0 Z'},
+  elephant:{name:'大象',d:'M30 30 C30 14 70 14 72 30 C86 26 96 40 92 58 C88 70 74 66 72 60 L70 72 C68 82 62 88 56 92 C52 95 47 92 50 87 C55 82 56 78 56 70 C46 72 34 68 30 60 C20 66 8 60 8 46 C8 32 20 26 30 30 Z',hole:'M44 40 a4 4 0 1 0 .1 0 Z'},
+  penguin:{name:'企鹅',d:'M50 6 C72 6 80 30 80 56 C80 80 68 94 50 94 C32 94 20 80 20 56 C20 30 28 6 50 6 Z',d2:'M50 32 C64 32 68 52 68 66 C68 82 60 90 50 90 C40 90 32 82 32 66 C32 52 36 32 50 32 Z',hole:'M41 20 a3.5 3.5 0 1 0 .1 0 Z M59 20 a3.5 3.5 0 1 0 .1 0 Z M45 30 H55 L50 37 Z'},
+  owl:{name:'猫头鹰',d:'M16 54 C16 34 22 18 28 8 L38 22 H62 L72 8 C78 18 84 34 84 54 C84 78 68 92 50 92 C32 92 16 78 16 54 Z',hole:'M36 37 a12 12 0 1 0 .1 0 Z M64 37 a12 12 0 1 0 .1 0 Z M50 60 L45 66 H55 Z'},
+  chick:{name:'小鸡',d:'M50 22 a34 34 0 1 0 .1 0 Z M44 22 C42 10 50 4 58 8 C52 11 52 16 56 22 Z',d2:'M43 54 H57 L50 63 Z',hole:'M38 46 a4 4 0 1 0 .1 0 Z M62 46 a4 4 0 1 0 .1 0 Z'},
+  pig:{name:'小猪',d:'M50 24 a36 32 0 1 0 .1 0 Z M16 30 L22 8 L40 24 Z M84 30 L78 8 L60 24 Z',d2:'M50 56 a13 10 0 1 0 .1 0 Z',hole:'M45 63 a2.5 3.5 0 1 0 .1 0 Z M55 63 a2.5 3.5 0 1 0 .1 0 Z M35 44 a4 4 0 1 0 .1 0 Z M65 44 a4 4 0 1 0 .1 0 Z'},
+  lion:{name:'小狮子',d:'M50 6 a44 44 0 1 0 .1 0 Z',d2:'M50 26 a24 24 0 1 0 .1 0 Z',hole:'M41 44 a3.5 3.5 0 1 0 .1 0 Z M59 44 a3.5 3.5 0 1 0 .1 0 Z M50 58 L45 53 H55 Z'},
+  butterfly:{name:'蝴蝶',d:'M48 30 C40 8 8 6 8 30 C8 46 26 50 44 50 C26 52 12 64 18 80 C24 92 42 84 48 64 Z M52 30 C60 8 92 6 92 30 C92 46 74 50 56 50 C74 52 88 64 82 80 C76 92 58 84 52 64 Z M47 24 H53 V82 H47 Z'},
+  turtle:{name:'小乌龟',d:'M18 62 C18 38 33 24 50 24 C67 24 82 38 82 62 Z M88 52 a9 9 0 1 0 .1 0 Z M24 60 h12 v14 h-12 Z M64 60 h12 v14 h-12 Z M18 58 L8 66 L20 62 Z',d2:'M50 32 L61 39 V52 L50 58 L39 52 V39 Z'},
   none:{name:'仅文字',d:''}
 };
-const PRINTS=[['none','无'],['dots','波点'],['stars','星星'],['stripes','条纹'],['checks','格纹'],['camo','迷彩'],['hearts','爱心'],['dino','小恐龙'],['mountain','山峰'],['rain','雨滴'],['custom','我上传的']];
+const PRINTS=[['none','无'],['dots','波点'],['stars','星星'],['stripes','条纹'],['checks','格纹'],['camo','迷彩'],['hearts','爱心'],['dino','小恐龙'],['mountain','山峰'],['rain','雨滴'],['animals','小动物'],['paws','小脚印'],['custom','我上传的']];
 const SHAPES=[['none','无底'],['circle','圆章'],['round','圆角方'],['shield','盾形'],['hex','六边形'],['pill','胶囊']];
 const FONTS={round:['圆体','"Baloo 2","ZCOOL KuaiLe","Noto Sans SC",sans-serif',800],cute:['可爱','"ZCOOL KuaiLe","Noto Sans SC",sans-serif',400],sans:['黑体','"Noto Sans SC",sans-serif',900],mono:['机能','"IBM Plex Mono","Noto Sans SC",monospace',700]};
 const PLACES={chestL:'左胸',chestR:'右胸',back:'后背中',backLow:'后背下',backNeck:'后领下',sleeveL:'左袖',sleeveR:'右袖',hemR:'右前下摆'};
@@ -585,31 +612,83 @@ const BASE = {
   meas:{height:106,weight:17,chest:54,sleeve:33,auto:true}
 };
 
+const PRESET_CATS=[['all','全部'],['out','机能户外'],['ski','滑雪'],['city','城市'],['kids','童趣']];
 const PRESETS = [
-  {id:'ridge',name:'山脊 · 极简机能',ref:'参考始祖鸟（Arc’teryx）式的极简机能语言：少分割、隐藏式防水拉链、硬挺帽檐、小面积标志。',
+  {id:'ridge',cat:'out',name:'山脊 · 极简机能',ref:'参考始祖鸟（Arc’teryx）式的极简机能语言：少分割、隐藏式防水拉链、硬挺帽檐、小面积标志。',
    cfg:{type:'hardshell',template:'solid',colors:{main:'#2f5d50',acc1:'#23272b',acc2:'#9aa2a6',trim:'#2f5d50',zip:'#2f5d50',lining:'#9aa2a6'},hoodColor:'main',collar:'hood',hoodBrim:true,hoodDeco:'none',zipType:'waterproof',zipFlap:false,bigPull:false,pullColor:'zip',chestPocket:'zipV',handPocket:'high',sleevePocket:false,pocketColor:'main',cuff:'velcro',hem:'droptail',refl:{band:false,back:false,piping:false},lining:'taffeta',
     logos:[{id:'l1',kind:'mark',icon:'mountain',text:'',font:'mono',shape:'none',fg:'#9aa2a6',bg:'#23272b',place:'chestL',size:4,method:'embroidery',img:null}]}},
-  {id:'alpine',name:'高山 · 斜向撞色',ref:'参考凯乐石（KAILAS）式的高山撞色：大面积斜切拼色、红黑白对比、反光袖带。',
+  {id:'alpine',cat:'out',name:'高山 · 斜向撞色',ref:'参考凯乐石（KAILAS）式的高山撞色：大面积斜切拼色、红黑白对比、反光袖带。',
    cfg:{type:'hardshell',template:'diagonal',colors:{main:'#eef0ec',acc1:'#c9283b',acc2:'#23272b',trim:'#23272b',zip:'#23272b',lining:'#23272b'},hoodColor:'acc1',collar:'hood',hoodBrim:true,hoodDeco:'none',zipType:'waterproof',zipFlap:false,bigPull:true,pullColor:'acc1',chestPocket:'zipH',handPocket:'welt',sleevePocket:true,pocketColor:'main',cuff:'velcro',hem:'droptail',refl:{band:true,back:false,piping:false},lining:'mesh',
     logos:[{id:'l1',kind:'mark',icon:'mountain',text:'SUMMIT',font:'mono',shape:'none',fg:'#23272b',bg:'#eef0ec',place:'chestL',size:6,method:'print',img:null},{id:'l2',kind:'mark',icon:'none',text:'LELE',font:'mono',shape:'none',fg:'#eef0ec',bg:'#23272b',place:'sleeveR',size:5,method:'reflective',img:null}]}},
-  {id:'classic',name:'经典 · 肩袖三拼',ref:'参考 90 年代经典户外夹克的肩袖深色拼接：耐脏、辨识度高。',
+  {id:'classic',cat:'city',name:'经典 · 肩袖三拼',ref:'参考 90 年代经典户外夹克的肩袖深色拼接：耐脏、辨识度高。',
    cfg:{type:'hardshell',template:'classic',colors:{main:'#f5d33f',acc1:'#23272b',acc2:'#eef0ec',trim:'#23272b',zip:'#23272b',lining:'#4a5058'},hoodColor:'acc1',collar:'hood',hoodBrim:false,hoodDeco:'none',zipType:'standard',zipFlap:true,bigPull:true,pullColor:'zip',chestPocket:'none',handPocket:'flap',sleevePocket:false,pocketColor:'main',cuff:'velcro',hem:'straight',refl:{band:false,back:true,piping:false},lining:'fleece',
     logos:[{id:'l1',kind:'mark',icon:'tent',text:'',font:'sans',shape:'round',fg:'#f5d33f',bg:'#23272b',place:'chestL',size:5,method:'embroidery',img:null},{id:'l2',kind:'mark',icon:'none',text:'LITTLE EXPLORER',font:'sans',shape:'none',fg:'#eef0ec',bg:'#23272b',place:'back',size:16,method:'print',img:null}]}},
-  {id:'retro',name:'复古 · 三段色带',ref:'参考 80 年代户外复古配色：水平三色带、柔和撞色。',
+  {id:'retro',cat:'ski',name:'复古 · 三段色带',ref:'参考 80 年代户外复古配色：水平三色带、柔和撞色。',
    cfg:{type:'hardshell',template:'tri',colors:{main:'#1f3354',acc1:'#8fd1bd',acc2:'#f08a7a',trim:'#1f3354',zip:'#eef0ec',lining:'#f08a7a'},hoodColor:'acc1',collar:'hood',hoodBrim:false,hoodDeco:'none',zipType:'standard',zipFlap:true,bigPull:true,pullColor:'acc2',chestPocket:'zipV',handPocket:'flap',sleevePocket:false,pocketColor:'main',cuff:'rib',hem:'straight',refl:{band:false,back:false,piping:false},lining:'print',
     logos:[{id:'l1',kind:'mark',icon:'sun',text:'',font:'round',shape:'circle',fg:'#f5d33f',bg:'#1f3354',place:'chestL',size:5.5,method:'embroidery',img:null}]}},
-  {id:'dino',name:'小探险家 · 恐龙',ref:'童趣款：亮橙衣身、侧片拼色、恐龙背鳍帽和反光滚边，过马路更显眼。',
+  {id:'dino',cat:'kids',name:'小探险家 · 恐龙',ref:'童趣款：亮橙衣身、侧片拼色、恐龙背鳍帽和反光滚边，过马路更显眼。',
    cfg:{type:'hardshell',template:'side',colors:{main:'#ff6a2b',acc1:'#1f3354',acc2:'#8fd1bd',trim:'#1f3354',zip:'#1f3354',lining:'#8fd1bd'},hoodColor:'main',collar:'hood',hoodBrim:false,hoodDeco:'dino',zipType:'standard',zipFlap:true,bigPull:true,pullColor:'acc2',chestPocket:'none',handPocket:'kangaroo',sleevePocket:false,pocketColor:'acc1',cuff:'elastic',hem:'straight',refl:{band:true,back:true,piping:true},lining:'fleece',
     logos:[{id:'l1',kind:'mark',icon:'dino',text:'',font:'round',shape:'circle',fg:'#1f3354',bg:'#8fd1bd',place:'chestL',size:6.5,method:'embroidery',img:null}]}},
-  {id:'bear',name:'小熊 · 软壳',ref:'柔软低饱和配色、小熊耳朵帽、袋鼠兜，适合 1–3 岁日常。',
+  {id:'bear',cat:'kids',name:'小熊 · 软壳',ref:'柔软低饱和配色、小熊耳朵帽、袋鼠兜，适合 1–3 岁日常。',
    cfg:{type:'softshell',template:'pop',colors:{main:'#d9cdb4',acc1:'#8b5a3c',acc2:'#f3b3c2',trim:'#8b5a3c',zip:'#8b5a3c',lining:'#f3b3c2'},hoodColor:'main',collar:'hood',hoodBrim:false,hoodDeco:'bear',zipType:'standard',zipFlap:false,bigPull:true,pullColor:'acc2',chestPocket:'none',handPocket:'kangaroo',sleevePocket:false,pocketColor:'acc1',cuff:'rib',hem:'straight',refl:{band:false,back:false,piping:false},lining:'fleece',
     logos:[{id:'l1',kind:'mark',icon:'paw',text:'',font:'cute',shape:'none',fg:'#8b5a3c',bg:'#d9cdb4',place:'chestL',size:5,method:'embroidery',img:null}]}},
-  {id:'puffer',name:'云朵 · 面包服',ref:'横向绗缝的面包羽绒服，雾蓝配杏桃色内衬。',
+  {id:'puffer',cat:'city',name:'云朵 · 面包服',ref:'横向绗缝的面包羽绒服，雾蓝配杏桃色内衬。',
    cfg:{type:'down',template:'solid',colors:{main:'#9cc9e0',acc1:'#1f3354',acc2:'#f2a65a',trim:'#9cc9e0',zip:'#1f3354',lining:'#f2a65a'},hoodColor:'main',collar:'hood',hoodBrim:false,hoodDeco:'none',zipType:'standard',zipFlap:true,bigPull:true,pullColor:'acc2',chestPocket:'none',handPocket:'welt',sleevePocket:false,pocketColor:'main',cuff:'rib',hem:'straight',refl:{band:false,back:false,piping:false},lining:'taffeta',
     logos:[{id:'l1',kind:'mark',icon:'snow',text:'',font:'round',shape:'none',fg:'#1f3354',bg:'#9cc9e0',place:'chestL',size:4.5,method:'rubber',img:null}]}},
-  {id:'fleecevest',name:'松林 · 轻量马甲',ref:'轻量填充马甲，可以单穿，也可以套在冲锋衣里。',
+  {id:'fleecevest',cat:'city',name:'松林 · 轻量马甲',ref:'轻量填充马甲，可以单穿，也可以套在冲锋衣里。',
    cfg:{type:'vest',template:'yoke',colors:{main:'#5f7148',acc1:'#d9cdb4',acc2:'#ff6a2b',trim:'#d9cdb4',zip:'#23272b',lining:'#d9cdb4'},hoodColor:'main',collar:'stand',hoodBrim:false,hoodDeco:'none',zipType:'standard',zipFlap:false,bigPull:true,pullColor:'acc2',chestPocket:'zipV',handPocket:'welt',sleevePocket:false,pocketColor:'main',cuff:'elastic',hem:'straight',refl:{band:false,back:false,piping:false},lining:'fleece',
     logos:[{id:'l1',kind:'mark',icon:'leaf',text:'',font:'round',shape:'none',fg:'#d9cdb4',bg:'#5f7148',place:'chestL',size:4.5,method:'embroidery',img:null}]}}
+  // —— 机能户外 ——
+  ,{id:'atom',cat:'out',name:'原子 · 轻量棉服',ref:'参考始祖鸟 Atom 系列的思路：绗缝保暖衣身 + 腋下弹力针织侧片，轻、暖、好活动。',
+   cfg:{type:'hardshell',template:'side',mats:{main:'quilt',acc1:'knit',acc2:'base'},colors:{main:'#27313a',acc1:'#33363a',acc2:'#3fbf8a',trim:'#33363a',zip:'#27313a',lining:'#3fbf8a'},hoodColor:'main',collar:'hood',hoodBrim:false,zipType:'standard',zipFlap:false,bigPull:true,pullColor:'acc2',chestPocket:'none',handPocket:'welt',cuff:'elastic',hem:'droptail',lining:'taffeta',
+    logos:[{id:'l1',kind:'mark',icon:'mountain',text:'',font:'mono',shape:'none',fg:'#3fbf8a',bg:'#27313a',place:'chestL',size:4,method:'embroidery',img:null}]}}
+  ,{id:'beta',cat:'out',name:'冰川 · 三层硬壳',ref:'参考始祖鸟 Beta 系列：纯色三层硬壳、防水拉链、硬挺帽檐、腋下透气开口位，颜色干净利落。',
+   cfg:{type:'hardshell',template:'solid',colors:{main:'#0f6e7a',acc1:'#23272b',acc2:'#e3f23b',trim:'#0f6e7a',zip:'#0f6e7a',lining:'#c4c8cc'},hoodColor:'main',hoodBrim:true,zipType:'waterproof',zipFlap:false,bigPull:false,pullColor:'zip',chestPocket:'zipV',handPocket:'high',cuff:'velcro',hem:'droptail',refl:{band:false,back:false,piping:false},lining:'taffeta',
+    logos:[{id:'l1',kind:'mark',icon:'none',text:'LELE',font:'mono',shape:'none',fg:'#c4c8cc',bg:'#0f6e7a',place:'chestL',size:4.5,method:'embroidery',img:null}]}}
+  ,{id:'climb',cat:'out',name:'攀登 · 红黑耐磨肩',ref:'参考凯乐石登山服：亮红衣身配黑色耐磨肩袖，背包摩擦处加厚，户外辨识度高。',
+   cfg:{type:'hardshell',template:'classic',colors:{main:'#c9283b',acc1:'#23272b',acc2:'#eef0ec',trim:'#23272b',zip:'#23272b',lining:'#33363a'},hoodColor:'acc1',hoodBrim:true,zipType:'waterproof',zipFlap:false,bigPull:true,pullColor:'acc2',chestPocket:'zipH',handPocket:'high',sleevePocket:true,cuff:'velcro',hem:'droptail',refl:{band:true,back:false,piping:false},lining:'mesh',
+    logos:[{id:'l1',kind:'mark',icon:'mountain',text:'',font:'mono',shape:'none',fg:'#eef0ec',bg:'#23272b',place:'chestL',size:5,method:'reflective',img:null}]}}
+  ,{id:'trail',cat:'out',name:'山径 · 软硬拼接',ref:'参考凯乐石轻量徒步款：硬壳衣身挡风雨，插肩袖用软壳，抬手攀爬更自在。',
+   cfg:{type:'hardshell',template:'raglan',mats:{main:'shell',acc1:'soft',acc2:'base'},colors:{main:'#f2a65a',acc1:'#4a5058',acc2:'#23272b',trim:'#4a5058',zip:'#23272b',lining:'#4a5058'},hoodColor:'acc1',zipType:'standard',zipFlap:true,bigPull:true,pullColor:'acc1',chestPocket:'zipV',handPocket:'welt',cuff:'velcro',hem:'straight',refl:{band:true,back:false,piping:false},lining:'mesh'}}
+  ,{id:'mammut',cat:'out',name:'冰峰 · 肩侧双拼',ref:'参考猛犸象（Mammut）式的肩部与侧片同色拼接，线条硬朗。',
+   cfg:{type:'softshell',template:'side',colors:{main:'#eef0ec',acc1:'#c9283b',acc2:'#23272b',trim:'#c9283b',zip:'#23272b',lining:'#c9283b'},hoodColor:'acc1',zipType:'standard',zipFlap:false,bigPull:true,pullColor:'acc1',chestPocket:'zipV',handPocket:'welt',cuff:'velcro',hem:'droptail',refl:{band:false,back:true,piping:true},lining:'fleece'}}
+  // —— 滑雪 ——
+  ,{id:'phenix',cat:'ski',name:'雪场 · 胸前横带',ref:'参考菲尼克斯（Phenix）儿童滑雪服：白色衣身配胸前宽色带，帽檐、反光，雪地里一眼认出。',
+   cfg:{type:'hardshell',template:'chestband',mats:{main:'shell',acc1:'base',acc2:'base'},colors:{main:'#eef0ec',acc1:'#d63c7a',acc2:'#1f3354',trim:'#1f3354',zip:'#1f3354',lining:'#1f3354'},hoodColor:'acc1',hoodBrim:true,zipType:'waterproof',zipFlap:false,bigPull:true,pullColor:'acc1',chestPocket:'zipH',handPocket:'high',sleevePocket:true,cuff:'rib',hem:'straight',refl:{band:true,back:true,piping:false},lining:'quilted',
+    logos:[{id:'l1',kind:'mark',icon:'snow',text:'',font:'round',shape:'circle',fg:'#eef0ec',bg:'#d63c7a',place:'chestL',size:5,method:'embroidery',img:null},{id:'l2',kind:'mark',icon:'none',text:'LELE',font:'round',shape:'none',fg:'#1f3354',bg:'#eef0ec',place:'back',size:12,method:'print',img:null}]}}
+  ,{id:'candy',cat:'ski',name:'雪场 · 糖果撞色',ref:'参考菲尼克斯的糖果色左右撞色：一半薄荷一半粉，配毛球精灵帽。',
+   cfg:{type:'hardshell',template:'halfsplit',colors:{main:'#f3b3c2',acc1:'#6fd0d6',acc2:'#f5d33f',trim:'#a594d6',zip:'#a594d6',lining:'#f6efe0'},hoodColor:'main',hoodShape:'pixie',hoodDeco:'pompom',zipType:'standard',zipFlap:true,bigPull:true,pullColor:'acc2',chestPocket:'none',handPocket:'flap',pocketColor:'acc2',cuff:'rib',hem:'straight',refl:{band:true,back:false,piping:false},lining:'fleece'}}
+  ,{id:'descente',cat:'ski',name:'竞速 · 几何 V 带',ref:'参考迪桑特（Descente）滑雪服的几何切割：胸前 V 形色带，竞技感强。',
+   cfg:{type:'hardshell',template:'chevron',colors:{main:'#1f3354',acc1:'#eef0ec',acc2:'#f0505a',trim:'#1f3354',zip:'#eef0ec',lining:'#f0505a'},hoodColor:'main',hoodBrim:true,zipType:'waterproof',zipFlap:false,bigPull:true,pullColor:'acc2',chestPocket:'zipV',handPocket:'high',cuff:'rib',hem:'droptail',refl:{band:false,back:true,piping:true},lining:'quilted'}}
+  ,{id:'powder',cat:'ski',name:'粉雪 · 荧光运动条',ref:'荧光黄衣身配黑色袖侧运动条，雾天和雪场里都很醒目。',
+   cfg:{type:'hardshell',template:'armstripe',colors:{main:'#e3f23b',acc1:'#23272b',acc2:'#eef0ec',trim:'#23272b',zip:'#23272b',lining:'#23272b'},hoodColor:'main',hoodBrim:true,zipType:'waterproof',zipFlap:false,bigPull:true,pullColor:'acc1',chestPocket:'zipH',handPocket:'high',cuff:'rib',hem:'droptail',refl:{band:true,back:true,piping:false},lining:'quilted'}}
+  // —— 城市 ——
+  ,{id:'nuptse',cat:'city',name:'面包服 · 深色肩',ref:'参考北面（The North Face）经典面包服：横向大绗缝，深色肩袖压住亮色衣身。',
+   cfg:{type:'down',template:'classic',colors:{main:'#ff8a1f',acc1:'#23272b',acc2:'#eef0ec',trim:'#23272b',zip:'#23272b',lining:'#33363a'},hoodColor:'acc1',zipType:'standard',zipFlap:true,bigPull:true,pullColor:'acc1',chestPocket:'none',handPocket:'welt',cuff:'elastic',hem:'straight',lining:'taffeta',
+    logos:[{id:'l1',kind:'mark',icon:'none',text:'LELE',font:'sans',shape:'none',fg:'#eef0ec',bg:'#23272b',place:'chestL',size:5,method:'embroidery',img:null}]}}
+  ,{id:'retrox',cat:'city',name:'复古抓绒 · 撞色袋',ref:'参考巴塔哥尼亚（Patagonia）Retro-X 抓绒：奶油白毛绒衣身，驼色胸袋和袖口滚边。',
+   cfg:{type:'fleece',template:'pop',colors:{main:'#f6efe0',acc1:'#c19a6b',acc2:'#0f6e7a',trim:'#c19a6b',zip:'#5b3a29',lining:'#c19a6b'},hoodColor:'main',collar:'stand',zipType:'standard',zipFlap:false,bigPull:true,pullColor:'acc1',chestPocket:'patch',handPocket:'welt',pocketColor:'acc1',cuff:'elastic',hem:'straight',lining:'taffeta',
+    logos:[{id:'l1',kind:'mark',icon:'mountain',text:'',font:'round',shape:'round',fg:'#f6efe0',bg:'#0f6e7a',place:'chestL',size:4,method:'woven',img:null}]}}
+  ,{id:'columbia',cat:'city',name:'通勤 · 撞色袖',ref:'参考哥伦比亚（Columbia）童装：深色衣身配亮色袖，耐脏又精神。',
+   cfg:{type:'softshell',template:'sleeves',colors:{main:'#1f3354',acc1:'#3fbf8a',acc2:'#f5d33f',trim:'#1f3354',zip:'#1f3354',lining:'#3fbf8a'},hoodColor:'main',zipType:'standard',zipFlap:true,bigPull:true,pullColor:'acc2',chestPocket:'zipV',handPocket:'kangaroo',pocketColor:'acc1',cuff:'velcro',hem:'straight',refl:{band:true,back:false,piping:false},lining:'fleece'}}
+  ,{id:'mist',cat:'city',name:'雾霭 · 低饱和立领',ref:'雾霭蓝软壳、立领、下摆深色拼，日常上学穿最百搭。',
+   cfg:{type:'softshell',template:'hemband',colors:{main:'#6f8fa6',acc1:'#3f5f8a',acc2:'#f6efe0',trim:'#3f5f8a',zip:'#3f5f8a',lining:'#f6efe0'},collar:'stand',zipType:'standard',zipFlap:false,bigPull:true,pullColor:'zip',chestPocket:'none',handPocket:'welt',cuff:'rib',hem:'straight',lining:'fleece'}}
+  // —— 童趣 ——
+  ,{id:'shark',cat:'kids',name:'小鲨鱼 · 雨衣',ref:'灰蓝大帽配鲨鱼鳍，满印小鱼，下雨天也想出门。',
+   cfg:{type:'hardshell',template:'chestband',colors:{main:'#6f8fa6',acc1:'#eef0ec',acc2:'#1f3354',trim:'#1f3354',zip:'#1f3354',lining:'#eef0ec'},hoodColor:'main',hoodShape:'big',hoodDeco:'shark',zipType:'standard',zipFlap:true,bigPull:true,pullColor:'acc2',chestPocket:'none',handPocket:'kangaroo',pocketColor:'acc1',cuff:'elastic',hem:'straight',refl:{band:true,back:true,piping:false},lining:'mesh',
+    print:{kind:'none',slot:'main',color:'#eef0ec',scale:1,img:null},logos:[{id:'l1',kind:'mark',icon:'fish',text:'',font:'round',shape:'none',fg:'#1f3354',bg:'#eef0ec',place:'chestL',size:5,method:'embroidery',img:null}]}}
+  ,{id:'unicorn',cat:'kids',name:'独角兽 · 星星满印',ref:'粉紫配色、金色独角、满印小星星，梦幻但不俗气。',
+   cfg:{type:'softshell',template:'yoke',colors:{main:'#f3b3c2',acc1:'#c3a6d8',acc2:'#f5d33f',trim:'#c3a6d8',zip:'#c3a6d8',lining:'#f6efe0'},hoodColor:'acc1',hoodDeco:'unicorn',zipType:'standard',zipFlap:false,bigPull:true,pullColor:'acc2',chestPocket:'none',handPocket:'kangaroo',pocketColor:'acc1',cuff:'rib',lining:'print',
+    print:{kind:'stars',slot:'main',color:'#f6efe0',scale:.9,img:null},logos:[]}}
+  ,{id:'frog',cat:'kids',name:'小青蛙 · 雨天',ref:'青柠绿硬壳、青蛙眼睛帽、雨滴满印，踩水坑专用。',
+   cfg:{type:'hardshell',template:'solid',colors:{main:'#b5d33a',acc1:'#5f7148',acc2:'#f6efe0',trim:'#5f7148',zip:'#5f7148',lining:'#f5d33f'},hoodColor:'main',hoodDeco:'frog',zipType:'standard',zipFlap:true,bigPull:true,pullColor:'acc1',chestPocket:'none',handPocket:'flap',pocketColor:'acc1',cuff:'elastic',refl:{band:true,back:true,piping:false},lining:'mesh',
+    print:{kind:'rain',slot:'main',color:'#eef0ec',scale:1,img:null},logos:[]}}
+  ,{id:'pixie',cat:'kids',name:'小精灵 · 森林',ref:'墨绿精灵尖帽配红色毛球，抓绒内衬，像从童话里走出来。',
+   cfg:{type:'softshell',template:'pop',colors:{main:'#2f5d50',acc1:'#c9283b',acc2:'#c9283b',trim:'#c9283b',zip:'#5b3a29',lining:'#f6efe0'},hoodColor:'main',hoodShape:'pixie',hoodDeco:'pompom',zipType:'standard',zipFlap:true,bigPull:true,pullColor:'acc1',chestPocket:'none',handPocket:'flap',pocketColor:'acc1',cuff:'rib',lining:'fleece',
+    logos:[{id:'l1',kind:'mark',icon:'tree',text:'',font:'round',shape:'none',fg:'#f6efe0',bg:'#2f5d50',place:'chestL',size:4.5,method:'embroidery',img:null}]}}
+  ,{id:'zoo',cat:'kids',name:'动物园 · 小动物满印',ref:'奶油白衣身印满小猫小兔小熊猫，袖子撞色，胸前一只小狮子。',
+   cfg:{type:'softshell',template:'sleeves',colors:{main:'#f6efe0',acc1:'#f2a65a',acc2:'#5b3a29',trim:'#f2a65a',zip:'#5b3a29',lining:'#f2a65a'},hoodColor:'acc1',hoodDeco:'bear',zipType:'standard',zipFlap:false,bigPull:true,pullColor:'acc1',chestPocket:'none',handPocket:'kangaroo',pocketColor:'acc1',cuff:'rib',lining:'fleece',
+    print:{kind:'animals',slot:'main',color:'#c19a6b',scale:1.6,img:null},logos:[{id:'l1',kind:'mark',icon:'lion',text:'',font:'round',shape:'none',fg:'#f2a65a',bg:'#5b3a29',place:'chestL',size:6,method:'embroidery',img:null}]}}
 ];
 const clone=o=>JSON.parse(JSON.stringify(o));
 function mergeCfg(base,over){const c=clone(base);for(const k in over){if(over[k]&&typeof over[k]==='object'&&!Array.isArray(over[k])&&c[k]&&typeof c[k]==='object'&&!Array.isArray(c[k]))c[k]={...c[k],...clone(over[k])};else c[k]=clone(over[k])}return c}
@@ -983,13 +1062,22 @@ function templateRegions(id,vA){
       S.push({c:'acc1',side:'both',pts:[[.37,0],[.63,0],[.63,1.1],[.37,1.1]]});lines.push({sleeve:'both',pts:[[.37,0],[.37,1]]},{sleeve:'both',pts:[[.63,0],[.63,1]]});break;
     case 'raglan': for(const m of [0,1]){const mk=u=>m?1-u:u;const pts=[[.075,1.1],[.075,1.0],[.215,vv(.98)],[.25,vv(.97)],[.285,vv(.98)],[.425,1.0],[.425,1.1]].map(([u,v])=>[mk(u),v]);B.push({c:'acc1',pts});lines.push(pts.slice(1,-1))}
       S.push({c:'acc1',side:'both',pts:[[0,-.1],[1,-.1],[1,1.1],[0,1.1]]});break;
+    case 'chestband': B.push({c:'acc1',pts:[[-.03,vv(.8)],[1.03,vv(.8)],[1.03,vv(.64)],[-.03,vv(.64)]]},{c:'acc2',pts:[[-.03,vv(.84)],[1.03,vv(.84)],[1.03,vv(.8)],[-.03,vv(.8)]]});
+      lines.push([[-.03,vv(.84)],[1.03,vv(.84)]],[[-.03,vv(.64)],[1.03,vv(.64)]]);S.push({c:'acc1',side:'both',pts:[[0,.32],[1,.32],[1,.46],[0,.46]]},{c:'acc2',side:'both',pts:[[0,.29],[1,.29],[1,.32],[0,.32]]});
+      lines.push({sleeve:'both',pts:[[0,.29],[1,.29]]},{sleeve:'both',pts:[[0,.46],[1,.46]]});break;
+    case 'hemband': B.push({c:'acc1',pts:[[-.03,-.1],[1.03,-.1],[1.03,vv(.24)],[-.03,vv(.24)]]});lines.push([[-.03,vv(.24)],[1.03,vv(.24)]]);
+      S.push({c:'acc1',side:'both',pts:[[0,.76],[1,.76],[1,.93],[0,.93]]});lines.push({sleeve:'both',pts:[[0,.76],[1,.76]]});break;
+    case 'halfsplit': B.push({c:'acc1',pts:[[.004,-.1],[.5,-.1],[.5,1.1],[.004,1.1]]});lines.push([[.5,-.02],[.5,1.02]]);S.push({c:'acc1',side:'L',pts:[[0,-.1],[1,-.1],[1,1.1],[0,1.1]]});break;
+    case 'sleeves': S.push({c:'acc1',side:'both',pts:[[0,-.1],[1,-.1],[1,1.1],[0,1.1]]});break;
+    case 'armstripe': for(const c0 of [.25,.75]){B.push({c:'acc1',pts:[[c0-.012,-.1],[c0+.012,-.1],[c0+.012,vv(1)],[c0-.012,vv(1)]]},{c:'acc2',pts:[[c0-.02,-.1],[c0-.012,-.1],[c0-.012,vv(1)],[c0-.02,vv(1)]]},{c:'acc2',pts:[[c0+.012,-.1],[c0+.02,-.1],[c0+.02,vv(1)],[c0+.012,vv(1)]]})}
+      S.push({c:'acc1',side:'both',pts:[[0,0],[.04,0],[.04,.93],[0,.93]]},{c:'acc1',side:'both',pts:[[.96,0],[1,0],[1,.93],[.96,.93]]},{c:'acc2',side:'both',pts:[[.04,0],[.06,0],[.06,.93],[.04,.93]]},{c:'acc2',side:'both',pts:[[.94,0],[.96,0],[.96,.93],[.94,.93]]});break;
     case 'chevron':{const top=u=>{const f=sfront(((u%1)+1)%1);return Math.abs(f)<=.25?vv(.9-.85*Math.abs(f)):vv(.9-.85*.25)};const bot=u=>top(u)-vv(.12);
       const t=curve(top,-.03,1.03,120),b=curve(bot,-.03,1.03,120);B.push({c:'acc1',pts:[...t,...b.reverse()]});
       const t2=curve(u=>top(u)+.014,-.03,1.03,120);B.push({c:'acc2',pts:[...t2,...curve(top,-.03,1.03,120).reverse()]});lines.push(t2,curve(bot,-.03,1.03,120));break}
   }
   return {B,S,lines};
 }
-const TEMPLATE_COLLAR={solid:'main',yoke:'acc1',classic:'acc1',diagonal:'acc1',tri:'acc1',side:'main',raglan:'acc1',chevron:'main',pop:'main'};
+const TEMPLATE_COLLAR={chestband:'main',hemband:'main',halfsplit:'acc1',sleeves:'main',armstripe:'main',solid:'main',yoke:'acc1',classic:'acc1',diagonal:'acc1',tri:'acc1',side:'main',raglan:'acc1',chevron:'main',pop:'main'};
 function pointIn(pts,x,y){let c=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){const [xi,yi]=pts[i],[xj,yj]=pts[j];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))c=!c}return c}
 function regionColorAt(regs,u,v,fallback='main'){let c=fallback;for(const r of regs){if(r.pts&&pointIn(r.pts,u,v))c=r.c}return c}
 
@@ -1020,6 +1108,8 @@ function printTile(pr,base){const k=pr.kind,sc=pr.scale||1;const N=Math.round(12
   if(k==='hearts'){icon('heart',N*.25,N*.28,N*.24,-.2);icon('heart',N*.75,N*.76,N*.2,.25)}
   if(k==='dino'){icon('dino',N*.28,N*.3,N*.34);icon('dino',N*.76,N*.78,N*.28)}
   if(k==='mountain'){icon('mountain',N*.25,N*.3,N*.36);icon('mountain',N*.75,N*.8,N*.3)}
+  if(k==='animals'){icon('cat',N*.25,N*.27,N*.3,-.15);icon('rabbit',N*.75,N*.3,N*.28,.15);icon('panda',N*.28,N*.77,N*.28,.1);icon('chick',N*.76,N*.78,N*.26,-.1)}
+  if(k==='paws'){icon('paw',N*.25,N*.3,N*.2,-.4);icon('paw',N*.5,N*.12,N*.2,-.2);icon('paw',N*.72,N*.68,N*.2,.3);icon('paw',N*.45,N*.88,N*.2,.1)}
   if(k==='rain'){x.fillStyle=col;for(const [a,b] of [[.2,.2],[.6,.4],[.35,.75],[.85,.85]]){x.beginPath();x.moveTo(a*N,b*N-N*.07);x.quadraticCurveTo(a*N+N*.05,b*N,a*N,b*N+N*.04);x.quadraticCurveTo(a*N-N*.05,b*N,a*N,b*N-N*.07);x.fill()}}
   if(k==='custom'&&pr._im){const im=pr._im,s=Math.min(N/im.width,N/im.height)*.9;x.drawImage(im,(N-im.width*s)/2,(N-im.height*s)/2,im.width*s,im.height*s)}
   return c}
@@ -1112,7 +1202,7 @@ function paintAll(cfg,g){
   const sleeveColorAt=(side,su,s)=>{let c='main';for(const r of tmpl.S){if(r.band)continue;if(r.side!=='both'&&r.side!==side)continue;if(pointIn(r.pts,su,s))c=r.c}return c};
   C.hood=col(cfg.hoodColor);C.collar=cfg.collar==='hood'?C.hood:col(regionColorAt(tmpl.B,.08,.995,TEMPLATE_COLLAR[cfg.template]));
   if(cfg.collar==='hood')C.collar=col(regionColorAt(tmpl.B,.08,.995,'main'));
-  C.hem=col(regionColorAt(tmpl.B,.1,.005));C.tape=cfg.zipType==='waterproof'?col(regionColorAt(tmpl.B,.01,.5)):C.zip;
+  C.hem=col(regionColorAt(tmpl.B,.1,.005));C.tape=cfg.zipType==='waterproof'?C.main:C.zip;
   C.pull=col(cfg.pullColor==='zip'?'zip':cfg.pullColor);C.hoodRim=C.hood;
   C.cuffL=cfg.cuff==='velcro'?col(sleeveColorAt('L',.5,.99)):C.trim;C.cuffR=cfg.cuff==='velcro'?col(sleeveColorAt('R',.5,.99)):C.trim;
   const out={colors:C};
@@ -1569,7 +1659,8 @@ function tabStyle(){
   <div class="types">${Object.entries(TYPES).map(([k,t])=>`<button class="tcard" data-set="type" data-v="${k}" aria-pressed="${cfg.type===k}"><b>${t.name}</b><small>${t.sub}</small></button>`).join('')}</div></section>
   <section class="sec"><div class="sh"><h2>风格灵感</h2><button class="btn ghost sm" data-act="random">${ic('dice')}<span>随机配色</span></button></div>
   <p class="note">点一下套用整套设计，之后每个细节都还能改。灵感款只借鉴设计语言（分割、配色、功能布局），不复制任何品牌标识或专有图案。</p>
-  <div class="presets">${PRESETS.map(p=>{const c=mergeCfg(mergeCfg(BASE,p.cfg),{age:cfg.age,meas:cfg.meas});return `<button class="pcard" data-preset="${p.id}"><span class="pf">${flatSVG(c,'front',{mini:true})}</span><span class="pt"><b>${p.name}</b><small>${p.ref}</small></span></button>`}).join('')}</div></section>`;
+  <div class="seg pcats">${PRESET_CATS.map(([k,n])=>`<button data-pcat="${k}" aria-pressed="${(ui.pcat||'all')===k}">${n} <small>${k==='all'?PRESETS.length:PRESETS.filter(p=>p.cat===k).length}</small></button>`).join('')}</div>
+  <div class="presets">${PRESETS.filter(p=>(ui.pcat||'all')==='all'||p.cat===ui.pcat).map(p=>{const c=mergeCfg(mergeCfg(BASE,p.cfg),{age:cfg.age,meas:cfg.meas});return `<button class="pcard" data-preset="${p.id}"><span class="pf">${flatSVG(c,'front',{mini:true})}</span><span class="pt"><b>${p.name}</b><small>${p.ref}</small></span></button>`}).join('')}</div></section>`;
 }
 function tabColor(){
   const used=usedSlots();
@@ -1726,6 +1817,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('button,[data-act
   if(D.tab){ui.tab=D.tab;LS.set('tab',ui.tab);renderPanel();$('.panel').scrollTop=0;return}
   if(D.set){let v=D.v;if(D.type==='num')v=+v;if((D.set==='hoodDeco'&&v!=='none'||D.set==='hoodShape')&&!ui.hoodUp){ui.hoodUp=true}if(getK(D.set)===v&&!D.set.startsWith('logo.'))return;change(D.set,v);return}
   if(D.tg){if(D.tg==='hoodBrim'&&!cfg.hoodBrim)ui.hoodUp=true;change(D.tg,!getK(D.tg));return}
+  if(D.pcat){ui.pcat=D.pcat;renderPanel();return}
   if(D.slot){ui.slot=D.slot;renderPanel();return}
   if(D.harm){snap();Object.assign(cfg.colors,harmonize(cfg.colors.main,D.harm));if(cfg.template==='solid'){cfg.template='yoke';cfg.hoodColor='acc1'}afterChange();toast('已按「'+HARMONY.find(x=>x[0]===D.harm)[1]+'」生成配色');return}
   if(D.mix){snap();const o=JSON.parse(D.mix);cfg.template=o.template;cfg.hoodColor=TEMPLATES[o.template].hood;cfg.mats=o.mats;afterChange();toast('已换成软硬拼接');return}
@@ -1734,7 +1826,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('button,[data-act
   if(D.color){change('colors.'+ui.slot,D.color);return}
   if(D.lcolor){change('colors.lining',D.lcolor);return}
   if(D.preset){const p=PRESETS.find(x=>x.id===D.preset);snap();const keep={age:cfg.age,meas:cfg.meas,name:cfg.name,nameLabel:cfg.nameLabel};const pants=cfg.colors.pants;
-    cfg=normalize(mergeCfg(mergeCfg(BASE,p.cfg),keep));cfg.colors.pants=pants;ui.logo=0;afterChange();toast(`已套用「${p.name}」`);return}
+    cfg=normalize(mergeCfg(mergeCfg(BASE,p.cfg),keep));cfg.colors.pants=pants;ui.logo=0;if(cfg.hoodDeco!=='none'||cfg.hoodBrim)ui.hoodUp=true;restoreImgs();afterChange();toast(`已套用「${p.name}」`);return}
   if(D.lsel){ui.logo=+D.lsel;renderPanel();return}
   if(D.view&&V){const m={front:[0,.06],q:[-.62,.1],side:[-Math.PI/2,.06],back:[Math.PI,.06]}[D.view];ui.auto=false;V.auto=false;V.goView(m[0],m[1]);vtag();return}
   if(D.vt&&V){const k=D.vt;ui[k]=!ui[k];
