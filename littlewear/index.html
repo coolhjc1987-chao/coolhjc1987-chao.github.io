@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#1b2526"></head><body>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#edf1f4" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0d131a" media="(prefers-color-scheme: dark)"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="小衣间"><script>/* 离线缓存：只在 https 网址上启用 */if('serviceWorker' in navigator&&location.protocol==='https:')addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});</script></head><body>
 <title>小衣间童装定制</title>
 <meta name="description" content="1–6 岁童装三维定制：冲锋衣拼色、口袋拉链、内衬、标志，生成商家制作单。">
 <script>/* 字体不阻塞渲染：连不上谷歌字体（如国内网络）就用系统字体 */
@@ -477,6 +477,42 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-with
 .fcmpt .dots{color:var(--ink);letter-spacing:-1px;font-size:10px}.fcmpt .dots span{color:var(--line)}
 .fcmpt tr.inuse td{background:color-mix(in srgb,var(--brand) 14%,transparent)}
 @media (max-width:620px){.fdet{grid-template-columns:1fr}.fdet canvas{width:100%;height:auto;aspect-ratio:2/1}.rbars{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* iPhone：刘海安全区、横屏、主屏安装提示 */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.top{top:0;padding-top:calc(10px + env(safe-area-inset-top,0px));padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+@media (max-width:959px){
+  .view{top:calc(var(--top) + env(safe-area-inset-top,0px))}
+}
+@media (orientation:landscape) and (max-height:520px) and (max-width:959px){
+  body{overflow:hidden}
+  #app{height:100%}
+  .top{min-height:52px;padding-top:6px;padding-bottom:6px}
+  .stage{display:grid;grid-template-columns:minmax(0,1fr) min(400px,46vw);gap:10px;padding:0 max(10px,env(safe-area-inset-right,0px)) 10px max(10px,env(safe-area-inset-left,0px));height:calc(100% - 52px);min-height:0}
+  .view{position:relative;top:auto;height:100%;min-height:0;border-radius:22px}
+  .panel{overflow-y:auto;height:100%;border-radius:22px}
+  .tabs{position:sticky;top:0}
+  .vtag>span:not(.temp){display:none}
+}
+.a2hs{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:40;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;
+  background:var(--glass);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border-radius:20px;padding:12px 10px 12px 12px;box-shadow:0 14px 40px rgba(30,43,58,.22),inset 0 0 0 1px rgba(255,255,255,.6);animation:bin .3s ease-out}
+.a2hs img{width:44px;height:44px;border-radius:11px}
+.a2hs b{display:block;font-size:14px}
+.a2hs span{font-size:12.5px;color:var(--muted);line-height:1.5}
+.a2hs span .ic{width:15px;height:15px;vertical-align:-3px;color:#2f7cf6}
+@media (min-width:700px){.a2hs{left:auto;width:380px}}
+.top{min-height:calc(var(--top) + env(safe-area-inset-top,0px))}
+@media (orientation:landscape) and (max-height:520px) and (max-width:959px){.top{min-height:52px}}
+@media (orientation:landscape) and (max-height:520px) and (max-width:959px){
+  .tgl button span{display:none}
+  .tgl button{padding:7px 9px}
+  .views button{padding:6px 10px}
+  .vbar{gap:6px;padding-bottom:10px}
+}
+@media (max-width:620px),(orientation:landscape) and (max-height:520px) and (max-width:959px){
+  .tabs{grid-template-columns:repeat(8,minmax(0,1fr));overflow:visible;padding:8px 2px 6px}
+  .tabs button{font-size:11.5px;min-width:0}
+  .tabs button .ic{width:40px;padding:4px 10px}
+}
 
 </style>
 <div id="app"></div>
@@ -2420,7 +2456,7 @@ function safetyItems(c){const T=TYPES[c.type];return ['7 岁及以下儿童服�
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LS={get(k,d){try{const v=localStorage.getItem('lws4.'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('lws4.'+k,JSON.stringify(v))}catch(e){}}};
-const ICON={layers:'M12 4l8.5 4.5L12 13 3.5 8.5z M3.5 12.5L12 17l8.5-4.5 M3.5 16.5L12 21l8.5-4.5',kid:'M12 4.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15z M9.3 11.3h.01 M14.7 11.3h.01 M9.6 14.6c1.3 1.1 3.5 1.1 4.8 0 M11.5 4.6c-.8-1.2.2-2.4 1.4-1.9',jacket:'M8.5 3.5L4 6.5V20h4.5v-7 M15.5 3.5L20 6.5V20h-4.5v-7 M8.5 3.5L12 6l3.5-2.5 M12 6v14 M8.5 20h7',palette:'M12 3.5a8.5 8.5 0 000 17c1.4 0 2-.9 2-1.9s-.9-1.4-.9-2.3.9-1.5 1.9-1.5h1.9a3.6 3.6 0 003.6-3.6C20.5 7 16.7 3.5 12 3.5z M7.8 11.2h.01 M10 7.6h.01 M14.4 7.6h.01',sliders:'M4 7h9 M17 7h3 M15 5v4 M4 17h3 M11 17h9 M9 15v4',flame:'M12 3.5c.8 2.7 4.8 4.6 4.8 9.3a4.8 4.8 0 01-9.6 0c0-1.9.9-3.3 1.9-4.3 0 1.9.9 2.8 1.9 2.8 0-2.9-.9-4.8 1-7.8z',star:'M12 3.8l2.4 5.1 5.6.7-4.1 3.8 1.1 5.5L12 16.2l-5 2.7 1.1-5.5L4 9.6l5.6-.7z',undo:'M9 14L4 9l5-5 M4 9h10a6 6 0 010 12h-3',redo:'M15 14l5-5-5-5 M20 9H10a6 6 0 000 12h3',save:'M5 3h12l3 3v15H4V3z M8 3v6h8V3 M8 21v-7h8v7',folder:'M3 6h6l2 2h10v11H3z',
+const ICON={share:'M12 3.5v11 M8 7.5l4-4 4 4 M6 11.5H5v9h14v-9h-1',layers:'M12 4l8.5 4.5L12 13 3.5 8.5z M3.5 12.5L12 17l8.5-4.5 M3.5 16.5L12 21l8.5-4.5',kid:'M12 4.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15z M9.3 11.3h.01 M14.7 11.3h.01 M9.6 14.6c1.3 1.1 3.5 1.1 4.8 0 M11.5 4.6c-.8-1.2.2-2.4 1.4-1.9',jacket:'M8.5 3.5L4 6.5V20h4.5v-7 M15.5 3.5L20 6.5V20h-4.5v-7 M8.5 3.5L12 6l3.5-2.5 M12 6v14 M8.5 20h7',palette:'M12 3.5a8.5 8.5 0 000 17c1.4 0 2-.9 2-1.9s-.9-1.4-.9-2.3.9-1.5 1.9-1.5h1.9a3.6 3.6 0 003.6-3.6C20.5 7 16.7 3.5 12 3.5z M7.8 11.2h.01 M10 7.6h.01 M14.4 7.6h.01',sliders:'M4 7h9 M17 7h3 M15 5v4 M4 17h3 M11 17h9 M9 15v4',flame:'M12 3.5c.8 2.7 4.8 4.6 4.8 9.3a4.8 4.8 0 01-9.6 0c0-1.9.9-3.3 1.9-4.3 0 1.9.9 2.8 1.9 2.8 0-2.9-.9-4.8 1-7.8z',star:'M12 3.8l2.4 5.1 5.6.7-4.1 3.8 1.1 5.5L12 16.2l-5 2.7 1.1-5.5L4 9.6l5.6-.7z',undo:'M9 14L4 9l5-5 M4 9h10a6 6 0 010 12h-3',redo:'M15 14l5-5-5-5 M20 9H10a6 6 0 000 12h3',save:'M5 3h12l3 3v15H4V3z M8 3v6h8V3 M8 21v-7h8v7',folder:'M3 6h6l2 2h10v11H3z',
   rotate:'M20 12a8 8 0 11-3-6.3 M20 4v5h-5',hood:'M6 20c0-9 2-15 6-15s6 6 6 15 M9 20c0-5 1-8 3-8s3 3 3 8',open:'M12 4v16 M12 4L5 7v13l7-2 M12 4l7 3v13l-7-2',moon:'M20 14A8 8 0 0110 4a8 8 0 1010 10z',
   body:'M12 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5z M7 22l1-9-3-4 4-1h6l4 1-3 4 1 9',plus:'M12 5v14 M5 12h14',minus:'M5 12h14',doc:'M6 3h9l4 4v14H6z M14 3v5h5 M9 13h7 M9 17h5',dice:'M4 4h16v16H4z M8.5 8.5h.01 M15.5 15.5h.01 M15.5 8.5h.01 M8.5 15.5h.01 M12 12h.01',
   close:'M6 6l12 12 M18 6L6 18',chat:'M4 5h16v11H9l-5 4z',trash:'M4 7h16 M9 7V4h6v3 M6 7l1 14h10l1-14',download:'M12 3v12 M7 10l5 5 5-5 M4 17v4h16v-4',upload:'M12 21V9 M7 14l5-5 5 5 M4 7V3h16v4',copy:'M8 8h12v12H8z M4 16V4h12',check:'M5 12l4 4L19 6'};
@@ -2934,8 +2970,31 @@ function closeSheet(){const s=$('#sheet');s.classList.remove('on');s.innerHTML='
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2600)}
 
 // ---------- 下载 ----------
+const MIME={pdf:'application/pdf',png:'image/png',html:'text/html',csv:'text/csv',json:'application/json'};
+const mimeOf=n=>MIME[(n.split('.').pop()||'').toLowerCase()]||'application/octet-stream';
+const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const NATIVE=()=>window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.lwSave;
+const blobToB64=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]||'');r.onerror=rej;r.readAsDataURL(b)});
 async function saveFile(name,data){if(dl){try{await dl.save({filename:name,data});toast('已保存：'+name)}catch(e){if(e&&e.code==='declined')return;toast('文件没有保存：'+(e&&e.message||'当前环境不支持下载'))}return}
-  try{const blob=data instanceof Blob?data:new Blob([data],{type:'application/octet-stream'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}catch(e){toast('当前环境不支持下载')}}
+  const blob=data instanceof Blob?data:new Blob([data],{type:mimeOf(name)});
+  // iPhone App：交给系统分享面板（存到“文件”、发微信、隔空投送）
+  const nb=NATIVE();if(nb){try{nb.postMessage({name,mime:blob.type||mimeOf(name),b64:await blobToB64(blob)})}catch(e){toast('文件没有保存，请再试一次')}return}
+  // iPhone / iPad 浏览器：优先用系统分享
+  if(IS_IOS&&navigator.canShare){const file=new File([blob],name,{type:blob.type||mimeOf(name)});
+    if(navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:name});return}catch(e){if(e&&e.name==='AbortError')return;shareLater(file);return}}}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}catch(e){toast('当前环境不支持下载')}}
+// 生成文件用时较长时，系统会拦住自动弹出的分享，这时让用户再点一下
+function shareLater(file){sheet(`<div class="fb"><div class="sh"><h2>文件已生成</h2><button class="ib" data-act="closesheet" aria-label="关闭">${ic('close')}</button></div>
+  <p class="note">${esc(file.name)}，${Math.max(1,Math.round(file.size/1024))} KB。点下面的按钮，选“存储到文件”或发给微信好友。</p>
+  <button class="btn wide cta" id="sharenow">${ic('share')}<span>保存或分享</span></button></div>`);
+  $('#sharenow').onclick=async()=>{try{await navigator.share({files:[file],title:file.name});closeSheet()}catch(e){if(e&&e.name!=='AbortError'){const u=URL.createObjectURL(file);window.open(u,'_blank');setTimeout(()=>URL.revokeObjectURL(u),60000)}}}}
+// Safari 里提示“添加到主屏幕”（只在 GitHub 网址上，App 和已安装的不提示）
+function installHint(){try{const standalone=navigator.standalone||matchMedia('(display-mode: standalone)').matches;
+  if(!IS_IOS||standalone||NATIVE()||!/github\.io$/.test(location.hostname)||LS.get('a2hs',0))return;
+  const el=document.createElement('div');el.className='a2hs';el.setAttribute('role','note');
+  el.innerHTML=`<img src="icons/icon-180.png" alt=""><div><b>把小衣间装到手机桌面</b><span>点 Safari 的分享按钮 ${ic('share')}，再选“添加到主屏幕”。之后像 App 一样全屏打开，没网也能用。</span></div><button class="ib" aria-label="不再提示">${ic('close')}</button>`;
+  document.body.appendChild(el);el.querySelector('button').onclick=()=>{LS.set('a2hs',1);el.remove()}}catch(e){}}
+setTimeout(installHint,2500);
 
 // ---------- 制作单 ----------
 let tpCache=null;
