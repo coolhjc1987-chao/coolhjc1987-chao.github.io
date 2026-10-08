@@ -313,6 +313,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .checks li.vdone{opacity:.75}.checks li.vdone .ci{background:var(--ok);color:#fff}
 .checks .cbtn{grid-column:2;display:flex;flex-wrap:wrap;gap:6px}.checks .cbtn button{grid-column:auto}
 .hoodtech{margin:6px 0 10px}.hoodtech summary{cursor:pointer;font-size:13px;font-weight:600;padding:6px 0;color:var(--ink)}
+.mrange{display:flex;align-items:center;gap:8px;width:100%}.mrange input{flex:1}.mrange small{font-size:11px;color:var(--muted);white-space:nowrap}
+.lmove{border-left:3px solid var(--soft);padding-left:8px;margin:4px 0}.note.warnt{color:#b5541f}
 
 </style>
 <div id="app"></div>
@@ -646,6 +648,10 @@ const ICONS = {
 const PRINTS=[['none','无'],['dots','波点'],['stars','星星'],['stripes','条纹'],['checks','格纹'],['camo','迷彩'],['hearts','爱心'],['dino','小恐龙'],['mountain','山峰'],['rain','雨滴'],['animals','小动物'],['paws','小脚印'],['custom','我上传的']];
 const SHAPES=[['none','无底'],['circle','圆章'],['round','圆角方'],['shield','盾形'],['hex','六边形'],['pill','胶囊']];
 const FONTS={round:['圆体','"Baloo 2","ZCOOL KuaiLe","Noto Sans SC",sans-serif',800],cute:['可爱','"ZCOOL KuaiLe","Noto Sans SC",sans-serif',400],sans:['黑体','"Noto Sans SC",sans-serif',900],mono:['机能','"IBM Plex Mono","Noto Sans SC",monospace',700]};
+// 标志微调范围（cm）：x 正向 = xl[1] 方向，y 正向 = 向上
+const LOGO_MOVE={chestL:{x:[-3,2.5],y:[-4,3],xl:['前中','侧缝']},chestR:{x:[-3,2.5],y:[-4,3],xl:['前中','侧缝']},back:{x:[-5,5],y:[-6,6],xl:['左','右']},backLow:{x:[-5,5],y:[-4,6],xl:['左','右']},backNeck:{x:[-2,2],y:[-1,2],xl:['左','右']},hemR:{x:[-3,3],y:[-2,5],xl:['前中','侧缝']},sleeveL:{x:[-2,2],y:[-6,4],xl:['后','前']},sleeveR:{x:[-2,2],y:[-6,4],xl:['后','前']}};
+const LOGO_USIGN={chestL:1,chestR:-1,hemR:-1,back:1,backLow:1,backNeck:1};
+const logoMoveText=(place,ax,v)=>{const M=LOGO_MOVE[place];if(!M||!v)return '居中（默认）';v=+v;if(ax==='y')return (v>0?'上移 ':'下移 ')+Math.abs(v)+' cm';return '往'+(v>0?M.xl[1]:M.xl[0])+' '+Math.abs(v)+' cm'};
 const PLACES={chestL:'左胸',chestR:'右胸',back:'后背中',backLow:'后背下',backNeck:'后领下',sleeveL:'左袖',sleeveR:'右袖',hemR:'右前下摆'};
 const METHODS={embroidery:['刺绣',14],print:['热转印',6],reflective:['反光印',10],rubber:['硅胶章',12],woven:['织唛',8]};
 
@@ -1366,7 +1372,7 @@ function paintAll(cfg,g){
       Pt.img(hatch,cx,cy,w,h,tf,{});Pt.x.restore()}};
   for(const L of logos){if(!L.place||!L.place.startsWith||['sleeveL','sleeveR'].includes(L.place))continue;
     const cy=cfg.chestPocket==='zipH'?.69:.79,cu=cfg.chestPocket==='zipV'?.16:.135;const pos={chestL:[cu,cy*vA],chestR:[1-cu,cy*vA],back:[.5,.7*vA],backLow:[.5,.32*vA],backNeck:[.5,vA+.02],hemR:[.9,.14*vA]}[L.place];if(!pos)continue;
-    const wpx=L.size/100*pxU;drawLogo(P,L,P.X(pos[0]),P.Y(pos[1]),wpx,pxV/pxU,[1,1]);}
+    const du=(LOGO_USIGN[L.place]||1)*(L.dx||0)/100/g.torsoM.u,dv=(L.dy||0)/100/g.torsoM.v;const wpx=L.size/100*pxU;drawLogo(P,L,P.X(pos[0]+du),P.Y(pos[1]+dv),wpx,pxV/pxU,[1,1]);}
   out.torso={map:P.c,hgt:P.hg,pmap:P.pr};
   // 衣身内衬
   out.torso.lmap=liningCanvas(cfg,2048,1024,{vA,pxU,pxV,facing:zw*3.4,mainAt:(u,v)=>col(regionColorAt(tmpl.B,u,v)),label:cfg.labelPos==='side'?{u:.25,v:vA*.3,pxU,pxV}:{u:.5,v:vA-.05,pxU,pxV},type:'torso'});
@@ -1401,7 +1407,7 @@ function paintAll(cfg,g){
       if(cfg.growCuff)SP.line([[-.02,.9],[1.02,.9]],1.4,'rgba(0,0,0,.35)',{dash:[3,3],h:.4});
       if(cfg.refl.band){const b=[[-.02,.8],[1.02,.8],[1.02,.835],[-.02,.835]];SP.fill(conv(b),REFL_HEX,{h:.6,refl:1,rough:.35})}
       if(side==='L'&&cfg.sleevePocket){const s0=sToT(.26),s1=sToT(.45);const pts=conv([[.06,s0],[.06,s1]]);const wpx=6;SP.line(pts,wpx+8,null,{h:.38});SP.line(pts,wpx,C.zip,{h:.62,gloss:.4});SP.seam(offsetLine(pts,9,SP),{top:false,w:1.5});SP.seam(offsetLine(pts,-9,SP),{top:false,w:1.5})}
-      for(const L of logos){if(L.place!=='sleeve'+side)continue;const pxu=512/g.sleeveM.u,pxv=1024/g.sleeveM.v;drawLogo(SP,L,SP.X(.0),SP.Y(sToT(.3)),L.size/100*pxu,pxv/pxu,side==='L'?[-1,-1]:[1,-1])}
+      for(const L of logos){if(L.place!=='sleeve'+side)continue;const pxu=512/g.sleeveM.u,pxv=1024/g.sleeveM.v;drawLogo(SP,L,SP.X(.0)+(side==='L'?1:-1)*(L.dx||0)/100*pxu,SP.Y(sToT(.3))+(L.dy||0)/100*pxv,L.size/100*pxu,pxv/pxu,side==='L'?[-1,-1]:[1,-1])}
       out['sleeve'+side]={map:SP.c,hgt:SP.hg,pmap:SP.pr,lmap:liningCanvas(cfg,512,1024,{type:'sleeve'})};
     }}
   // ================= 领 / 帽 =================
@@ -1530,7 +1536,7 @@ function flatSVG(cfg,side='front',o={}){
   const logoPos={chestL:[.135,.79],chestR:[.865,.79],back:[.5,.7],backLow:[.5,.32],backNeck:[.5,.97],hemR:[.9,.14]};
   for(const L of (cfg.logos||[])){const pp=logoPos[L.place];if(!pp)continue;const isBack=['back','backLow','backNeck'].includes(L.place);if(isBack===F)continue;
     let u=pp[0],k=pp[1];if(L.place==='chestL'||L.place==='chestR'){if(cfg.chestPocket==='zipH')k=.69;if(cfg.chestPocket==='zipV')u=L.place==='chestL'?.16:.84}
-    const lc=logoCanvas(L,o.mini?160:300);const w=L.size*5.4,h=w*lc.height/lc.width;const x=F?cx+sfront(u)*4*hw:X(u),y=L.place==='backNeck'?Y(.86):Y(k*vA);
+    {const G=(cfg.meas.chest||56)+16,Hc=cfg.meas.height*.36;u+=(LOGO_USIGN[L.place]||1)*(L.dx||0)/G;k+=(L.dy||0)/Hc}const lc=logoCanvas(L,o.mini?160:300);const w=L.size*5.4,h=w*lc.height/lc.width;const x=F?cx+sfront(u)*4*hw:X(u),y=L.place==='backNeck'?Y(.86)-(L.dy||0)*3:Y(k*vA);
     bodyG+=`<image href="${lc.toDataURL()}" x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}"/>`}
   out+=`<g clip-path="url(#${id}b)">${bodyG}</g><path d="${body}" fill="none" stroke="${ink}" stroke-width="${stroke}" stroke-linejoin="round"/>`;
   // 下摆明线
@@ -2007,6 +2013,17 @@ function costModel(c){const T=TYPES[c.type],sf=Math.pow(c.meas.height/106,1.3),m
   const sum=k=>G[k].reduce((a,r)=>r[2]?[a[0]+r[2][0],a[1]+r[2][1]]:a,[0,0]);
   return {G,mat:sum('mat'),work:sum('work'),dev:sum('dev')}}
 
+// —— 标志位置：换算成工厂能量的距离 ——
+function logoGeo(c,L){const sz=sizeModel(c),G=c.meas.chest+sz.ease,B=sz.back,dx=L.dx||0,dy=L.dy||0,r=v=>Math.round(v*2)/2;
+  const cy=c.chestPocket==='zipH'?.69:.79,cu=c.chestPocket==='zipV'?.16:.135;
+  switch(L.place){case 'chestL':case 'chestR':return {x:r(cu*G+dx),y:r((1-cy)*B-dy),t:`图案中心距前中 ${r(cu*G+dx)} cm，肩颈点向下 ${r((1-cy)*B-dy)} cm`};
+    case 'back':return {t:`图案中心距后中 ${r(Math.abs(dx))} cm${dx?'（偏'+(dx>0?'右':'左')+'）':''}，后领中点向下 ${r(.3*B-dy)} cm`};
+    case 'backLow':return {t:`图案中心距后中 ${r(Math.abs(dx))} cm${dx?'（偏'+(dx>0?'右':'左')+'）':''}，后领中点向下 ${r(.68*B-dy)} cm`};
+    case 'backNeck':return {t:`后领中点向下 ${r(2-dy)} cm${dx?'，偏'+(dx>0?'右 ':'左 ')+r(Math.abs(dx))+' cm':''}`};
+    case 'hemR':return {t:`图案中心距前中 ${r(.1*G+dx)} cm，下摆向上 ${r(.14*B+dy)} cm`};
+    case 'sleeveL':case 'sleeveR':{const sl=c.meas.sleeve+4;return {t:`袖中线${dx?'往'+(dx>0?'前 ':'后 ')+r(Math.abs(dx))+' cm':''}，肩点向下 ${r(.3*sl-dy)} cm`}}}
+  return {t:PLACES[L.place]||''}}
+const logoPosText=(c,L)=>logoGeo(c,L).t;
 // —— 生产前检查：hard = 硬冲突（必须改）；warn = 需打样验证才能确认；info = 提示 ——
 const HARD_KEYS=['twoWayZip','magZip','zipFlap','bigPull','chinGuard','zipPos','chestPocket','growType','cuff','thumbLoops','brimSoft','lining','fill','stowHood'];
 function checksOf(c){const C=[];const add=(id,lv,t,fix,fl)=>C.push({id,lv,t,fix,fl});const used=slotsUsed(c);
@@ -2015,6 +2032,9 @@ function checksOf(c){const C=[];const add=(id,lv,t,fix,fl)=>C.push({id,lv,t,fix,
   if(mats.size>1&&shellType(c)&&c.taping!=='none')add('mix-'+[...mats].sort().join('+'),'warn','不同面料拼接并压胶：伸缩、厚薄和胶条黏结可能不一致。需先做拼接压胶小样验证；或第一版改为同系列面料只换颜色。',{mats:{main:'base',acc1:'base',acc2:'base'}},'改为同系列面料');
   if(c.type==='hardshell'&&['10k','20k'].includes(c.wpRating)&&c.taping!=='full')add('tape-'+c.taping,'warn','面料防水指数较高，但侧缝、拼缝、口袋没有压胶，整衣不承诺防雨（制作单已按此写明）。要整衣防雨请改为全压胶；只按小雨短时使用可标记“已确认”。',{taping:'full'},'改为全压胶');
   if(c.logos.some(l=>l.method==='embroidery')&&shellType(c))add('emb','warn','外壳刺绣会扎穿防水层，制作单已加“反面贴封胶片”。需做刺绣封孔小样验证，或改热转印。',{logos:c.logos.map(l=>l.method==='embroidery'?{...l,method:'print'}:l)},'改为热转印');
+  c.logos.forEach((L,i)=>{if(L.place!=='chestL'&&L.place!=='chestR')return;const g=logoGeo(c,L),inner=g.x-L.size/2;const flap=c.zipFlap&&c.zipLen!=='none'&&((c.flapSide==='L')===(L.place==='chestL'));const need=flap?5:2.5;
+    if(inner<need)add('lpos-'+i+'-'+L.dx,'hard',`${PLACES[L.place]}标志离门襟太近：内边距前中只有 ${Math.max(0,Math.round(inner*2)/2)} cm${flap?'，会被外门襟（3.5 cm）盖住':''}。建议至少 ${need} cm。`,{logos:c.logos.map((l,j)=>j===i?{...l,dx:Math.round(((l.dx||0)+need-inner)*2)/2}:l)},'往侧缝移');
+    if(c.chestPocket!=='none'&&L.place==='chestL'&&Math.abs(L.dy||0)>1.5)add('lpos-pk-'+i,'warn','左胸已有胸袋，标志上下移动后要确认不压到口袋拉链 / 袋口。')});
   const texts=c.logos.filter(l=>l.kind!=='image'&&l.text).map(l=>'“'+l.text+'”');if(texts.length)add('txt-'+texts.join(''),'warn','请确认标志文字拼写：'+texts.join('、')+'。工厂按批准稿制作，不会自行修改。');
   if(c.twoWayZip&&c.zipFlap&&c.zipLen==='full')add('twoway','warn','双头拉链配外门襟：从下方拉开时要先解开下方按扣，建议下方两颗改暗扣，并用照护者操作样验证。');
   if(c.collar==='hood'&&c.detachHood)add('detach','warn','可拆卸帽：需做帽领连接小样，检查拉链端头、遮挡片和拆帽后领口是否刮颈。');
@@ -2075,8 +2095,8 @@ function techModel(c,imgs){const ST=packStatus(c);const T=TYPES[c.type],C=c.colo
   partRows.push(['—','袖型',OPTS.sleeveCut.find(x=>x[0]===c.sleeveCut)[1]+(c.template==='raglan'&&c.sleeveCut!=='raglan'?'（插肩撞色为分割缝，非插肩结构）':'')]);
   sec('5　部件工艺',[{type:'table',cols:[.09,.14,.77],head:['编号','部位','做法'],rows:partRows},{type:'table',cols:[.16,.18,.22,.44],head:['口袋','数量','样式','规格'],rows:pocketList(c)}]);
   if(seal)sec('6　防水与接缝密封',[{type:'para',text:'层构：'+seal.layer},{type:'para',text:'防雨承诺范围：'+seal.scope},{type:'table',cols:[.3,.7],head:['部位','处理'],rows:seal.rows},{type:'table',cols:[.2,.32,.22,.26],head:['指标','目标','测试方法','条件'],rows:seal.targets},{type:'para',text:'面料指标不等于整衣防雨。正式生产前，用实际采购的面料、胶条和拉链做试样，检查洗前和约定洗涤后的表现。'}]);
-  const lg=c.logos.map(L=>[{img:logoCanvas(L,300).toDataURL()},PLACES[L.place],L.size+' cm 宽',METHODS[L.method][0]+(L.method==='embroidery'&&shellType(c)?'（反面贴封胶片）':''),L.kind==='image'?'客户图片（按批准稿）':(ICONS[L.icon]?.name||'')+(L.text?' + “'+L.text+'”（拼写待确认）':''),sw(L.method==='reflective'?REFL_HEX:L.fg)+(L.shape!=='none'?sw(L.bg):'')]);
-  sec('7　标志规格',lg.length?[{type:'table',cols:[.15,.11,.11,.17,.22,.24],head:['图样','位置','尺寸','工艺','内容','颜色'],rows:lg},{type:'para',text:'标志先做工艺小样，确认文字、针迹清晰度、背面触感和封孔效果后再上整衣。'}]:[{type:'para',text:'无'}],160);
+  const lg=c.logos.map(L=>[{img:logoCanvas(L,300).toDataURL()},PLACES[L.place]+'；'+logoPosText(c,L),L.size+' cm 宽',METHODS[L.method][0]+(L.method==='embroidery'&&shellType(c)?'（反面贴封胶片）':''),L.kind==='image'?'客户图片（按批准稿）':(ICONS[L.icon]?.name||'')+(L.text?' + “'+L.text+'”（拼写待确认）':''),sw(L.method==='reflective'?REFL_HEX:L.fg)+(L.shape!=='none'?sw(L.bg):'')]);
+  sec('7　标志规格',lg.length?[{type:'table',cols:[.13,.25,.09,.14,.17,.22],head:['图样','位置','尺寸','工艺','内容','颜色'],rows:lg},{type:'para',text:'标志先做工艺小样，确认文字、针迹清晰度、背面触感和封孔效果后再上整衣。'}]:[{type:'para',text:'无'}],160);
   sec('8　尺寸',[{type:'kv',title:'当前量体数据',rows:sz.body},{type:'kv',title:'放松量构成（cm，加在胸围上）',rows:sz.easeRows.map(r=>[r[0],String(r[1])])},
     {type:'table',cols:[.07,.22,.12,.09,.5],head:['代号','部位','尺寸 cm','公差','量法'],rows:sz.rows.map(r=>[r[0],r[1],String(r[2]),r[3],r[4]])},{type:'kv',title:'成长设计',rows:sz.growRows},
     {type:'para',text:'以上为打样起点，不直接作为验收定值；用样衣确认最终尺寸。打样重点检查抬手、抱举、坐下、蹲起和爬行时是否受限，戴帽检查转头、低头和视野。'}],300);
@@ -2238,7 +2258,7 @@ if(V){V.onLongPress=openBubble;V.onPress=()=>{if(ui.bubble&&performance.now()-bu
 // ---------- 状态变更 ----------
 function snap(){hist.push(JSON.stringify(strip(cfg)));if(hist.length>60)hist.shift();fut=[]}
 function setPath(k,v){
-  if(k.startsWith('logo.')){const L=cfg.logos[ui.logo];if(!L)return;L[k.slice(5)]=v;return}
+  if(k.startsWith('logo.')){const L=cfg.logos[ui.logo];if(!L)return;L[k.slice(5)]=v;if(k==='logo.place'){L.dx=0;L.dy=0}return}
   const ks=k.split('.');let o=cfg;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks[ks.length-1]]=v;
   if(k==='template')cfg.hoodColor=TEMPLATES[v].hood;
   if(k==='age'){const A=AGES[v];cfg.meas={height:A.h,weight:A.w,chest:A.c,sleeve:A.s,belly:A.b,head:A.hd,auto:true}}
@@ -2407,6 +2427,7 @@ function tabLogo0(){const L=cfg.logos[ui.logo];
    ${row('图案色',`<div class="mini">${PALETTE.map(([c,n,h])=>`<button class="swc s" style="--c:${h}" data-set="logo.fg" data-v="${h}" aria-label="${n}" aria-pressed="${L.fg===h}"></button>`).join('')}</div>`)}
    ${L.shape!=='none'?row('底色',`<div class="mini">${PALETTE.map(([c,n,h])=>`<button class="swc s" style="--c:${h}" data-set="logo.bg" data-v="${h}" aria-label="${n}" aria-pressed="${L.bg===h}"></button>`).join('')}</div>`):''}
    ${row('位置',seg('logo.place',Object.entries(PLACES).filter(([k])=>cfg.type!=='vest'||!k.startsWith('sleeve')).map(([k,n])=>[k,n]),L.place))}
+   ${LOGO_MOVE[L.place]?(()=>{const M=LOGO_MOVE[L.place],dx=L.dx||0,dy=L.dy||0;return `<div class="lmove">${row(`左右 <b class="mono">${logoMoveText(L.place,'x',dx)}</b>`,`<div class="mrange"><small>${M.xl[0]}</small><input type="range" min="${M.x[0]}" max="${M.x[1]}" step=".5" value="${dx}" data-range="logo.dx" aria-label="标志左右位置"><small>${M.xl[1]}</small></div>`)}${row(`上下 <b class="mono">${logoMoveText(L.place,'y',dy)}</b>`,`<div class="mrange"><small>下</small><input type="range" min="${M.y[0]}" max="${M.y[1]}" step=".5" value="${dy}" data-range="logo.dy" aria-label="标志上下位置"><small>上</small></div>`)}${dx||dy?`<button class="btn ghost sm" data-act="logoreset">位置复原</button>`:''}<p class="note">${logoPosText(cfg,L)}（会写进制作单）</p>${checksOf(cfg).filter(x=>x.id.startsWith('lpos-'+ui.logo+'-')).map(x=>`<p class="note warnt">${esc(x.t)}</p>`).join('')}</div>`})():''}
    ${row(`尺寸 <b class="mono">${L.size} cm</b>`,`<input type="range" min="2" max="${maxS}" step=".5" value="${Math.min(L.size,maxS)}" data-range="logo.size" aria-label="标志宽度">`,'指标志宽度')}
    ${row('工艺',seg('logo.method',Object.entries(METHODS).map(([k,m])=>[k,m[0]]),L.method))}
   </section>`;
@@ -2475,7 +2496,7 @@ document.addEventListener('click',e=>{if(ui.bubble&&!e.target.closest('#bubble')
   if(D.mix){snap();const o=JSON.parse(D.mix);cfg.template=o.template;cfg.hoodColor=TEMPLATES[o.template].hood;cfg.mats=o.mats;afterChange();toast('已换成软硬拼接');return}
   if(D.ideaex){ui.idea=D.ideaex;const t=$('#ideatxt');if(t)t.value=D.ideaex;return}
   if(D.verify!==undefined){snap();cfg.verified={...(cfg.verified||{})};if(cfg.verified[D.verify])delete cfg.verified[D.verify];else cfg.verified[D.verify]=true;afterChange();return}
-  if(D.fix!==undefined){const x=(ui.checks||checksOf(cfg))[+D.fix];if(x&&x.fix){snap();const {logos,...r}=x.fix;if(logos)cfg.logos.forEach(l=>{if(l.method==='embroidery')l.method='print'});Object.assign(cfg,clone(r));afterChange();toast('已修改：'+(x.fl||''))}return}
+  if(D.fix!==undefined){const x=(ui.checks||checksOf(cfg))[+D.fix];if(x&&x.fix){snap();const {logos,...r}=x.fix;if(logos)cfg.logos.forEach((l,i)=>{const f=logos[i];if(f)for(const k of ['method','dx','dy','place','size'])if(f[k]!==undefined)l[k]=f[k]});Object.assign(cfg,clone(r));afterChange();toast('已修改：'+(x.fl||''))}return}
   if(D.advice){const x=adviceList(cfg).find(a=>a.id===D.advice);if(x){snap();Object.assign(cfg,clone(x.apply));afterChange();toast('已采用：'+x.title)}return}
   if(D.color){change('colors.'+ui.slot,D.color);return}
   if(D.lcolor){change('colors.lining',D.lcolor);return}
@@ -2498,6 +2519,7 @@ document.addEventListener('click',e=>{if(ui.bubble&&!e.target.closest('#bubble')
     advall:()=>{const L=adviceList(cfg).filter(x=>!x.ok);snap();L.forEach(x=>Object.assign(cfg,clone(x.apply)));afterChange();toast(`已采用 ${L.length} 项建议`)},
     reest:()=>{snap();cfg.meas.auto=true;Object.assign(cfg.meas,estimateMeas(cfg.meas,cfg.age));afterChange()},
     idea:()=>{const t=($('#ideatxt')?.value||'').trim();ui.idea=t;if(!t){toast('先写一句你的想法');return}const r=parseIdea(t,strip(cfg));ui.ideaDone=r.done;if(r.done.length){snap();if(r.c.hoodDeco!=='none'&&r.c.hoodDeco!==cfg.hoodDeco)ui.hoodUp=true;const imgs=cfg.logos.map(l=>l._im);cfg=normalize(r.c);cfg.logos.forEach((l,i)=>{if(imgs[i])l._im=imgs[i]});afterChange();toast(`按你的想法改了 ${r.done.length} 处`)}else renderPanel()},
+    logoreset:()=>{const L=cfg.logos[ui.logo];if(!L)return;snap();L.dx=0;L.dy=0;afterChange()},
     closebubble:closeBubble,bubblemore:()=>{const t=ui.bubbleMenu?.tab;closeBubble();if(t){ui.tab=t;LS.set('tab',t);renderPanel();$('.panel').scrollTop=0}},
     feedback:openFeedback,fbcopy:copyFeedback,
     tpdl:()=>dlTechPack(),tpexport:()=>exportTech(ui.fmt||'pdf'),tppng:()=>dlRenders(),opendoc:()=>openDoc(D.id),deldoc:()=>delDoc(D.id),
@@ -2508,7 +2530,7 @@ document.addEventListener('input',e=>{const t=e.target,D=t.dataset;
   if(t.id==='dname'){cfg.name=t.value||'我的设计';LS.set('draft',strip(cfg));return}
   if(t.id==='cpick'){setPath('colors.'+ui.slot,t.value);afterChange(false,80);return}
   if(D.in){setPath(D.in,t.value);afterChange(false,120);if(D.in.startsWith('logo.'))drawLogoPreview();return}
-  if(D.range){setPath(D.range,+t.value);const b=t.closest('.row').querySelector('.mono');if(b)b.textContent=(D.range==='print.scale'?Math.round(t.value*6):t.value)+' cm';afterChange(false,60);return}
+  if(D.range){setPath(D.range,+t.value);const b=t.closest('.row').querySelector('.mono');if(b)b.textContent=D.range==='logo.dx'||D.range==='logo.dy'?logoMoveText(cfg.logos[ui.logo].place,D.range.slice(-1),+t.value):(D.range==='print.scale'?Math.round(t.value*6):t.value)+' cm';afterChange(false,60);return}
 });
 document.addEventListener('change',e=>{const t=e.target,D=t.dataset;
   if(t.id==='cpick'||D.in||D.range){snap();renderPanel();return}
