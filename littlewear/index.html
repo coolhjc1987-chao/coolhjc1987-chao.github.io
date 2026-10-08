@@ -315,6 +315,10 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .hoodtech{margin:6px 0 10px}.hoodtech summary{cursor:pointer;font-size:13px;font-weight:600;padding:6px 0;color:var(--ink)}
 .mrange{display:flex;align-items:center;gap:8px;width:100%}.mrange input{flex:1}.mrange small{font-size:11px;color:var(--muted);white-space:nowrap}
 .lmove{border-left:3px solid var(--soft);padding-left:8px;margin:4px 0}.note.warnt{color:#b5541f}
+h3.sub{font-size:13.5px;margin:14px 0 4px}h3.sub small{font-weight:400;color:var(--muted);font-size:11.5px;margin-left:6px}
+details.grade{margin-top:10px}details.grade summary{cursor:pointer;font-size:13px;font-weight:600;padding:6px 0}
+.gwrap{overflow-x:auto;margin:0 -2px}.spec.grade{min-width:520px;font-size:12px}.spec.grade th,.spec.grade td{padding:5px 4px;white-space:nowrap}
+.spec .cur{background:color-mix(in srgb,var(--accent) 14%,transparent);font-weight:700}
 
 </style>
 <div id="app"></div>
@@ -660,6 +664,8 @@ const AGES=[ // 年龄 → 参考身高/体重/胸围/臂长（cm、kg），按�
 ];
 // BMI-年龄参考（WHO 儿童生长标准近似值，取男女平均）：[-2SD, 中位数, +2SD]
 const BMI_REF=[null,[14.6,16.9,19.6],[13.7,15.9,18.6],[13.4,15.6,18.2],[13.2,15.4,18.1],[13.0,15.3,18.2],[13.0,15.3,18.5]];
+const HOOD_EASE={snug:3,round:5,big:8,pixie:5}; // 帽子松量（cm，加在头围上）
+const brimLen=c=>c.age<=2?3:4; // 帽檐伸出（cm）：1–2 岁短一点
 const SIZE_STEPS=[80,90,100,110,120,130,140]; // GB/T 1335.3：80–130 cm 身高 10 cm 一档
 function bodyInfo(c){const m=c.meas,a=c.age,h=m.height/100,bmi=m.weight/(h*h);const [lo,md,hi]=BMI_REF[a];
   const z=bmi>=md?2*(bmi-md)/(hi-md):-2*(md-bmi)/(md-lo);
@@ -1024,14 +1030,14 @@ function buildGarment(cfg,d,st){
   out.collarM={u:2*Math.PI*nRx,v:collarH};
   // 帽子
   if(cfg.collar==='hood'){
-    const tau=.5,b1=2.06,vh=.78; const hs={round:[1.36,1.2,1.34],big:[1.52,1.33,1.5],snug:[1.24,1.12,1.22],pixie:[1.36,1.2,1.34]}[cfg.hoodShape||'round'];
-    const A=d.headR[0]*hs[0],B=d.headR[1]*hs[1],C=d.headR[2]*hs[2];
+    const tau=.5,b1=2.06,vh=.78; // 帽子按尺寸表松量包住头：侧面 / 头顶 / 前后各留几厘米，不再按比例放大
+    const he=HOOD_EASE[cfg.hoodShape||'round']/100;const A=d.headR[0]+.004+he*.16,B=d.headR[1]+.004+he*.2,C=d.headR[2]+.005+he*.22;
     const a0v=v=>lerp(1.42,.8,smooth(v/.5)); // 帽口顶端张开成圆弧，不再是尖角
-    const hc=V3.add(d.headC,[0,hh*.035,-hh*.055]);
+    const hc=V3.add(d.headC,[0,hh*.03,-hh*.025]);
     const sphereP=(al,be)=>{let x=Math.sin(be)*Math.sin(al),y=Math.cos(be),z=Math.sin(be)*Math.cos(al);
-      const y2=y*Math.cos(tau)-z*Math.sin(tau),z2=y*Math.sin(tau)+z*Math.cos(tau);let zz=z2*C;if(zz<0)zz*=1.12;return [hc[0]+x*A,hc[1]+y2*B,hc[2]+zz]};
+      const y2=y*Math.cos(tau)-z*Math.sin(tau),z2=y*Math.sin(tau)+z*Math.cos(tau);let zz=z2*C;return [hc[0]+x*A,hc[1]+y2*B,hc[2]+zz]};
     const tipDir=V3.norm([0,.55,-.85]);
-    const pix=p=>{if(cfg.hoodShape!=='pixie')return p;const r=V3.sub(p,hc);const n=V3.norm([r[0]/A,r[1]/B,r[2]/C]);const k=Math.max(0,(V3.dot(n,tipDir)-.5)/.5);return V3.add(p,V3.scale(tipDir,hh*.42*k*k*k))};
+    const pix=p=>{if(cfg.hoodShape!=='pixie')return p;const r=V3.sub(p,hc);const n=V3.norm([r[0]/A,r[1]/B,r[2]/C]);const k=Math.max(0,(V3.dot(n,tipDir)-.5)/.5);return V3.add(p,V3.scale(tipDir,hh*.24*k*k*k))};
     function hoodRaw(a,v){const a0=a0v(Math.min(v,vh)),al=a0+a*(2*Math.PI-2*a0);
       if(v<=vh){const be=v/vh*b1;return pix(sphereP(al,be))}
       const t=(v-vh)/(1-vh);const a0b=a0v(vh);const p1=pix(sphereP(a0b+a*(2*Math.PI-2*a0b),b1));const p2=collarP(a,1,0);const cen=[0,p1[1],0];
@@ -1043,9 +1049,9 @@ function buildGarment(cfg,d,st){
     const backTab=[];for(let i=0;i<=40;i++){const v=i/40;const pb=torsoP(.5,v,0),ps=torsoP(.25,v,0);backTab.push([pb[1],pb[2],ps[0]])}
     const backAt=y=>{let best=backTab[0];for(const r of backTab)if(Math.abs(r[0]-y)<Math.abs(best[0]-y))best=r;return best};
     const fold=p=>{const r=V3.sub(p,piv);const th=2.55,cs=Math.cos(th),sn=Math.sin(th);
-      let x=r[0]*1.12,y=r[1]*cs+r[2]*sn,z=-r[1]*sn+r[2]*cs;let q=V3.add(piv,[x,y,z]);
+      let x=r[0]*1.02,y=r[1]*cs+r[2]*sn,z=-r[1]*sn+r[2]*cs;let q=V3.add(piv,[x,y,z]);
       const [,zb,rx]=backAt(q[1]);const k=Math.sqrt(Math.max(0,1-Math.pow(q[0]/(rx*1.02),2)));const zs=zb*k;
-      const depth=zs-q[2];q[2]=zs-.007-Math.max(0,depth)*.34;return q};
+      const depth=zs-q[2];q[2]=zs-.006-Math.max(0,depth)*.22;return q};
     function hoodP(a,v){if(!down)return hoodRaw(a,v);
       if(v<=vh)return fold(hoodRaw(a,v));
       const t=(v-vh)/(1-vh);const p1=fold(hoodRaw(a,vh));const p2=collarP(a,1,0);return V3.lerp(p1,p2,smooth(t))}
@@ -1058,8 +1064,8 @@ function buildGarment(cfg,d,st){
     out.hoodRim=tube(rim,()=>.0035*(H/1.06),{nu:10});
     // 圆弧帽檐：沿帽口上沿向前伸出，中间最长、两端收为零
     if(cfg.hoodBrim&&st.hoodUp){const E=[];const n=24;for(let i=0;i<=n;i++)E.push(hoodP(0,.42*(1-i/n)));for(let i=1;i<=n;i++)E.push(hoodP(1,.42*i/n));
-      const O=E.map((p,i)=>{const t=i/(E.length-1),w=Math.pow(Math.sin(Math.PI*t),.75);const rr=V3.norm(V3.sub(p,hc));const dir=V3.norm([rr[0]*.3,-.32,1]);return V3.add(p,V3.scale(dir,hh*.3*w))});
-      const brim=surface(E.length-1,4,(u,v)=>{const i=Math.round(u*(E.length-1));const p=V3.lerp(E[i],O[i],v);return V3.add(p,[0,-hh*.03*v*v,0])});
+      const O=E.map((p,i)=>{const t=i/(E.length-1),w=Math.pow(Math.sin(Math.PI*t),.75);const rr=V3.norm(V3.sub(p,hc));const dir=V3.norm([rr[0]*.3,-.32,1]);return V3.add(p,V3.scale(dir,brimLen(cfg)/100*w))});
+      const brim=surface(E.length-1,4,(u,v)=>{const i=Math.round(u*(E.length-1));const p=V3.lerp(E[i],O[i],v);return V3.add(p,[0,-.004*v*v,0])});
       out.brim=brim;out.brimEdge=tube(O.map(p=>V3.add(p,[0,-hh*.03,0])),()=>.003*(H/1.06),{nu:8});}
   }
   // 袖子
@@ -1569,7 +1575,7 @@ function flatSVG(cfg,side='front',o={}){
 }
 
 // —— 尺寸测量示意：字母与 sizeModel 代号一致 ——
-function measureSVG(c){const sz=sizeModel(c),V={};sz.rows.forEach(r=>V[r[0]]=r[2]);const vest=c.type==='vest',raglan=c.sleeveCut==='raglan';
+function measureSVG(c){const sz=sizeModel(c),V={};sz.all.forEach(r=>V[r[0]]=r[2]);const vest=c.type==='vest',raglan=c.sleeveCut==='raglan';
   const id='m'+Math.random().toString(36).slice(2,7),ink='#2a3336',fil='#f1f2ed',acc='#ff6a2b',cx=200,neckY=122,shY=152,hemY=390;
   let o=`<defs><marker id="${id}a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 1 L9 5 L0 9 Z" fill="${acc}"/></marker></defs>`;
   const body=`M${cx-34} ${neckY} L${cx-104} ${shY} L${cx-96} 210 L${cx-98} ${hemY} L${cx+98} ${hemY} L${cx+96} 210 L${cx+104} ${shY} L${cx+34} ${neckY} Q${cx} ${neckY+16} ${cx-34} ${neckY} Z`;
@@ -1637,8 +1643,8 @@ function flapSVG(c){const sz=sizeModel(c),len=sz.front,ink='#2a3336',acc='#ff6a2
   return `<svg viewBox="0 0 600 ${top+H+40}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="外门襟结构图">${o}</svg>`}
 
 // ===== 帽子局部技术图：裁片展开 / 帽口正侧面 / 帽领连接剖面 / 拆卸前后 =====
-function hoodGeo(c){const sz=sizeModel(c),V={};sz.rows.forEach(r=>V[r[0]]=r[2]);const head=c.meas.head||AGES[c.age].hd;
-  return {H:V.H||Math.round(head*.58),I:V.I||Math.round(head*.37+2),J:V.J||Math.round(head*.68),K:V.K||Math.round(head*.95),w1:Math.round(head*.18),w2:Math.round(head*.12),brim:4}}
+function hoodGeo(c){const sz=sizeModel(c),V={};sz.all.forEach(r=>V[r[0]]=r[2]);const head=c.meas.head||AGES[c.age].hd;
+  return {H:V.H||Math.round(head*.58),I:V.I||Math.round(head*.37+2),J:V.J||Math.round(head*.68),K:V.K||Math.round(head*.95),w1:Math.round(head*.18),w2:Math.round(head*.12),brim:brimLen(c)}}
 // 侧面轮廓（朝右，领口拼缝 y=0，向上为负；单位 px，约 6.5px/cm 对应 H=27）
 const HOOD_SIDE='M-48 0 C-82 -40 -86 -150 -6 -174 C30 -184 56 -172 58 -158 C66 -100 52 -34 32 0 Z';
 const HOOD_FRONT_EDGE='M58 -158 C66 -100 52 -34 32 0';
@@ -1674,8 +1680,8 @@ function hoodSVG(c,kind){const g=hoodGeo(c),ink='#2a3336',acc='#ff6a2b',mut='#5f
     if(c.hoodBrim){const bx=520,by=120;o+=T(bx,18,`帽檐 ×2（面 + 里）`,{w:700,s:12});
       o+=`<path d="M${bx-62} ${by} Q${bx} ${by-46} ${bx+62} ${by} Q${bx} ${by-18} ${bx-62} ${by} Z" fill="${hc}" fill-opacity=".18" stroke="${ink}" stroke-width="1.6"/><path d="M${bx-54} ${by-4} Q${bx} ${by-38} ${bx+54} ${by-4}" fill="none" stroke="${ink}" stroke-width=".9" stroke-dasharray="3 2"/>`;
       o+=`<path d="M${bx-62} ${by} Q${bx} ${by-18} ${bx+62} ${by}" fill="none" stroke="${acc}" stroke-width="3" opacity=".7"/>`;
-      o+=ar(`M${bx} ${by-9} V${by-32}`)+T(bx+8,by-16,'4 cm',{s:10,m:1,c:acc,a:'start'});
-      o+=T(bx,by+20,'内弧与帽口前沿缝合（橙色）',{s:10,c:mut})+T(bx,by+36,c.brimSoft?'中间夹软质 PE 衬 1 mm':'中间夹硬衬',{s:10,c:mut})+T(bx,by+52,'伸出 4 cm：帽口前沿中点量至帽檐外沿',{s:10,c:mut});}
+      o+=ar(`M${bx} ${by-9} V${by-32}`)+T(bx+8,by-16,g.brim+' cm',{s:10,m:1,c:acc,a:'start'});
+      o+=T(bx,by+20,'内弧与帽口前沿缝合（橙色）',{s:10,c:mut})+T(bx,by+36,c.brimSoft?'中间夹软质 PE 衬 1 mm':'中间夹硬衬',{s:10,c:mut})+T(bx,by+52,'伸出 '+g.brim+' cm：帽口前沿中点量至帽檐外沿',{s:10,c:mut});}
     o+=`<g transform="translate(440 236)">${[['#3a8fb7','S1 侧片 + 中片拼缝（左右各 1 条）'],[acc,'帽口边（包边）'],[ink,'∨ 对位刀口']].map(([cl,t],i)=>`<rect x="0" y="${i*18-9}" width="14" height="4" fill="${cl}"/>${T(20,i*18-3,t,{s:10,a:'start'})}`).join('')}</g>`;
     o+=T(320,300,`三片帽：帽侧片 ×2 + 帽中片 ×1，里布按同样裁片${c.lining==='none'?'（三层面料无独立里布，帽口内侧包边）':''}；帽中片长 J 与侧片 S1 边长一致`,{s:10.5,c:mut});
     return `<svg viewBox="0 0 640 312" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="帽子裁片展开">${o}</svg>`}
@@ -1692,7 +1698,7 @@ function hoodSVG(c,kind){const g=hoodGeo(c),ink='#2a3336',acc='#ff6a2b',mut='#5f
     const sx=380,sy=232;o+=T(sx,18,'侧面（戴帽）',{w:700,s:12});
     o+=`<g transform="translate(${sx} ${sy})"><circle cx="16" cy="-98" r="66" fill="#efe4d8" stroke="${ink}" stroke-width="1"/><path d="M80 -104 l8 10 l-8 2" fill="none" stroke="${ink}" stroke-width="1"/><circle cx="68" cy="-110" r="2.6" fill="${ink}"/>`;
     o+=`<path d="${HOOD_SIDE}" fill="${hc}" stroke="${ink}" stroke-width="1.6"/><path d="M48 -166 C28 -172 -66 -164 -72 -100 C-72 -50 -56 -18 -40 0" fill="none" stroke="${ink}" stroke-width="1" stroke-dasharray="3 2"/>`;
-    if(c.hoodBrim)o+=`<path d="${brimPath}" fill="${hc}" stroke="#e9ece6" stroke-width="1.4"/>`+ar('M58 -170 H101')+T(80,-176,'4 cm',{s:10,m:1,c:acc});
+    if(c.hoodBrim)o+=`<path d="${brimPath}" fill="${hc}" stroke="#e9ece6" stroke-width="1.4"/>`+ar('M58 -170 H101')+T(80,-176,g.brim+' cm',{s:10,m:1,c:acc});
     o+=`<path d="M68 -110 H150" stroke="${mut}" stroke-width="1" stroke-dasharray="2 3"/><path d="M68 -110 L140 -150 M68 -110 L140 -70" stroke="${mut}" stroke-width=".8" stroke-dasharray="2 3"/>`+T(144,-150,'视线不遮挡',{s:10,c:mut,a:'start'});
     o+=ar('M58 -122 H68')+T(30,30,'外眼角应露在帽口前沿之前（目标 ≥ 2 cm）',{s:10,c:acc});
     o+=`<path d="${HOOD_FRONT_EDGE}" fill="none" stroke="${acc}" stroke-width="1.5" stroke-dasharray="2 2"/>`+tag(64,-52,'K 帽口 '+g.K);
@@ -1968,15 +1974,25 @@ function sizeModel(c){const d=dims(c),m=c.meas,gr=c.growth||0,H=m.height,S=H/106
     A('G','袖口围（自然）',cuffNat,'±0.5',c.cuff==='velcro'?'袖襻全松开，袖口平量 ×2':'罗纹 / 松紧自然状态平量 ×2');
     A('G2','袖口拉伸通过量','≥ '+palm,'—','袖口拉伸后需能通过手掌（手掌围约 '+palm+' cm），洗后回复良好');
   }else A('E','袖窿深',Math.round(d.armR*200+6),'±0.8','肩点垂直量至袖窿底');
-  if(c.collar==='hood'){A('H','帽高',Math.round(head*.58),'±1','领口拼缝垂直量至帽顶');A('I','帽宽（平量）',Math.round(head*.37+2),'±1','帽子侧面平铺，帽口前沿横量至帽后最远点（最宽处）');A('J','帽深（帽中线长）',Math.round(head*.68),'±1','帽口前沿中点沿帽中片量至后领口拼缝（贴着帽子量弧长）');A('K','帽口长',Math.round(head*.95),'±1','帽口边沿一周（不含领座）');A('P','帽中片宽（前 / 后）',Math.round(head*.18)+' / '+Math.round(head*.12),'±0.5','帽中片在帽口处 / 在后领口处的宽度');if(c.hoodBrim)A('Q','帽檐伸出',4,'±0.5','帽口前沿中点水平量至帽檐外沿')}
-  A('L','领高',Math.round(d.hh*(c.collar==='stand'?.4:.16)*100),'±0.5','领口拼缝至领上口');
-  A('M','领围',Math.round(2*Math.PI*(d.neckR+.016)*100+2),'±1','拉链合上，领口拼缝一周');
+  const HR=[];const HA=(code,name,val,tol,how)=>HR.push([code,name,val,tol,how]);const he=HOOD_EASE[c.hoodShape||'round'];
+  if(c.collar==='hood'){HA('H','帽高',Math.round(head*.52+he*.4),'±1','侧颈点（领口拼缝）垂直量至帽顶');HA('I','帽宽（平量）',Math.round(head*.34+he*.5),'±1','帽子侧面平铺，帽口前沿横量至帽后最远点');HA('J','帽深（帽中线长）',Math.round(head*.62+he*.6),'±1','帽口前沿中点沿帽中片量至后领口拼缝（量弧长）');HA('K','帽口长',Math.round(head*.86+he*.4),'±1','帽口边沿一周（不含领座）');HA('P','帽中片宽（前 / 后）',Math.round(head*.16+he*.2)+' / '+Math.round(head*.11+he*.1),'±0.5','帽中片在帽口处 / 在后领口处的宽度');if(c.hoodBrim)HA('Q','帽檐伸出',brimLen(c),'±0.5','帽口前沿中点水平量至帽檐外沿')}
+  A('L','领高',c.collar==='stand'?(H<100?5:6):3,'±0.5','领口拼缝至领上口');
+  A('M','领围',Math.round(head*.56+10),'±1','拉链合上，领口拼缝一周');
   const body=[['身高',H+' cm'],['体重',m.weight+' kg'],['胸围',m.chest+' cm（'+(c.measureMode==='bare'?'裸量':'隔薄衣量')+'）'],['腹围',belly+' cm'],['头围',head+' cm'],['臂长（肩点至腕骨）',m.sleeve+' cm']];
   const easeRows=[['计划内搭（'+OPTS.layering.find(x=>x[0]===(c.layering||'thin'))[1]+'）',layer],['活动量',act],['成长余量（'+OPTS.growth.find(x=>x[0]===gr)[1]+'）',grow],...(typ?[[TYPES[c.type].name+'厚度',typ]]:[]),...(fitA?[['版型（'+OPTS.fit.find(x=>x[0]===c.fit)[1]+'）',fitA]]:[]),['合计放松量',ease]];
   const growRows=[['成长余量',OPTS.growth.find(x=>x[0]===gr)[1]+'（设计意图，非穿着期限保证）'],['可调节部位',[c.growCuff?(c.growType==='fold'?'外翻袖口 3 cm':'袖口内藏放长 3 cm'):null,c.hemAdjust?'下摆调节扣':null,c.collar==='hood'&&c.hoodAdjust?'帽后魔术贴调节':null].filter(Boolean).join('；')||'无'],['说明','袖长可调不代表胸腹围、背长、头围同步解决']];
-  return {rows:R,body,easeRows,growRows,ease,code:bodyInfo(c).code,back,front};
+  const hoodInfo=c.collar==='hood'?[['头围（量体）',head+' cm'],['帽型',OPTS.hoodShape.find(x=>x[0]===(c.hoodShape||'round'))[1]],['帽子松量（加在头围上）',he+' cm'],['戴帽要求','帽顶与头顶留 1.5–2.5 cm，帽口不压额头、不挡侧面视野']]:[];
+  return {rows:R,hoodRows:HR,hoodInfo,all:[...R,...HR],body,easeRows,growRows,ease,code:bodyInfo(c).code,back,front};
 }
 
+// —— 全号型参考尺寸表（同款按身高分档推算，本单号型高亮） ——
+function gradeModel(c){const cur=bodyInfo(c).code;const steps=SIZE_STEPS.filter(h=>h<=130);const cols=[],data={};
+  for(const h of steps){let a=1;for(let k=1;k<=6;k++)if(AGES[k].h<=h+4)a=k;const A=AGES[a];const k2=h/A.h;
+    const cc=clone(strip0(c));cc.age=a;cc.growth=0;cc.meas={height:h,weight:+(A.w*k2*k2).toFixed(1),chest:Math.round(A.c*(.6+.4*k2)),sleeve:Math.round(A.s*k2),belly:Math.round(A.b*(.6+.4*k2)),head:Math.round(A.hd*(.85+.15*k2)),auto:true};
+    const z=sizeModel(cc);const code=h+'/'+Math.round(cc.meas.chest/4)*4;cols.push(code);z.all.forEach(r=>{(data[r[0]]=data[r[0]]||{name:r[1],v:{}}).v[code]=r[2]})}
+  const cc0=cols.find(x=>x.split('/')[0]===cur.split('/')[0])||cur;
+  return {cols,cur:cc0,rows:Object.entries(data).filter(([k])=>!['G2'].includes(k)).map(([k,o])=>[k,o.name,...cols.map(x=>o.v[x]??'—')])}}
+const strip0=c=>({...c,logos:(c.logos||[]).map(l=>{const {_im,...r}=l;return r}),print:(()=>{const {_im,...r}=c.print||{};return r})()});
 // —— 防水与接缝密封 ——
 function sealModel(c){if(!shellType(c)&&c.type!=='down')return null;const t=c.taping;const yes=t==='full',key=t!=='none';
   const S=[['肩缝 / 袖窿','缝份压胶',key],['帽缝 / 帽领缝','缝份压胶',key],['侧缝 / 袖底缝','缝份压胶',yes],['撞色拼缝','缝份压胶',yes||c.template==='solid'],['口袋开口 / 口袋拉链缝','袋布反面压胶 + 拒水拉链',yes],['前拉链缝','拉链边压胶'+(c.zipFlap?' + 外门襟遮挡':''),yes],['按扣位置','反面加衬片 + 封胶片',yes],['刺绣针孔',c.logos.some(l=>l.method==='embroidery')?'反面贴兼容封胶片（或改热转印）':'无刺绣','yes']];
@@ -2077,7 +2093,7 @@ function techModel(c,imgs){const ST=packStatus(c);const T=TYPES[c.type],C=c.colo
   if(c.zipLen!=='none')bom.push(['拉头',pullSpec(c),sw(C[c.pullColor==='zip'?'zip':c.pullColor]),'门襟']);
   if(c.zipFlap&&c.zipLen!=='none')bom.push(['外门襟四合扣','树脂四合扣 Ø10 mm × 5 套，面料反面加衬片加固','—','外门襟（扣位见门襟图）']);
   if(c.collar==='hood'&&c.detachHood)bom.push(['拆帽连接件','3 号隐形拉链（领座内）+ 四合扣 × 4 + 领后遮挡片','—','帽与领座连接']);
-  if(c.collar==='hood'&&c.hoodBrim)bom.push(['帽檐支撑',c.brimSoft?'软质可弯折 PE 衬 1 mm，伸出约 4 cm':'硬衬，伸出约 4 cm','—','帽檐夹层']);
+  if(c.collar==='hood'&&c.hoodBrim)bom.push(['帽檐支撑',c.brimSoft?'软质可弯折 PE 衬 1 mm，伸出 '+brimLen(c)+' cm':'硬衬，伸出 '+brimLen(c)+' cm','—','帽檐夹层']);
   if(!vest)bom.push(['袖口辅料',{elastic:'松紧带 2.5 cm',velcro:'魔术贴袖襻 2 × 5 cm（软面朝里）',rib:'1×1 罗纹，高 5 cm'}[c.cuff],sw(C.trim),'双袖']);
   const rf=[c.refl.band&&'袖口环绕反光带 1.5 cm',c.refl.back&&'后背反光条 2 × 16 cm',c.refl.piping&&'拼接线反光滚边 3 mm'].filter(Boolean);if(rf.length)bom.push(['反光材料',rf.join('；'),'银灰','见款式图']);
   if(c.nameLabel)bom.push(['姓名标',`柔软织唛 5 × 2.4 cm，内容：${c.nameLabel}，四边折光`,'白底',c.labelPos==='side'?'左侧缝内侧':'后领内侧（覆盖处理）']);
@@ -2085,7 +2101,7 @@ function techModel(c,imgs){const ST=packStatus(c);const T=TYPES[c.type],C=c.colo
   bom.push(['使用说明',isInfant(c)?'洗涤与安全说明，加注“婴幼儿用品”':'洗涤与安全说明','—','侧缝']);
   sec('4　物料清单',[{type:'table',cols:[.16,.38,.2,.26],head:['物料','规格','颜色','使用部位'],rows:bom}]);
   // 工艺
-  const parts=[[1,'帽 / 领',c.collar==='hood'?`${c.detachHood?'可拆卸':'固定'}三片帽（帽侧片 ×2 + 帽中片 ×1）${c.detachHood?'，领座内隐形拉链 + 4 颗四合扣连接，领后加遮挡片，拉链端头包边':''}${c.hoodBrim?`，${c.brimSoft?'软质':'硬质'}帽檐伸出约 4 cm`:''}${c.hoodAdjust?'，帽后魔术贴调节片 2.5×6 cm（调节范围约 3 cm，钩面朝外不接触皮肤）':''}，帽口包边，无抽绳（裁片、拼缝、连接见第 2a 节帽子结构图）；帽饰：${OPTS.hoodDeco.find(x=>x[0]===c.hoodDeco)[1]}`:'立领，内侧贴抓绒护颈'+(c.stowHood?'，领内拉链收纳帽':'')],
+  const parts=[[1,'帽 / 领',c.collar==='hood'?`${c.detachHood?'可拆卸':'固定'}三片帽（帽侧片 ×2 + 帽中片 ×1）${c.detachHood?'，领座内隐形拉链 + 4 颗四合扣连接，领后加遮挡片，拉链端头包边':''}${c.hoodBrim?`，${c.brimSoft?'软质':'硬质'}帽檐伸出 ${brimLen(c)} cm`:''}${c.hoodAdjust?'，帽后魔术贴调节片 2.5×6 cm（调节范围约 3 cm，钩面朝外不接触皮肤）':''}，帽口包边，无抽绳（裁片、拼缝、连接见第 2a 节帽子结构图）；帽饰：${OPTS.hoodDeco.find(x=>x[0]===c.hoodDeco)[1]}`:'立领，内侧贴抓绒护颈'+(c.stowHood?'，领内拉链收纳帽':'')],
     [2,'门襟',`${OPTS.zipLen.find(x=>x[0]===c.zipLen)[1]}${zs?'；'+zs:''}${c.zipFlap&&c.zipLen!=='none'?`；外门襟成品宽 3.5 cm，${c.flapSide==='L'?'穿着者左片压右片':'穿着者右片压左片'}，四合扣 5 颗（位置见门襟图）`:''}${c.chinGuard?'；拉链顶端防夹护片':''}`],
     [3,'胸袋',pocketList(c)[1][1]==='0'?'无（胸袋 0）':pocketList(c)[1][2]+'，'+pocketList(c)[1][3]],[4,'手袋',pocketList(c)[0][2]+'，'+pocketList(c)[0][3]],
     [5,'袖口',vest?'袖窿包边':OPTS.cuff.find(x=>x[0]===c.cuff)[1]+(c.innerCuffs?'；内层短罗纹挡风，外层壳布覆盖':'')+(c.growCuff?`；成长调节：${OPTS.growType.find(x=>x[0]===c.growType)[1]}，正常与展开长度见尺寸 F / F2`:'')],
@@ -2099,6 +2115,9 @@ function techModel(c,imgs){const ST=packStatus(c);const T=TYPES[c.type],C=c.colo
   sec('7　标志规格',lg.length?[{type:'table',cols:[.13,.25,.09,.14,.17,.22],head:['图样','位置','尺寸','工艺','内容','颜色'],rows:lg},{type:'para',text:'标志先做工艺小样，确认文字、针迹清晰度、背面触感和封孔效果后再上整衣。'}]:[{type:'para',text:'无'}],160);
   sec('8　尺寸',[{type:'kv',title:'当前量体数据',rows:sz.body},{type:'kv',title:'放松量构成（cm，加在胸围上）',rows:sz.easeRows.map(r=>[r[0],String(r[1])])},
     {type:'table',cols:[.07,.22,.12,.09,.5],head:['代号','部位','尺寸 cm','公差','量法'],rows:sz.rows.map(r=>[r[0],r[1],String(r[2]),r[3],r[4]])},{type:'kv',title:'成长设计',rows:sz.growRows},
+    ...(sz.hoodRows.length?[{type:'kv',title:'帽子尺寸依据',rows:sz.hoodInfo},{type:'table',cols:[.07,.22,.12,.09,.5],head:['代号','帽子部位','尺寸 cm','公差','量法'],rows:sz.hoodRows.map(r=>[r[0],r[1],String(r[2]),r[3],r[4]])}]:[]),
+    (()=>{const G=gradeModel(c);return {type:'table',cols:[.07,.21,...G.cols.map(()=>.72/G.cols.length)],head:['代号','部位（cm）',...G.cols.map(x=>x===G.cur?x+' ★':x)],rows:G.rows.map(r=>r.map(String))}})(),
+    {type:'para',text:'全号型参考表按同款放码推算，★ 为本单号型；单件定制以上方本单尺寸为准，其他号型只作参考。'},
     {type:'para',text:'以上为打样起点，不直接作为验收定值；用样衣确认最终尺寸。打样重点检查抬手、抱举、坐下、蹲起和爬行时是否受限，戴帽检查转头、低头和视野。'}],300);
   sec('9　保暖与功能（设计参考）',[{type:'table',cols:[.18,.82],head:null,rows:[['适穿温度',`约 ${W.lo}–${W.hi} °C（静止或轻度活动，内搭长袖）${W.notes.length?'；'+W.notes.join('；'):''}`],['防雨',W.rain],['防风',W.wind],['透气',W.breath]]},{type:'para',text:'面料克重、整衣重量和实际透湿未确定前，温度只作设计参考，不能当作穿着保证。'}]);
   const std=isInfant(c)?['36 个月及以下属婴幼儿产品：GB 31701-2015 A 类，使用说明加注“婴幼儿用品”。','产品执行标准建议核对 GB/T 33271-2016《机织婴幼儿服装》的适用性，防雨功能另行约定和验证。','GB/T 32614-2023《户外运动服装 冲锋衣》不适用于 36 个月及以下，不作为本款执行依据。']:['GB 31701-2015：直接接触皮肤不低于 B 类。',c.type==='hardshell'?'冲锋衣类可核对 GB/T 32614-2023《户外运动服装 冲锋衣》的适用性。':'执行标准按面料和品类与工厂确认。'];
@@ -2330,7 +2349,7 @@ function usedSlots(){const s=new Set(['main','zip','lining']);const t=templateRe
 function tabDetail(){const vest=cfg.type==='vest';
   return `<section class="sec"><h2>帽子与领口</h2>
    ${row('领型',seg('collar',OPTS.collar,cfg.collar))}
-   ${cfg.collar==='hood'?row('帽型',seg('hoodShape',OPTS.hoodShape,cfg.hoodShape))+row('帽檐',sw('hoodBrim',cfg.hoodBrim,'圆弧帽檐','挡雨遮阳，戴上帽子时可见'))+(cfg.hoodBrim?row('帽檐软硬',sw('brimSoft',cfg.brimSoft,'软质可弯折','伸出约 4 cm；1–2 岁建议软质，不顶脸')):'')+row('帽饰',seg('hoodDeco',OPTS.hoodDeco,cfg.hoodDeco),cfg.age<3&&cfg.hoodDeco!=='none'?'3 岁以下建议做软质、缝牢':''):''}
+   ${cfg.collar==='hood'?row('帽型',seg('hoodShape',OPTS.hoodShape,cfg.hoodShape))+row('帽檐',sw('hoodBrim',cfg.hoodBrim,'圆弧帽檐','挡雨遮阳，戴上帽子时可见'))+(cfg.hoodBrim?row('帽檐软硬',sw('brimSoft',cfg.brimSoft,'软质可弯折','伸出 '+brimLen(cfg)+' cm；1–2 岁建议软质，不顶脸')):'')+row('帽饰',seg('hoodDeco',OPTS.hoodDeco,cfg.hoodDeco),cfg.age<3&&cfg.hoodDeco!=='none'?'3 岁以下建议做软质、缝牢':''):''}
    ${cfg.collar==='hood'?row('帽子固定方式',seg('detachHood',[['false','固定帽'],['true','可拆卸帽']],String(!!cfg.detachHood)),cfg.detachHood?'领座内隐形拉链 + 4 颗四合扣，领后加遮挡片':'帽与领口缝死，结构最简单'):''}
    ${cfg.collar==='hood'?`<details class="hoodtech"><summary>帽子结构图（裁片 / 正侧面 / 连接）</summary><div class="pf meas">${hoodSVG(cfg,'pieces')}</div><div class="pf meas">${hoodSVG(cfg,'views')}</div><div class="pf meas">${hoodSVG(cfg,'joint')}</div>${cfg.detachHood?`<div class="pf meas">${hoodSVG(cfg,'detach')}</div>`:''}</details>`:''}
    <p class="safe">${ic('check')}帽子不设抽绳：7 岁及以下儿童服装头颈部不应有绳带（GB 31701）。</p></section>
@@ -2457,7 +2476,9 @@ function tabKid(){const m=cfg.meas,sp=sizeSpec(cfg),b=bodyInfo(cfg),adv=adviceLi
    <ul class="adv">${adv.map(x=>`<li class="${x.ok?'ok':''}"><div><span class="atag">${x.tag}</span><b>${x.title}</b><p>${x.why}</p></div>${x.ok?`<span class="done">${ic('check')}已采用</span>`:`<button class="btn ghost sm" data-advice="${x.id}">采用</button>`}</li>`).join('')}</ul></section>
   <section class="sec"><div class="sh"><h2>成衣尺寸</h2><span class="tag mono">号型 ${sp.code}</span></div>
    <table class="spec"><thead><tr><th>代号</th><th>部位</th><th>cm</th><th>公差</th></tr></thead><tbody>${sp.rows.map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}<small class="how">${r[4]}</small></td><td class="mono">${r[2]}</td><td class="mono">${r[3]}</td></tr>`).join('')}</tbody></table>
+   ${sp.hoodRows.length?`<h3 class="sub">帽子尺寸表 <small>头围 ${cfg.meas.head||AGES[cfg.age].hd} cm + ${OPTS.hoodShape.find(x=>x[0]===(cfg.hoodShape||'round'))[1]}松量 ${HOOD_EASE[cfg.hoodShape||'round']} cm</small></h3><table class="spec"><thead><tr><th>代号</th><th>部位</th><th>cm</th><th>公差</th></tr></thead><tbody>${sp.hoodRows.map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}<small class="how">${r[4]}</small></td><td class="mono">${r[2]}</td><td class="mono">${r[3]}</td></tr>`).join('')}</tbody></table><p class="note">帽子大小按头围和帽型算，三维图按这张表包住头部；改头围或帽型，表和三维图一起变。</p>`:''}
    <div class="pf meas">${measureSVG(cfg)}</div>
+   ${(()=>{const G=gradeModel(cfg);return `<details class="grade"><summary>全号型参考尺寸表（${G.cols[0].split('/')[0]}–${G.cols[G.cols.length-1].split('/')[0]} cm）</summary><div class="gwrap"><table class="spec grade"><thead><tr><th>代号</th><th>部位</th>${G.cols.map(x=>`<th class="mono${x===G.cur?' cur':''}">${x}</th>`).join('')}</tr></thead><tbody>${G.rows.map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}</td>${r.slice(2).map((v,i)=>`<td class="mono${G.cols[i]===G.cur?' cur':''}">${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div><p class="note">同款按身高分档推算，高亮列是本单号型。单件定制以上面的本单尺寸为准。</p></details>`})()}
    <p class="note">打样起点，不是验收定值。每个尺寸都写了量法，商家按同样方法量样衣。</p></section>`;
 }
 function tabMake(){const k=costModel(cfg),T=TYPES[cfg.type],ST=packStatus(cfg),ck=ST.ck,vf=cfg.verified||{};ui.checks=ck;const cr=r=>`¥${Math.round(r[0])}–${Math.round(r[1])}`;const nw=ck.filter(x=>x.lv==='warn').length;
