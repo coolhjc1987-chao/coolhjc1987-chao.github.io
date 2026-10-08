@@ -438,6 +438,45 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,label:focus-with
   .vtag>span:not(.temp){display:none}
   .vtag .temp{margin-top:0}
 }
+/* 面料页 */
+.tabs{grid-template-columns:repeat(8,minmax(50px,1fr))}
+.recs{display:grid;gap:10px;margin-top:12px}
+.rec{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px}
+.rec.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:color-mix(in srgb,var(--brand) 10%,var(--card))}
+.rec .rsw{display:grid;grid-template-columns:repeat(2,40px);grid-auto-rows:40px;gap:4px;align-self:center}
+.rec .rsw canvas{width:40px;height:40px;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.rec .rsw canvas:first-child{grid-column:1/3;width:84px;height:44px}
+.rec .rbody{min-width:0}
+.rec .btn{grid-column:1/-1;justify-self:end}
+.rt{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.rt b{font-size:15px}
+.rmix{margin:3px 0 0;font-size:12.5px;color:var(--ink);font-weight:500}
+.why{margin:4px 0 0;font-size:12.5px;color:var(--muted);line-height:1.55}
+.rbars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 12px;margin-top:8px}
+.rbars span{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
+.rbars em{font-style:normal;flex:none;width:2.4em}
+.pbar{flex:1;height:6px;border-radius:99px;background:var(--soft);overflow:hidden;display:block}
+.pbar>i{display:block;height:100%;border-radius:inherit;background:var(--ink)}
+.rec.on .pbar>i,.fdet .pbar>i{background:color-mix(in srgb,var(--ink) 85%,var(--brand))}
+.ffam{margin-top:12px}
+.ffam h3{font-size:12.5px;font-weight:700;color:var(--muted);margin:0 0 6px}
+.fabs{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.fab{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:16px;padding:6px 6px 8px;transition:border-color .12s,box-shadow .12s}
+.fab canvas{width:100%;aspect-ratio:1;height:auto;border-radius:11px;margin-bottom:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.fab b{font-size:12.5px;padding:0 3px;line-height:1.3}
+.fab small{font-size:11px;color:var(--muted);padding:0 3px;line-height:1.35}
+.fab:hover{border-color:color-mix(in srgb,var(--ink) 35%,var(--line))}
+.fab[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:color-mix(in srgb,var(--brand) 13%,var(--card))}
+.fab[aria-disabled="true"]{opacity:.4;filter:grayscale(1)}
+.fdet{display:grid;grid-template-columns:110px 1fr;gap:14px;margin-top:16px;padding:14px;border-radius:20px;background:var(--soft)}
+.fdet canvas{width:110px;height:110px;border-radius:16px;box-shadow:0 6px 16px rgba(30,43,58,.12)}
+.fdet .dl{margin-top:10px;font-size:12.5px}
+.fdet .btn{margin-top:10px}
+.fcmp summary{cursor:pointer;font-weight:700;font-size:14px;padding:4px 0}
+.fcmpt{min-width:520px;font-size:12px}.fcmpt td,.fcmpt th{padding:6px 5px;white-space:nowrap}
+.fcmpt .dots{color:var(--ink);letter-spacing:-1px;font-size:10px}.fcmpt .dots span{color:var(--line)}
+.fcmpt tr.inuse td{background:color-mix(in srgb,var(--brand) 14%,transparent)}
+@media (max-width:620px){.fdet{grid-template-columns:1fr}.fdet canvas{width:100%;height:auto;aspect-ratio:2/1}.rbars{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 </style>
 <div id="app"></div>
@@ -681,7 +720,51 @@ const TYPES = {
   vest:{name:'马甲',sub:'无袖背心',fabric:'防泼水尼龙 + 轻量填充',ease:.03,rough:.42,spec:.4,sheen:.08,detail:'nylon',base:118,meters:.8}
 };
 
-const MATS={shell:['硬壳','防水尼龙格子布',.5],soft:['软壳','弹力梭织复合',.72],fleece:['抓绒','摇粒绒',.96],knit:['弹力针织','罗纹 / 针织弹力布',.85],quilt:['菱格绗缝','夹棉绗缝',.45],cord:['灯芯绒','细条灯芯绒',.9],nylon:['光面尼龙','防泼水尼龙',.38]};
+// —— 面料库：评分 0–3（wp 防水 / br 透气 / wm 保暖 / st 弹性 / ab 耐磨 / sf 柔软）；price 元/米（区间估算）；tape = 可压胶、可算防水 ——
+const FAB_FAMS=[['shellF','防水壳'],['softF','软壳'],['fleeceF','抓绒'],['knitF','针织'],['warmF','保暖'],['natF','天然'],['funcF','功能']];
+const FAB={
+  shell:{n:'3L 硬壳',fam:'shellF',d:'最挡风雨',comp:'尼龙 40D 格子布 + 透湿膜 + 针织背衬（三层复合）',gsm:140,wp:3,br:2,wm:1,st:0,ab:2,sf:1,rough:.5,price:[45,70],care:'冷水机洗，不用柔顺剂；低温烘干可恢复防泼水',parts:'衣身、帽子',why:'雨雪天的主力面料，配合全压胶才能整衣防雨',tape:true},
+  shell25:{n:'2.5L 轻硬壳',fam:'shellF',d:'轻、能叠起来',comp:'尼龙 20D + PU 透湿膜 + 印点保护层（2.5 层）',gsm:95,wp:2,br:1,wm:0,st:0,ab:1,sf:1,rough:.42,price:[32,50],care:'冷水轻柔洗，不烘干',parts:'衣身、帽子',why:'春秋小雨、放书包里备用；比 3L 闷一点',tape:true},
+  shellpoly:{n:'涤纶静音硬壳',fam:'shellF',d:'哑光、不沙沙响',comp:'再生涤纶细斜纹 + 无氟透湿膜 + 背衬（三层复合）',gsm:150,wp:3,br:2,wm:1,st:0,ab:2,sf:2,rough:.64,price:[48,68],care:'冷水机洗，不用柔顺剂',parts:'衣身、帽子',why:'防水和 3L 相当，手感更软、走路声音小，上学天天穿更舒服',tape:true},
+  cordura:{n:'耐磨尼龙',fam:'shellF',d:'抗磨抗勾',comp:'高强尼龙 210D–330D，PU 涂层',gsm:200,wp:2,br:0,wm:1,st:0,ab:3,sf:0,rough:.58,price:[55,80],care:'冷水机洗',parts:'肩部、肘部、下摆、袖口',why:'背书包、爬滑梯磨得最快的地方用它；偏硬，不做大面积',tape:true},
+  soft:{n:'复合软壳',fam:'softF',d:'弹、挡风、暖',comp:'涤纶/氨纶 四面弹梭织 + 摇粒绒复合，防泼水',gsm:290,wp:1,br:2,wm:2,st:3,ab:2,sf:2,rough:.72,price:[35,55],care:'机洗，不用柔顺剂',parts:'衣身、袖子、侧片',why:'不怕跑跳，秋冬干冷天最好穿；不防大雨',tape:false},
+  softlite:{n:'轻弹面料',fam:'softF',d:'透气能伸展',comp:'涤纶/氨纶 四面弹梭织，防泼水，无复合',gsm:130,wp:1,br:3,wm:0,st:3,ab:1,sf:2,rough:.66,price:[30,48],care:'机洗',parts:'侧片、腋下、袖子',why:'放在出汗多、动作大的位置，抬手不卡',tape:false},
+  fleece:{n:'摇粒绒',fam:'fleeceF',d:'最暖最软',comp:'涤纶摇粒绒，双面起绒',gsm:280,wp:0,br:2,wm:3,st:1,ab:1,sf:3,rough:.96,price:[22,35],care:'反面机洗，不烘干',parts:'肩部、领口、口袋、内胆',why:'干冷天保暖首选；不挡风也不防水',tape:false},
+  gridfl:{n:'网格抓绒',fam:'fleeceF',d:'暖但不闷',comp:'涤纶网格抓绒，内侧方格起绒',gsm:190,wp:0,br:3,wm:2,st:2,ab:1,sf:2,rough:.88,price:[35,50],care:'机洗',parts:'侧片、袖子、中层',why:'运动量大的孩子穿，出汗散得快',tape:false},
+  sherpa:{n:'羊羔绒',fam:'fleeceF',d:'毛茸茸',comp:'涤纶仿羊羔毛，卷曲长绒',gsm:300,wp:0,br:1,wm:3,st:0,ab:0,sf:3,rough:.98,price:[30,45],care:'反面轻柔洗，不烘干',parts:'育克、领子、袋盖',why:'做装饰拼块或领子很可爱；会掉少量绒毛',tape:false},
+  knit:{n:'针织罗纹',fam:'knitF',d:'贴身有弹性',comp:'棉/氨纶 1×1 罗纹针织',gsm:260,wp:0,br:2,wm:1,st:3,ab:1,sf:3,rough:.85,price:[20,32],care:'机洗',parts:'袖口、侧片、领口',why:'贴着皮肤也舒服，伸缩方便',tape:false},
+  scuba:{n:'空气层',fam:'knitF',d:'挺括柔软',comp:'涤纶/棉 空气层（三明治）针织',gsm:300,wp:0,br:2,wm:2,st:2,ab:1,sf:3,rough:.8,price:[25,38],care:'机洗',parts:'衣身、袖子',why:'像卫衣外套，城市日常好看又好打理',tape:false},
+  quilt:{n:'菱格绗缝',fam:'warmF',d:'立体保暖',comp:'尼龙面 + 80 g 仿丝棉，菱格绗缝',gsm:220,wp:1,br:1,wm:3,st:0,ab:1,sf:2,rough:.45,price:[38,55],care:'轻柔机洗，平铺晾干',parts:'育克、衣身',why:'保暖又有质感，冬天做肩部拼块很好看',tape:false},
+  nylon:{n:'光面尼龙',fam:'warmF',d:'轻滑防跑绒',comp:'尼龙 20D 防跑绒，防泼水',gsm:70,wp:1,br:1,wm:0,st:0,ab:1,sf:1,rough:.38,price:[25,40],care:'机洗',parts:'羽绒服、马甲',why:'羽绒服、马甲的常用外层',tape:false},
+  cord:{n:'灯芯绒',fam:'natF',d:'复古温暖',comp:'棉 98% / 氨纶 2%，14 条灯芯绒',gsm:280,wp:0,br:2,wm:2,st:1,ab:2,sf:2,rough:.9,price:[28,40],care:'反面机洗',parts:'育克、口袋、领子',why:'春秋城市风，天然棉手感',tape:false},
+  canvas:{n:'棉帆布',fam:'natF',d:'结实透气',comp:'有机棉帆布，防泼水整理',gsm:250,wp:1,br:2,wm:1,st:0,ab:3,sf:1,rough:.82,price:[25,40],care:'冷水洗，首次会轻微缩水',parts:'衣身、口袋、肩部',why:'耐磨透气，天然材质；不防雨',tape:false},
+  refl:{n:'反光布',fam:'funcF',d:'夜里整块发亮',comp:'玻璃微珠反光织物',gsm:180,wp:1,br:0,wm:0,st:0,ab:1,sf:0,rough:.4,refl:.9,price:[60,90],care:'冷水手洗，不熨烫',parts:'细拼条、侧片、帽中片',why:'车灯一照整块发亮；只适合小面积拼块',tape:false}
+};
+const MATS=Object.fromEntries(Object.entries(FAB).map(([k,f])=>[k,[f.n,f.comp,f.rough,f.refl||0]]));
+const FAB_PROPS=[['wp','防雨'],['br','透气'],['wm','保暖'],['st','弹性'],['ab','耐磨'],['sf','柔软']];
+// —— 场景推荐：每个场景 3 套组合 ——
+const SCENES=[['daily','上学日常'],['rain','雨天出门'],['hike','郊游徒步'],['snow','玩雪滑雪'],['rough','爱爬爱滚'],['city','城市休闲']];
+const SCENE_W={daily:{wp:1,br:1.2,wm:1,st:1,ab:1,sf:1.6},rain:{wp:2.4,br:1,wm:.6,st:.5,ab:1,sf:.6},hike:{wp:1.2,br:2,wm:.6,st:1.6,ab:1.2,sf:.6},snow:{wp:2,br:.6,wm:2.2,st:.6,ab:1.2,sf:.6},rough:{wp:.8,br:.8,wm:.8,st:1.2,ab:2.4,sf:.8},city:{wp:.5,br:1,wm:1.2,st:1,ab:.8,sf:2}};
+const FAB_RECS={
+  daily:[{t:'安静柔软',type:'hardshell',tpl:'side',mats:{main:'shellpoly',acc1:'softlite',acc2:'base'},why:'涤纶静音硬壳走路不沙沙响；侧片轻弹面料，背书包、抬手不卡。'},
+    {t:'软壳通勤',type:'softshell',tpl:'raglan',mats:{main:'soft',acc1:'knit',acc2:'base'},why:'四面弹软壳不怕跑跳，秋冬上学最舒服；袖子用针织更贴手。'},
+    {t:'轻量备用',type:'hardshell',tpl:'solid',mats:{main:'shell25',acc1:'base',acc2:'base'},why:'2.5L 轻硬壳可以叠进书包，变天再穿。'}],
+  rain:[{t:'全天候防雨',type:'hardshell',tpl:'classic',mats:{main:'shell',acc1:'cordura',acc2:'base'},patch:{taping:'full',zipFlap:true},why:'3L 硬壳做衣身，肩部耐磨尼龙抗书包磨；配合全压胶和外门襟。'},
+    {t:'同料换色最稳',type:'hardshell',tpl:'chevron',mats:{main:'shellpoly',acc1:'shellpoly',acc2:'refl'},patch:{taping:'full'},why:'同一种面料只换颜色，压胶最稳；胸前反光细条，雨天傍晚更安全。'},
+    {t:'轻便雨衣',type:'hardshell',tpl:'solid',mats:{main:'shell25',acc1:'base',acc2:'base'},patch:{taping:'full'},why:'最轻，适合小雨和备用。'}],
+  hike:[{t:'轻快徒步',type:'hardshell',tpl:'side',mats:{main:'shell25',acc1:'softlite',acc2:'base'},why:'主体轻防水，侧片透气弹力，爬坡抬腿不闷。'},
+    {t:'透气排汗',type:'hardshell',tpl:'side',mats:{main:'shellpoly',acc1:'gridfl',acc2:'base'},why:'侧片网格抓绒排汗快，适合天气好、运动量大的日子。'},
+    {t:'硬朗耐磨',type:'hardshell',tpl:'yoke',mats:{main:'shell',acc1:'cordura',acc2:'base'},why:'肩背耐磨尼龙，背包带反复摩擦也不怕。'}],
+  snow:[{t:'玩雪全防护',type:'hardshell',tpl:'classic',mats:{main:'shell',acc1:'cordura',acc2:'base'},patch:{taping:'full',fill:'mid',snowSkirt:true,innerCuffs:true},why:'3L 防水加肩肘耐磨，再加中厚填充、防雪裙和内防风袖口。'},
+    {t:'绗缝保暖',type:'hardshell',tpl:'yoke',mats:{main:'shell',acc1:'quilt',acc2:'base'},patch:{fill:'thin'},why:'菱格绗缝做肩部，保暖又有质感。'},
+    {t:'毛茸茸领口',type:'hardshell',tpl:'yoke',mats:{main:'shellpoly',acc1:'sherpa',acc2:'base'},patch:{fill:'thin'},why:'羊羔绒肩部很可爱；1–2 岁注意掉绒，第一次穿前先洗一遍。'}],
+  rough:[{t:'下摆袖口加强',type:'hardshell',tpl:'hemband',mats:{main:'shellpoly',acc1:'cordura',acc2:'base'},why:'下摆和袖口用耐磨尼龙，滑滑梯、地上爬最先磨坏的地方先加强。'},
+    {t:'帆布工装',type:'softshell',tpl:'hemband',mats:{main:'canvas',acc1:'cordura',acc2:'base'},why:'棉帆布结实透气，配耐磨下摆；不防雨，适合晴天玩耍。'},
+    {t:'软壳加强',type:'softshell',tpl:'yoke',mats:{main:'soft',acc1:'cordura',acc2:'base'},why:'软壳灵活不束缚，肩背耐磨。'}],
+  city:[{t:'卫衣感外套',type:'softshell',tpl:'raglan',mats:{main:'scuba',acc1:'knit',acc2:'base'},why:'空气层挺括柔软，像卫衣一样好搭。'},
+    {t:'复古灯芯绒',type:'softshell',tpl:'yoke',mats:{main:'canvas',acc1:'cord',acc2:'base'},why:'帆布配灯芯绒育克，天然材质，春秋好看。'},
+    {t:'羊羔绒拼接',type:'softshell',tpl:'yoke',mats:{main:'soft',acc1:'sherpa',acc2:'base'},why:'软壳挡风，羊羔绒肩部软萌保暖。'}]
+};
 const TYPE_MAT={hardshell:'shell',softshell:'soft',fleece:'fleece',down:'nylon',vest:'nylon'};
 const matOf=(c,slot)=>{const m=c.mats&&c.mats[slot];return m&&m!=='base'&&MATS[m]?m:TYPE_MAT[c.type]};
 const TEMPLATES = {
@@ -810,7 +893,7 @@ const BASE = {
   zipLen:'full',zipPos:'center',flapSide:'R',magZip:false,chinGuard:true,
   pitZips:false,thumbLoops:false,innerCuffs:false,snowSkirt:false,hemAdjust:false,hoodAdjust:true,stowHood:false,innerPocket:false,hangLoop:true,
   pfcFree:true,wpRating:'10k',taping:'key',fill:'none',threeInOne:'none',
-  layer:'3l',liningPurpose:'touch',verified:{},brimSoft:true,labelPos:'neck',growType:'hidden',sleeveCut:'setin',layering:'thin',fitTarget:'now',measureMode:'thin',
+  layer:'3l',liningPurpose:'touch',scene:'daily',verified:{},brimSoft:true,labelPos:'neck',growType:'hidden',sleeveCut:'setin',layering:'thin',fitTarget:'now',measureMode:'thin',
   age:4,sex:'',fit:'regular',growth:1,growCuff:false,twoWayZip:false,detachHood:false,
   meas:{height:106,weight:17,chest:54,sleeve:33,belly:52,head:50,auto:true}
 };
@@ -955,7 +1038,7 @@ function harmonize(main,kind){const [h,s,l]=hex2hsl(main);let a1,a2,m=main;
 const IDEA_COLORS=[['酒红','#7a2232'],['大红','#c9283b'],['红','#c9283b'],['橙','#ff6a2b'],['橘','#ff6a2b'],['柠檬黄','#f5d33f'],['芥末','#d4a72c'],['姜黄','#d4a72c'],['黄','#f5d33f'],['墨绿','#2f5d50'],['深绿','#2f5d50'],['军绿','#5f7148'],['薄荷','#8fd1bd'],['浅绿','#8fd1bd'],['绿','#5f7148'],
   ['藏青','#1f3354'],['海军蓝','#1f3354'],['深蓝','#1f3354'],['宝蓝','#2d55c8'],['天蓝','#9cc9e0'],['浅蓝','#9cc9e0'],['蓝','#3a8fb7'],['香芋','#a594d6'],['浅紫','#a594d6'],['紫','#5a3d82'],['珊瑚','#f08a7a'],['桃','#f08a7a'],['粉','#f3b3c2'],
   ['黑','#23272b'],['白','#eef0ec'],['深灰','#4a5058'],['灰','#9aa2a6'],['米','#d9cdb4'],['燕麦','#d9cdb4'],['奶','#d9cdb4'],['卡其','#b39a72'],['咖啡','#8b5a3c'],['棕','#8b5a3c'],['杏','#f2a65a']];
-const IDEA_MATS=[['抓绒','fleece'],['摇粒绒','fleece'],['软壳','soft'],['针织','knit'],['罗纹','knit'],['绗缝','quilt'],['菱格','quilt'],['夹棉','quilt'],['灯芯绒','cord'],['硬壳','shell'],['防水面料','shell']];
+const IDEA_MATS=[['网格抓绒','gridfl'],['羊羔绒','sherpa'],['羊羔毛','sherpa'],['抓绒','fleece'],['摇粒绒','fleece'],['轻弹','softlite'],['软壳','soft'],['空气层','scuba'],['针织','knit'],['罗纹','knit'],['绗缝','quilt'],['菱格','quilt'],['夹棉','quilt'],['灯芯绒','cord'],['帆布','canvas'],['耐磨','cordura'],['反光布','refl'],['反光面料','refl'],['静音','shellpoly'],['涤纶','shellpoly'],['轻薄防水','shell25'],['2.5','shell25'],['硬壳','shell'],['防水面料','shell']];
 function parseIdea(text,c){const done=[],t=text.replace(/\s+/g,'');if(!t)return {c,done};c=clone(c);const say=m=>done.push(m);
   const setType=(k,w)=>{c.type=k;say('款式：'+TYPES[k].name)};
   if(/羽绒|面包服/.test(t))setType('down');else if(/马甲|背心/.test(t))setType('vest');else if(/抓绒外套|抓绒衣/.test(t))setType('fleece');else if(/软壳外套|软壳衣/.test(t))setType('softshell');else if(/冲锋衣/.test(t))setType('hardshell');
@@ -973,7 +1056,7 @@ function parseIdea(text,c){const done=[],t=text.replace(/\s+/g,'');if(!t)return 
       else{const slot=part==='main'?'main':['main','acc1','acc2'][Math.min(order++,2)];if(slot!=='main'&&c.template==='solid'){c.template='yoke';c.hoodColor='acc1'}c.colors[slot]=h;say((slot==='main'?'主色':slot==='acc1'?'拼色 1':'拼色 2')+'：'+n)}}
     if(mat){const slot=part==='sleeve'?'acc1':part==='hood'?c.hoodColor:part==='pocket'?c.pocketColor:part==='main'?'main':part==='acc1'?'acc1':null;
       if(slot){if(part==='sleeve'&&!['raglan','classic'].includes(c.template)){c.template='raglan'}c.mats[slot]=mat[1];say((part==='sleeve'?'袖子':slot==='main'?'衣身':'拼色')+'面料：'+MATS[mat[1]][0])}
-      else if(!/软硬/.test(cl)){c.mats.acc1=mat[1];if(c.template==='solid')c.template='side';say('拼色面料：'+MATS[mat[1]][0])}}}
+      else if(!/软硬/.test(cl)){const sl=mat[1]==='refl'?'acc2':'acc1';c.mats[sl]=mat[1];if(c.template==='solid')c.template=sl==='acc2'?'chevron':'side';say('拼色面料：'+MATS[mat[1]][0])}}}
   if(/软硬/.test(t)){const hard=TYPE_MAT[c.type]==='shell'||c.type==='down'?TYPE_MAT[c.type]:'shell';c.mats.main=hard;if(!c.mats.acc1||c.mats.acc1==='base'||c.mats.acc1===hard)c.mats.acc1=/抓绒/.test(t)?'fleece':/针织|罗纹/.test(t)?'knit':'soft';
     if(c.template==='solid'){c.template='side';c.hoodColor='main'}say(`软硬拼接：衣身${MATS[c.mats.main][0]} + 拼色${MATS[c.mats.acc1][0]}`)}
   if(hm){const H=harmonize(c.colors.main,hm[1]);Object.assign(c.colors,H);if(c.template==='solid'){c.template='yoke';c.hoodColor='acc1'}say('配色思路：'+HARMONY.find(x=>x[0]===hm[1])[1])}
@@ -1320,7 +1403,7 @@ function regionColorAt(regs,u,v,fallback='main'){let c=fallback;for(const r of r
 
 // —— 面料纹理（高度图平铺，约 2 px/mm） ——
 const matTiles={};
-function matTile(k){if(matTiles[k])return matTiles[k];const N=k==='quilt'?96:48,c=mkCanvas(N,N),x=c.getContext('2d');const r=mulberry(k.length*131);
+function matTile(k){if(matTiles[k])return matTiles[k];const N=k==='quilt'?96:k==='sherpa'?64:48,c=mkCanvas(N,N),x=c.getContext('2d');const r=mulberry(k.length*131);
   x.fillStyle=gray(.5);x.fillRect(0,0,N,N);
   if(k==='shell'){x.fillStyle=gray(.49);for(let i=0;i<N;i+=3)x.fillRect(0,i,N,1);x.fillStyle=gray(.555);x.fillRect(0,0,N,2);x.fillRect(0,0,2,N);x.fillRect(0,24,N,2);x.fillRect(24,0,2,N)}
   if(k==='soft'){x.strokeStyle=gray(.56);x.lineWidth=1.2;for(let i=-N;i<2*N;i+=4){x.beginPath();x.moveTo(i,0);x.lineTo(i+N,N);x.stroke()}}
@@ -1330,6 +1413,15 @@ function matTile(k){if(matTiles[k])return matTiles[k];const N=k==='quilt'?96:48,
   if(k==='quilt'){const g=x.createRadialGradient(N/2,N/2,4,N/2,N/2,N*.62);g.addColorStop(0,gray(.66));g.addColorStop(1,gray(.4));x.fillStyle=g;x.fillRect(0,0,N,N);
     x.strokeStyle=gray(.22);x.lineWidth=3;x.beginPath();x.moveTo(0,0);x.lineTo(N,N);x.moveTo(N,0);x.lineTo(0,N);x.stroke()}
   if(k==='nylon'){x.fillStyle=gray(.49);for(let i=0;i<N;i+=2)x.fillRect(0,i,N,1)}
+  if(k==='shell25'){x.fillStyle=gray(.49);for(let i=0;i<N;i+=2)x.fillRect(0,i,N,1);x.fillStyle=gray(.54);for(let j=0;j<N;j+=6)for(let i=(j/6%2)*3;i<N;i+=6)x.fillRect(i,j,1.4,1.4)}
+  if(k==='shellpoly'){x.strokeStyle=gray(.535);x.lineWidth=1;for(let i=-N;i<2*N;i+=3){x.beginPath();x.moveTo(i,0);x.lineTo(i+N,N);x.stroke()}}
+  if(k==='cordura'){for(let j=0;j<N;j+=8)for(let i=0;i<N;i+=8){const h=((i+j)/8)%2;x.fillStyle=gray(h?.58:.44);x.fillRect(i,j,8,8);x.fillStyle=gray(h?.5:.52);for(let t=0;t<8;t+=2)h?x.fillRect(i,j+t,8,1):x.fillRect(i+t,j,1,8)}}
+  if(k==='softlite'){x.strokeStyle=gray(.54);x.lineWidth=.8;for(let i=-N;i<2*N;i+=3){x.beginPath();x.moveTo(i,0);x.lineTo(i+N,N);x.stroke()}}
+  if(k==='gridfl'){const id=x.getImageData(0,0,N,N);for(let i=0;i<id.data.length;i+=4){const v=128+(r()-.5)*60;id.data[i]=id.data[i+1]=id.data[i+2]=v}x.putImageData(id,0,0);x.fillStyle=gray(.36);for(let i=0;i<N;i+=12){x.fillRect(i,0,2,N);x.fillRect(0,i,N,2)}}
+  if(k==='sherpa'){for(let n=0;n<160;n++){const cx=r()*N,cy=r()*N,rr=2+r()*3.5;const g=x.createRadialGradient(cx-rr*.3,cy-rr*.3,0,cx,cy,rr);g.addColorStop(0,gray(.72));g.addColorStop(1,gray(.4));x.fillStyle=g;x.beginPath();x.arc(cx,cy,rr,0,7);x.fill()}}
+  if(k==='scuba'){const id=x.getImageData(0,0,N,N);for(let i=0;i<id.data.length;i+=4){const v=128+(r()-.5)*14;id.data[i]=id.data[i+1]=id.data[i+2]=v}x.putImageData(id,0,0)}
+  if(k==='canvas'){for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){x.fillStyle=gray(((i+j)/2)%2?.56:.45);x.fillRect(i,j,2,2)}}
+  if(k==='refl'){x.fillStyle=gray(.5);for(let j=0;j<N;j+=3)for(let i=(j/3%2)*1.5;i<N;i+=3){x.fillStyle=gray(.5+(r()-.5)*.2);x.fillRect(i,j,1.5,1.5)}}
   return matTiles[k]=c}
 
 // —— 满印图案平铺（约 2 px/mm） ——
@@ -1366,8 +1458,8 @@ function Part(w,h,{wrap=false,rough=.6,lining=false}={}){
   P.line=(pts,width,col,o={})=>{const p=P.open(pts);const set=(ctx,st)=>{ctx.lineWidth=width;ctx.lineCap=o.cap||'butt';ctx.lineJoin='round';ctx.setLineDash(o.dash||[]);ctx.strokeStyle=st;ctx.stroke(p);ctx.setLineDash([])};
     if(col){P.x.globalAlpha=o.alpha??1;set(P.x,col);P.x.globalAlpha=1}if(o.h!=null)set(P.y,gray(o.h));if(o.rough!=null||o.refl||o.gloss)set(P.z,pcol(o.rough??P.base,o.refl||0,o.gloss||0))};
   // 缝线：凹槽 + 两侧明线
-  P.matAll=k=>{P.y.fillStyle=P.y.createPattern(matTile(k),'repeat');P.y.fillRect(0,0,w,h);P.z.fillStyle=`rgb(${MATS[k][2]*255|0},0,0)`;P.z.fillRect(0,0,w,h);P.base=MATS[k][2]};
-  P.mat=(pts,k)=>{const p=P.path(pts);P.y.fillStyle=P.y.createPattern(matTile(k),'repeat');P.y.fill(p);P.z.fillStyle=`rgb(${MATS[k][2]*255|0},0,0)`;P.z.fill(p)};
+  P.matAll=k=>{P.y.fillStyle=P.y.createPattern(matTile(k),'repeat');P.y.fillRect(0,0,w,h);P.z.fillStyle=`rgb(${MATS[k][2]*255|0},${(MATS[k][3]||0)*255|0},0)`;P.z.fillRect(0,0,w,h);P.base=MATS[k][2]};
+  P.mat=(pts,k)=>{const p=P.path(pts);P.y.fillStyle=P.y.createPattern(matTile(k),'repeat');P.y.fill(p);P.z.fillStyle=`rgb(${MATS[k][2]*255|0},${(MATS[k][3]||0)*255|0},0)`;P.z.fill(p)};
   P.printOn=(pts,tile)=>{const pat=P.x.createPattern(tile,'repeat');P.x.fillStyle=pat;if(pts)P.x.fill(P.path(pts));else P.x.fillRect(0,0,w,h)};
   P.seam=(pts,o={})=>{P.line(pts,o.w||3,null,{h:.28});P.line(pts,1.4,'rgba(0,0,0,.28)',{});
     if(o.top!==false){const off=o.off||5;for(const s of [-1,1]){if(o.one&&s<0)continue;P.line(offsetLine(pts,s*off,P),1.1,'rgba(0,0,0,.30)',{dash:[4,3],h:.58})}}};
@@ -1641,6 +1733,12 @@ function headTextures(){if(HEAD_TEX)return HEAD_TEX;const W=1024,H=512;const X=u
   h.strokeStyle='rgba(120,120,120,.5)';h.lineWidth=2;for(let k=0;k<26;k++){const u=k/26;h.beginPath();h.moveTo(X(u),H);h.quadraticCurveTo(X(u+.01),Y(.2),X(u+.02),Y(hairEnd(u+.02)));h.stroke()}
   h.globalCompositeOperation='source-over';
   return HEAD_TEX={face,pm,hair}}
+
+// —— 面料小样（界面用）：颜色 × 纹理 × 柔光 ——
+function fabSwatch(cv,k,hex){const x=cv.getContext('2d'),W=cv.width,H=cv.height;x.fillStyle=hex;x.fillRect(0,0,W,H);
+  const t=matTile(k);x.save();x.globalCompositeOperation='overlay';x.globalAlpha=k==='scuba'?.6:1;const sc=k==='quilt'?.7:k==='sherpa'?.8:1.2;x.scale(sc,sc);x.fillStyle=x.createPattern(t,'repeat');x.fillRect(0,0,W/sc,H/sc);x.globalAlpha=.75;x.fillRect(0,0,W/sc,H/sc);x.restore();
+  if(k==='refl'){const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,'rgba(255,255,255,.55)');g.addColorStop(.5,'rgba(200,205,212,.25)');g.addColorStop(1,'rgba(255,255,255,.5)');x.fillStyle=g;x.fillRect(0,0,W,H)}
+  const L=x.createLinearGradient(0,0,W*.7,H);const gl=FAB[k]&&FAB[k].rough<.55?.22:.12;L.addColorStop(0,`rgba(255,255,255,${gl})`);L.addColorStop(.55,'rgba(255,255,255,0)');L.addColorStop(1,'rgba(0,0,0,.14)');x.fillStyle=L;x.fillRect(0,0,W,H)}
 
 // ---- flat.js ----
 // ===== flat.js — 平面款式图（SVG），复用拼色模板与口袋定义 =====
@@ -2183,7 +2281,7 @@ function slotFractions(c){const t=templateRegions(c.template,.8);const f={main:0
   const N=30;for(let i=0;i<N;i++)for(let j=0;j<N;j++)add(regionColorAt(t.B,(i+.5)/N,(j+.5)/N),.55/(N*N));
   if(c.type!=='vest'){const band=t.S.some(r=>r.band);for(let i=0;i<20;i++)for(let j=0;j<20;j++){const su=(i+.5)/20,s=(j+.5)/20;let k='main';if(band)k=regionColorAt(t.B,.25,.8*(1-s*.9));else for(const r of t.S){if(r.pts&&(r.side==='both'||r.side==='L')&&pointIn(r.pts,su,s))k=r.c}add(k,.3/400)}}
   if(c.collar==='hood')add(c.hoodColor,.15);const sum=f.main+f.acc1+f.acc2;for(const k in f)f[k]/=sum;return f}
-const FAB_PRICE={shell:[45,70],soft:[35,55],fleece:[22,35],knit:[20,32],quilt:[38,55],cord:[28,40],nylon:[25,40]};
+const FAB_PRICE=Object.fromEntries(Object.entries(FAB).map(([k,f])=>[k,f.price]));
 const LIN_PRICE={none:[0,0],cotton:[18,26],mesh:[10,15],taffeta:[10,16],fleece:[20,30],quilted:[28,40],print:[20,30]};
 function costModel(c){const T=TYPES[c.type],sf=Math.pow(c.meas.height/106,1.3),m=T.meters*sf*(c.collar==='hood'?1:.92);const fr=slotFractions(c);const G={mat:[],work:[],dev:[],other:[]};const rg=(a,b)=>[a,b];
   for(const k of ['main','acc1','acc2']){if(fr[k]<.02)continue;const mt=matOf(c,k),p=FAB_PRICE[mt],len=+(m*fr[k]*1.12).toFixed(2);G.mat.push([`面料 · ${SLOT_NAME[k]}（${MATS[mt][0]}）`,`约 ${len} m（含 12% 裁损）`,rg(p[0]*len,p[1]*len)])}
@@ -2227,6 +2325,11 @@ function checksOf(c){const C=[];const add=(id,lv,t,fix,fl)=>C.push({id,lv,t,fix,
   c.logos.forEach((L,i)=>{if(L.place!=='chestL'&&L.place!=='chestR')return;const g=logoGeo(c,L),inner=g.x-L.size/2;const flap=c.zipFlap&&c.zipLen!=='none'&&((c.flapSide==='L')===(L.place==='chestL'));const need=flap?5:2.5;
     if(inner<need)add('lpos-'+i+'-'+L.dx,'hard',`${PLACES[L.place]}标志离门襟太近：内边距前中只有 ${Math.max(0,Math.round(inner*2)/2)} cm${flap?'，会被外门襟（3.5 cm）盖住':''}。建议至少 ${need} cm。`,{logos:c.logos.map((l,j)=>j===i?{...l,dx:Math.round(((l.dx||0)+need-inner)*2)/2}:l)},'往侧缝移');
     if(c.chestPocket!=='none'&&L.place==='chestL'&&Math.abs(L.dy||0)>1.5)add('lpos-pk-'+i,'warn','左胸已有胸袋，标志上下移动后要确认不压到口袋拉链 / 袋口。')});
+  {const fm=matOf(c,'main'),fr=slotFractions(c);
+    if(c.type==='hardshell'&&!FAB[fm].tape)add('fab-main-'+fm,'warn',`冲锋衣主面料选了${FAB[fm].n}，它不防水，整衣不再按防雨冲锋衣考核。要防雨请换回防水壳类面料。`,{mats:{...c.mats,main:'base'}},'换回防水面料');
+    const rf=['main','acc1','acc2'].filter(k=>matOf(c,k)==='refl').reduce((a,k)=>a+fr[k],0);if(rf>.25)add('fab-refl','warn',`反光布占了约 ${Math.round(rf*100)}% 面积，偏硬、偏贵，透气差。建议只做细拼条或侧片。`);
+    if(isInfant(c)&&['main','acc1','acc2'].some(k=>matOf(c,k)==='sherpa'&&(k===c.hoodColor||fr[k]>.05)))add('fab-sherpa','info','羊羔绒会掉少量绒毛，1–2 岁孩子爱啃衣领，建议不用在帽子和领口附近，第一次穿前先洗一遍。');
+    if(c.type==='down'&&!['nylon','shell25','shell','shellpoly'].includes(fm))add('fab-down','warn',`羽绒服外层选了${FAB[fm].n}，羽绒容易钻出来。外层建议用防跑绒的光面尼龙或硬壳。`,{mats:{...c.mats,main:'base'}},'换回防跑绒面料');}
   const texts=c.logos.filter(l=>l.kind!=='image'&&l.text).map(l=>'“'+l.text+'”');if(texts.length)add('txt-'+texts.join(''),'warn','请确认标志文字拼写：'+texts.join('、')+'。工厂按批准稿制作，不会自行修改。');
   if(c.twoWayZip&&c.zipFlap&&c.zipLen==='full')add('twoway','warn','双头拉链配外门襟：从下方拉开时要先解开下方按扣，建议下方两颗改暗扣，并用照护者操作样验证。');
   if(c.collar==='hood'&&c.detachHood)add('detach','warn','可拆卸帽：需做帽领连接小样，检查拉链端头、遮挡片和拆帽后领口是否刮颈。');
@@ -2258,8 +2361,8 @@ function techModel(c,imgs){const ST=packStatus(c);const T=TYPES[c.type],C=c.colo
   sec('3　裁片与配色',[{type:'table',cols:[.09,.27,.08,.28,.28],head:['编号','裁片','数量','颜色','面料 / 备注'],rows:pieces.map(p=>[p.no,p.name,String(p.qty),sw(pieceColor(c,p.slot)),pieceMat(c,p.slot)+(p.note?'；'+p.note:'')])},{type:'para',text:'颜色以本表为准；效果图仅示意外观。各色块面料的部位由裁片表推导，与款式图一致。'}]);
   // 物料
   const where=slot=>pieces.filter(p=>p.slot===slot).map(p=>p.name).join('、')||'—';
-  const fab=k=>{const m=matOf(c,k);return m===TYPE_MAT[c.type]?T.fabric:MATS[m][0]+'（'+MATS[m][1]+'）'};
-  const bom=[];for(const k of ['main','acc1','acc2'])if(pieces.some(p=>p.slot===k))bom.push(['面料 · '+SLOT_NAME[k],fab(k)+'；料号、成分、克重、幅宽待供应商确认',sw(C[k]),where(k)]);
+  const fab=k=>{const m=matOf(c,k),f=FAB[m];return f.n+'：'+f.comp+`，约 ${f.gsm} g/m²`};
+  const bom=[];for(const k of ['main','acc1','acc2'])if(pieces.some(p=>p.slot===k))bom.push(['面料 · '+SLOT_NAME[k],fab(k)+'；料号、幅宽、实测克重待供应商确认',sw(C[k]),where(k)]);
   if(c.print&&c.print.kind!=='none')bom.push(['满印图案',PRINTS.find(x=>x[0]===c.print.kind)[1]+(c.print.kind==='custom'?'（客户图片）':'')+`，数码印花，循环宽约 ${Math.round(c.print.scale*6)} cm`,c.print.kind==='custom'?'按图':sw(c.print.color),SLOT_NAME[c.print.slot]+'块']);
   bom.push(['里布',OPTS.lining.find(l=>l[0]===c.lining)[1]+'（'+LINING_SPEC[c.lining]+'）'+(c.type==='hardshell'&&c.layer==='3l'&&c.lining!=='none'?'；用途：'+OPTS.liningPurpose.find(x=>x[0]===(c.liningPurpose||'touch'))[1]:''),c.lining==='none'?'—':sw(C.lining),c.lining==='none'?'—':'衣身、袖、帽内里；门襟、下摆内贴边用面料']);
   if((c.fill||'none')!=='none')bom.push(['保暖填充',c.type==='down'?{thin:'羽绒 60g',mid:'羽绒 100g',thick:'羽绒 140g',down:'羽绒 160g'}[c.fill]+'（90/10）':OPTS.fill.find(x=>x[0]===c.fill)[1]+(c.fill==='down'?'（含绒量 90%）':' 仿丝棉'),'—','衣身、袖子']);
@@ -2275,7 +2378,9 @@ function techModel(c,imgs){const ST=packStatus(c);const T=TYPES[c.type],C=c.colo
   if(c.nameLabel)bom.push(['姓名标',`柔软织唛 5 × 2.4 cm，内容：${c.nameLabel}，四边折光`,'白底',c.labelPos==='side'?'左侧缝内侧':'后领内侧（覆盖处理）']);
   if(shellType(c)&&c.taping!=='none')bom.push(['压胶胶条','与面料匹配的 3 层压胶条，宽 20 mm；型号待面料确认',' —',c.taping==='full'?'全部接缝':'关键接缝']);
   bom.push(['使用说明',isInfant(c)?'洗涤与安全说明，加注“婴幼儿用品”':'洗涤与安全说明','—','侧缝']);
-  sec('4　物料清单',[{type:'table',cols:[.16,.38,.2,.26],head:['物料','规格','颜色','使用部位'],rows:bom}]);
+  const dots=n=>'●'.repeat(n)+'○'.repeat(3-n);const usedF=[...new Set(['main','acc1','acc2'].filter(k=>pieces.some(p=>p.slot===k)).map(k=>matOf(c,k)))];
+  const perf={type:'table',cols:[.16,.2,.08,.08,.08,.08,.08,.24],head:['面料','用在','防雨','透气','保暖','弹性','耐磨','护理'],rows:usedF.map(m=>{const f=FAB[m];return [f.n,['main','acc1','acc2'].filter(k=>matOf(c,k)===m&&pieces.some(p=>p.slot===k)).map(k=>SLOT_NAME[k]).join('、'),dots(f.wp),dots(f.br),dots(f.wm),dots(f.st),dots(f.ab),f.care]})};
+  sec('4　物料清单',[{type:'table',cols:[.16,.38,.2,.26],head:['物料','规格','颜色','使用部位'],rows:bom},{type:'para',text:'面料性能与护理（评分为同类面料常见水平，以供应商检测报告为准）'},perf]);
   // 工艺
   const parts=[[1,'帽 / 领',c.collar==='hood'?`${c.detachHood?'可拆卸':'固定'}三片帽（帽侧片 ×2 + 帽中片 ×1）${c.detachHood?'，领座内隐形拉链 + 4 颗四合扣连接，领后加遮挡片，拉链端头包边':''}${c.hoodBrim?`，${c.brimSoft?'软质':'硬质'}帽檐伸出 ${brimLen(c)} cm`:''}${c.hoodAdjust?'，帽后魔术贴调节片 2.5×6 cm（调节范围约 3 cm，钩面朝外不接触皮肤）':''}，帽口包边，无抽绳（裁片、拼缝、连接见第 2a 节帽子结构图）；帽饰：${OPTS.hoodDeco.find(x=>x[0]===c.hoodDeco)[1]}`:'立领，内侧贴抓绒护颈'+(c.stowHood?'，领内拉链收纳帽':'')],
     [2,'门襟',`${OPTS.zipLen.find(x=>x[0]===c.zipLen)[1]}${zs?'；'+zs:''}${c.zipFlap&&c.zipLen!=='none'?`；外门襟成品宽 3.5 cm，${c.flapSide==='L'?'穿着者左片压右片':'穿着者右片压左片'}，四合扣 5 颗（位置见门襟图）`:''}${c.chinGuard?'；拉链顶端防夹护片':''}`],
@@ -2315,13 +2420,13 @@ function safetyItems(c){const T=TYPES[c.type];return ['7 岁及以下儿童服�
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LS={get(k,d){try{const v=localStorage.getItem('lws4.'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('lws4.'+k,JSON.stringify(v))}catch(e){}}};
-const ICON={kid:'M12 4.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15z M9.3 11.3h.01 M14.7 11.3h.01 M9.6 14.6c1.3 1.1 3.5 1.1 4.8 0 M11.5 4.6c-.8-1.2.2-2.4 1.4-1.9',jacket:'M8.5 3.5L4 6.5V20h4.5v-7 M15.5 3.5L20 6.5V20h-4.5v-7 M8.5 3.5L12 6l3.5-2.5 M12 6v14 M8.5 20h7',palette:'M12 3.5a8.5 8.5 0 000 17c1.4 0 2-.9 2-1.9s-.9-1.4-.9-2.3.9-1.5 1.9-1.5h1.9a3.6 3.6 0 003.6-3.6C20.5 7 16.7 3.5 12 3.5z M7.8 11.2h.01 M10 7.6h.01 M14.4 7.6h.01',sliders:'M4 7h9 M17 7h3 M15 5v4 M4 17h3 M11 17h9 M9 15v4',flame:'M12 3.5c.8 2.7 4.8 4.6 4.8 9.3a4.8 4.8 0 01-9.6 0c0-1.9.9-3.3 1.9-4.3 0 1.9.9 2.8 1.9 2.8 0-2.9-.9-4.8 1-7.8z',star:'M12 3.8l2.4 5.1 5.6.7-4.1 3.8 1.1 5.5L12 16.2l-5 2.7 1.1-5.5L4 9.6l5.6-.7z',undo:'M9 14L4 9l5-5 M4 9h10a6 6 0 010 12h-3',redo:'M15 14l5-5-5-5 M20 9H10a6 6 0 000 12h3',save:'M5 3h12l3 3v15H4V3z M8 3v6h8V3 M8 21v-7h8v7',folder:'M3 6h6l2 2h10v11H3z',
+const ICON={layers:'M12 4l8.5 4.5L12 13 3.5 8.5z M3.5 12.5L12 17l8.5-4.5 M3.5 16.5L12 21l8.5-4.5',kid:'M12 4.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15z M9.3 11.3h.01 M14.7 11.3h.01 M9.6 14.6c1.3 1.1 3.5 1.1 4.8 0 M11.5 4.6c-.8-1.2.2-2.4 1.4-1.9',jacket:'M8.5 3.5L4 6.5V20h4.5v-7 M15.5 3.5L20 6.5V20h-4.5v-7 M8.5 3.5L12 6l3.5-2.5 M12 6v14 M8.5 20h7',palette:'M12 3.5a8.5 8.5 0 000 17c1.4 0 2-.9 2-1.9s-.9-1.4-.9-2.3.9-1.5 1.9-1.5h1.9a3.6 3.6 0 003.6-3.6C20.5 7 16.7 3.5 12 3.5z M7.8 11.2h.01 M10 7.6h.01 M14.4 7.6h.01',sliders:'M4 7h9 M17 7h3 M15 5v4 M4 17h3 M11 17h9 M9 15v4',flame:'M12 3.5c.8 2.7 4.8 4.6 4.8 9.3a4.8 4.8 0 01-9.6 0c0-1.9.9-3.3 1.9-4.3 0 1.9.9 2.8 1.9 2.8 0-2.9-.9-4.8 1-7.8z',star:'M12 3.8l2.4 5.1 5.6.7-4.1 3.8 1.1 5.5L12 16.2l-5 2.7 1.1-5.5L4 9.6l5.6-.7z',undo:'M9 14L4 9l5-5 M4 9h10a6 6 0 010 12h-3',redo:'M15 14l5-5-5-5 M20 9H10a6 6 0 000 12h3',save:'M5 3h12l3 3v15H4V3z M8 3v6h8V3 M8 21v-7h8v7',folder:'M3 6h6l2 2h10v11H3z',
   rotate:'M20 12a8 8 0 11-3-6.3 M20 4v5h-5',hood:'M6 20c0-9 2-15 6-15s6 6 6 15 M9 20c0-5 1-8 3-8s3 3 3 8',open:'M12 4v16 M12 4L5 7v13l7-2 M12 4l7 3v13l-7-2',moon:'M20 14A8 8 0 0110 4a8 8 0 1010 10z',
   body:'M12 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5z M7 22l1-9-3-4 4-1h6l4 1-3 4 1 9',plus:'M12 5v14 M5 12h14',minus:'M5 12h14',doc:'M6 3h9l4 4v14H6z M14 3v5h5 M9 13h7 M9 17h5',dice:'M4 4h16v16H4z M8.5 8.5h.01 M15.5 15.5h.01 M15.5 8.5h.01 M8.5 15.5h.01 M12 12h.01',
   close:'M6 6l12 12 M18 6L6 18',chat:'M4 5h16v11H9l-5 4z',trash:'M4 7h16 M9 7V4h6v3 M6 7l1 14h10l1-14',download:'M12 3v12 M7 10l5 5 5-5 M4 17v4h16v-4',upload:'M12 21V9 M7 14l5-5 5 5 M4 7V3h16v4',copy:'M8 8h12v12H8z M4 16V4h12',check:'M5 12l4 4L19 6'};
 const ic=n=>`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON[n]}"/></svg>`;
-const TABS=[['kid','孩子'],['style','款式'],['color','配色'],['detail','细节'],['lining','保暖'],['logo','图案'],['make','制作单']];
-const TAB_IC={kid:'kid',style:'jacket',color:'palette',detail:'sliders',lining:'flame',logo:'star',make:'doc'};
+const TABS=[['kid','孩子'],['style','款式'],['color','配色'],['fabric','面料'],['detail','细节'],['lining','保暖'],['logo','图案'],['make','制作单']];
+const TAB_IC={kid:'kid',style:'jacket',color:'palette',fabric:'layers',detail:'sliders',lining:'flame',logo:'star',make:'doc'};
 
 let cfg=normalize(LS.get('draft',null)||mergeCfg(BASE,{}));
 const ui={tab:(t=>TABS.some(x=>x[0]===t)?t:'kid')(LS.get('tab','kid')),slot:'main',logo:0,hoodUp:false,open:false,night:false,auto:false,body:true,docId:LS.get('docId',null),confirmDel:null};
@@ -2411,15 +2516,17 @@ function why(k,v,c=cfg){const zf=c.zipLen==='full',zn=c.zipLen==='none',inf=c.ag
     case 'brimSoft':return !v&&inf&&c.hoodBrim?'1–2 岁帽檐只用软质，不顶脸':'';
     case 'lining':if(v!=='none')return '';if(c.type!=='hardshell')return '只有三层复合的硬壳面料自带背衬，其他款式都要里布';if(c.layer==='2l')return '两层复合面料没有背衬，必须加里布';if(fill)return '有保暖填充时需要里布把填充包住';return '';
     case 'fill':return v!=='none'&&c.lining==='none'?'没有独立里布，填充无处固定；先选一种里布':'';
+    case 'mats.main':return v==='refl'?'反光布只适合小面积拼块，不能做主面料':'';
     case 'stowHood':return v&&c.collar==='hood'?'已经是连帽，不需要领内收纳帽':'';
   }return ''}
+window.why=why; // 制作单检查（spec.js）也用同一套互斥规则
 // 依赖关系：上级选项变了，下级不再成立的自动复位
 function resolveCfg(c){if(c.zipLen!=='full'){c.twoWayZip=false;c.magZip=false}if(c.zipLen==='none')c.zipFlap=false;
   if(c.age<3)c.thumbLoops=false;if(c.age<=2&&c.hoodBrim)c.brimSoft=true;
   if(c.growCuff&&c.growType==='fold'&&c.cuff==='rib')c.growType='hidden';
   if(c.zipPos==='offset'&&c.chestPocket!=='none'&&c.zipLen!=='none')c.zipPos='center';
   if(c.lining==='none'&&(c.type!=='hardshell'||c.layer==='2l'||(c.fill||'none')!=='none'))c.lining='mesh';
-  if(c.collar==='hood')c.stowHood=false;return c}
+  if(c.collar==='hood')c.stowHood=false;if(c.mats&&c.mats.main==='refl')c.mats.main='base';return c}
 const opt=(k,arr)=>arr.map(([v,t])=>({t,on:String(getK(k))===String(v),dis:why(k,v),f:()=>setPath(k,v)}));
 const tg=(k,t,extra)=>({t,on:!!getK(k),dis:why(k,!getK(k)),f:()=>setPath(k,!getK(k)),...extra});
 function addLogoAt(place,size){if(cfg.logos.some(l=>l.place===place)){cfg.logos=cfg.logos.filter(l=>l.place!==place);return}if(cfg.logos.length>=6)return;cfg.logos.push({...clone(BASE.logos[0]),id:'l'+Date.now().toString(36),place,size,icon:place==='back'?'mountain':'star',text:place==='back'?(cfg.nameLabel||'LELE'):''})}
@@ -2484,9 +2591,10 @@ const getK=k=>k.split('.').reduce((o,p)=>o?.[p],cfg);
 // ---------- 面板 ----------
 function renderPanel(){const top=$('.panel').scrollTop, ws=window.scrollY;
   document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===ui.tab));
-  $('#tb').innerHTML=({kid:tabKid,style:tabStyle,color:tabColor,detail:tabDetail,lining:tabLining,logo:tabLogo,make:tabMake})[ui.tab]();
+  $('#tb').innerHTML=({kid:tabKid,style:tabStyle,color:tabColor,fabric:tabFabric,detail:tabDetail,lining:tabLining,logo:tabLogo,make:tabMake})[ui.tab]();
   $('.panel').scrollTop=top;if(Math.abs(window.scrollY-ws)>2)window.scrollTo(0,ws);
-  if(ui.tab==='logo'){drawLogoPreview();drawPrintTiles()}vtag();}
+  if(ui.tab==='logo'){drawLogoPreview();drawPrintTiles()}drawFabTiles();vtag();}
+function drawFabTiles(){document.querySelectorAll('canvas[data-fab]').forEach(cv=>fabSwatch(cv,cv.dataset.fab,cv.dataset.col))}
 
 function tabStyle(){
   return `<section class="sec idea"><h2>说说你的想法</h2><p class="note">用一句话描述，比如“衣身军绿，袖子用抓绒做软硬拼接，帽子要小熊耳，配色协调一点”。能看懂的部分会直接改到衣服上。</p>
@@ -2517,13 +2625,38 @@ function tabColor(){
   ${row('口袋 / 袋盖',seg('pocketColor',OPTS.colorRef,cfg.pocketColor))}
   ${row('拉头颜色',seg('pullColor',[['zip','同拉链'],['acc1','拼色 1'],['acc2','拼色 2']],cfg.pullColor))}
   </section>
-  <section class="sec"><h2>面料拼接（软硬拼接）</h2><p class="note">每个颜色块可以用不同面料。比如衣身用硬壳挡风雨，肩部或侧片用软壳、针织，活动更自在；也可以拼一块抓绒或绗缝，暖和又有质感。</p>
-   ${[['main','主色块'],['acc1','拼色 1 块'],['acc2','拼色 2 块']].map(([k,n])=>row(`<span class="mdot" style="background:${cfg.colors[k]}"></span>${n}`,`<div class="seg">${[['base','同款式'],...Object.entries(MATS).filter(([m])=>m!=='nylon').map(([m,v])=>[m,v[0]])].map(([m,l])=>`<button data-set="mats.${k}" data-v="${m}" aria-pressed="${(cfg.mats?.[k]||'base')===m}">${l}</button>`).join('')}</div>`,k==='main'?'同款式 = '+MATS[TYPE_MAT[cfg.type]][0]:used.has(k)?'':'当前拼色方式没用到')).join('')}
-   <div class="mixq">${[['硬壳 + 软壳侧片',{template:'side',mats:{main:'shell',acc1:'soft',acc2:'base'}}],['硬壳 + 抓绒肩部',{template:'yoke',mats:{main:'shell',acc1:'fleece',acc2:'base'}}],['软壳 + 针织袖',{template:'raglan',mats:{main:'soft',acc1:'knit',acc2:'base'}}],['硬壳 + 绗缝育克',{template:'yoke',mats:{main:'shell',acc1:'quilt',acc2:'base'}}]].map(([n,o])=>`<button class="chipbtn" data-mix='${JSON.stringify(o)}'>${n}</button>`).join('')}</div>
+  <section class="sec"><div class="sh"><h2>面料</h2><button class="btn ghost sm" data-goto="fabric">去选面料</button></div>
+   <p class="note">主色块：${FAB[matOf(cfg,'main')].n}${usedSlots().has('acc1')?'；拼色 1：'+FAB[matOf(cfg,'acc1')].n:''}${usedSlots().has('acc2')?'；拼色 2：'+FAB[matOf(cfg,'acc2')].n:''}。在“面料”页可以按场景挑推荐组合，或者给每块颜色单独换面料。</p>
   </section>`;
 }
 function usedSlots(){const s=new Set(['main','zip','lining']);const t=templateRegions(cfg.template,.8);[...t.B,...t.S].forEach(r=>r.c&&s.add(r.c));if(cfg.template==='tri'){s.add('acc1');s.add('acc2')}
   [cfg.hoodColor,cfg.pocketColor,cfg.pullColor].forEach(k=>s.add(k));if(cfg.cuff!=='velcro'||cfg.type==='vest')s.add('trim');if(cfg.cuff==='velcro')s.add('trim');if(cfg.hoodDeco!=='none')s.add('acc2');return s}
+const recMats=r=>{const m={...r.mats};for(const k of ['acc1','acc2'])if(!m[k]||m[k]==='base')m[k]=m.main;return m};
+function recState(r){const t={...strip(cfg),type:r.type,template:r.tpl,hoodColor:TEMPLATES[r.tpl].hood,mats:recMats(r)};const fr=slotFractions(t);const P={};
+  for(const [p] of FAB_PROPS)P[p]=['main','acc1','acc2'].reduce((a,k)=>a+fr[k]*FAB[matOf(t,k)][p],0);const used=['main','acc1','acc2'].filter(k=>fr[k]>=.03);return {P,used,t}}
+const SLOT_LBL={main:'主色块',acc1:'拼色 1',acc2:'拼色 2'};
+function tabFabric(){const sc=cfg.scene||'daily',recs=FAB_RECS[sc],slot=ui.fslot||'main',cur=matOf(cfg,slot),f=FAB[cur],used=usedSlots();
+  const bars=P=>`<div class="rbars">${FAB_PROPS.map(([p,n])=>`<span><em>${n}</em><i class="pbar"><i style="width:${Math.round(P[p]/3*100)}%"></i></i></span>`).join('')}</div>`;
+  const recCard=(r,i)=>{const st=recState(r);const on=cfg.type===r.type&&cfg.template===r.tpl&&['main','acc1','acc2'].every(k=>matOf(cfg,k)===matOf(st.t,k));
+    return `<article class="rec${on?' on':''}"><div class="rsw">${st.used.map(k=>`<canvas data-fab="${matOf(st.t,k)}" data-col="${cfg.colors[k]}" width="96" height="96" title="${SLOT_LBL[k]}"></canvas>`).join('')}</div>
+     <div class="rbody"><div class="rt"><b>${r.t}</b>${i===0?'<span class="tag">最推荐</span>':''}${cfg.type!==r.type?`<span class="tag">${TYPES[r.type].name}</span>`:''}</div>
+     <p class="rmix">${st.used.map(k=>`${SLOT_LBL[k]} ${FAB[matOf(st.t,k)].n}`).join(' ＋ ')}　·　${TEMPLATES[r.tpl].name}</p><p class="why">${r.why}</p>${bars(st.P)}</div>
+     <button class="btn sm ${on?'ghost':'cta'}" data-rec="${i}"${on?' disabled':''}>${on?'正在用':'用这套'}</button></article>`};
+  const inf=isInfant(cfg)?'<p class="note">1–2 岁优先选柔软、轻、安静的面料：涤纶静音硬壳、轻弹面料、针织罗纹；羊羔绒不要放在领口和帽子附近。</p>':'';
+  return `<section class="sec"><h2>按场景推荐</h2><p class="note">选孩子最常穿的场合，给三套面料组合。点“用这套”会同时换好拼色方式，颜色保持不变。</p>
+   ${seg('scene',SCENES,sc)}${inf}
+   <div class="recs">${recs.map(recCard).join('')}</div></section>
+  <section class="sec"><h2>每块颜色用什么面料</h2><p class="note">先选色块，再点面料。小样按这块的颜色显示。</p>
+   <div class="slots">${['main','acc1','acc2'].map(k=>`<button class="slot" data-fslot="${k}" aria-pressed="${slot===k}"><i style="background:${cfg.colors[k]}"></i><span><b>${SLOT_LBL[k]}</b><small>${FAB[matOf(cfg,k)].n}${used.has(k)?'':' · 当前没用到'}</small></span></button>`).join('')}</div>
+   ${FAB_FAMS.map(([fk,fn])=>{const list=Object.entries(FAB).filter(([,x])=>x.fam===fk);return `<div class="ffam"><h3>${fn}</h3><div class="fabs">${list.map(([k,x])=>{const r=why('mats.'+slot,k);return `<button class="fab" data-set="mats.${slot}" data-v="${k}" aria-pressed="${cur===k}"${cur===k?'':dis(r)}><canvas data-fab="${k}" data-col="${cfg.colors[slot]}" width="120" height="120"></canvas><b>${x.n}</b><small>${x.d}</small></button>`}).join('')}</div></div>`}).join('')}
+   <div class="fdet"><canvas data-fab="${cur}" data-col="${cfg.colors[slot]}" width="220" height="220"></canvas>
+    <div><div class="rt"><b>${f.n}</b><span class="tag">${FAB_FAMS.find(x=>x[0]===f.fam)[1]}</span>${cur===TYPE_MAT[cfg.type]?'<span class="tag">本款默认</span>':''}</div><p class="why">${f.why}</p>
+    ${bars(f)}
+    <dl class="dl"><dt>成分</dt><dd>${f.comp}</dd><dt>克重</dt><dd>约 ${f.gsm} g/m²</dd><dt>参考价</dt><dd>¥${f.price[0]}–${f.price[1]} / 米</dd><dt>适合</dt><dd>${f.parts}</dd><dt>护理</dt><dd>${f.care}</dd></dl>
+    ${cfg.mats?.[slot]&&cfg.mats[slot]!=='base'&&cur!==TYPE_MAT[cfg.type]?`<button class="btn ghost sm" data-set="mats.${slot}" data-v="base">恢复本款默认（${FAB[TYPE_MAT[cfg.type]].n}）</button>`:''}</div></div>
+  </section>
+  <section class="sec"><details class="fcmp"><summary>全部面料对比（${Object.keys(FAB).length} 种）</summary><div class="gwrap"><table class="spec fcmpt"><thead><tr><th>面料</th>${FAB_PROPS.map(([,n])=>`<th>${n}</th>`).join('')}<th>克重</th><th>元/米</th></tr></thead><tbody>${Object.entries(FAB).map(([k,x])=>`<tr${['main','acc1','acc2'].some(s=>matOf(cfg,s)===k)?' class="inuse"':''}><td><b>${x.n}</b><small class="how">${x.d}</small></td>${FAB_PROPS.map(([p])=>`<td class="dots">${'●'.repeat(x[p])}<span>${'●'.repeat(3-x[p])}</span></td>`).join('')}<td class="mono">${x.gsm}</td><td class="mono">${x.price[0]}–${x.price[1]}</td></tr>`).join('')}</tbody></table></div><p class="note">评分是同类面料的常见水平，方便比较；实际以供应商的检测报告为准。高亮行是这件衣服正在用的面料。</p></details></section>`;
+}
 function tabDetail(){const vest=cfg.type==='vest';
   return `<section class="sec"><h2>帽子与领口</h2>
    ${row('领型',seg('collar',OPTS.collar,cfg.collar))}
@@ -2681,6 +2814,9 @@ const sizeSpec=c=>sizeModel(c);
 
 // ---------- 事件 ----------
 document.addEventListener('click',e=>{if(ui.bubble&&!e.target.closest('#bubble')&&performance.now()-bubbleAt>400)closeBubble();const t=e.target.closest('button,[data-act]');if(!t)return;const D=t.dataset;if(t.getAttribute('aria-disabled')==='true'){toast(D.why||'和当前选择冲突');return}
+  if(D.goto){ui.tab=D.goto;LS.set('tab',ui.tab);renderPanel();$('.panel').scrollTop=0;return}
+  if(D.fslot){ui.fslot=D.fslot;renderPanel();return}
+  if(D.rec!==undefined){const r=FAB_RECS[cfg.scene||'daily'][+D.rec];if(r){snap();if(cfg.type!==r.type)setPath('type',r.type);cfg.template=r.tpl;cfg.hoodColor=TEMPLATES[r.tpl].hood;cfg.mats=recMats(r);if(r.patch)Object.assign(cfg,clone(r.patch));resolveCfg(cfg);afterChange();toast('已换成「'+r.t+'」')}return}
   if(D.tab){ui.tab=D.tab;LS.set('tab',ui.tab);renderPanel();$('.panel').scrollTop=0;return}
   if(D.set){let v=D.v;if(D.type==='num')v=+v;if(v==='true')v=true;if(v==='false')v=false;if((D.set==='hoodDeco'&&v!=='none'||D.set==='hoodShape')&&!ui.hoodUp){ui.hoodUp=true}if(getK(D.set)===v&&!D.set.startsWith('logo.'))return;change(D.set,v);return}
   if(D.tg){if(D.tg==='hoodBrim'&&!cfg.hoodBrim)ui.hoodUp=true;change(D.tg,!getK(D.tg));return}
