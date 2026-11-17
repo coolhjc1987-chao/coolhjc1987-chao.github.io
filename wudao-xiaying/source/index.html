@@ -1,0 +1,2001 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>雾岛侠影 · 武侠奇幻两人卡牌</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      :root{
+        --bg:#efe9da; --bg2:#e2d9c2; --panel:#fbf7ec; --panel2:#f3ecd9;
+        --ink:#22302a; --ink-soft:#5d6a5e; --line:#cfc09c;
+        --gold:#a87b1f; --gold-soft:#eed9a0; --jade:#17604f; --jade-soft:#d3e8dd;
+        --red:#b3382a; --red-soft:#f6ded8;
+        --p1:#b3382a; --p1-soft:#f6ded8; --p2:#17604f; --p2-soft:#d3e8dd;
+        --atk:#b3382a; --def:#17604f; --skill:#8a6d1f;
+        --shadow:0 14px 34px rgba(52,42,14,.18);
+        --card-shadow:0 10px 22px rgba(52,42,14,.20), 0 2px 6px rgba(52,42,14,.14);
+        --radius:16px;
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#0a1410; --bg2:#0e1d17; --panel:#152720; --panel2:#1a2f27;
+          --ink:#ecf2e6; --ink-soft:#a7b8a6; --line:#33503f;
+          --gold:#e0b64f; --gold-soft:#54451d; --jade:#57c9a6; --jade-soft:#17382e;
+          --red:#ff9a86; --red-soft:#40221d;
+          --p1:#ff9a86; --p1-soft:#40221d; --p2:#57c9a6; --p2-soft:#17382e;
+          --atk:#ff9a86; --def:#57c9a6; --skill:#e0b64f;
+          --shadow:0 14px 34px rgba(0,0,0,.5);
+          --card-shadow:0 12px 24px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.4);
+        }
+      }
+      *{box-sizing:border-box}
+      html,body{margin:0;padding:0}
+      body{
+        font-family:"Noto Sans SC",system-ui,sans-serif; color:var(--ink);
+        background:
+          radial-gradient(900px 480px at 85% -60px, var(--jade-soft), transparent 60%),
+          radial-gradient(700px 420px at -10% 240px, var(--gold-soft), transparent 55%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+        min-height:100vh;
+      }
+      .wrap{max-width:1020px;margin:0 auto;padding:16px 16px 52px}
+
+      /* ===== Hero ===== */
+      .hero{position:relative;border-radius:22px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--line);min-height:300px;display:flex;align-items:flex-end;margin-bottom:18px;isolation:isolate}
+      .hero img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transform:scale(1.04)}
+      .hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg, rgba(8,20,14,.06) 30%, rgba(8,20,14,.78) 88%),linear-gradient(90deg, rgba(8,20,14,.55), transparent 65%)}
+      .hero-in{padding:26px 24px 22px;color:#f7f1de;width:100%}
+      .hero .sealrow{display:flex;gap:12px;align-items:flex-start}
+      .seal{flex:none;width:52px;height:52px;border-radius:10px;background:#b3382a;color:#ffe9c9;font-family:"Ma Shan Zheng",serif;font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,.4);transform:rotate(-4deg);border:2px solid rgba(255,233,201,.55)}
+      h1{font-family:"Ma Shan Zheng","Noto Serif SC",serif;font-weight:400;font-size:clamp(42px,8.5vw,68px);margin:0;line-height:1.05;letter-spacing:.04em;text-shadow:0 3px 18px rgba(0,0,0,.5)}
+      h1 .accent{color:#eec96a}
+      .hero .sub{margin:10px 0 0;font-size:15px;line-height:1.7;max-width:620px;color:#e9e2cb;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+      .rulebar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+      .rulebar span{border:1px solid rgba(238,217,160,.5);background:rgba(10,24,17,.55);backdrop-filter:blur(3px);border-radius:999px;padding:5px 12px;font-size:13px;color:#e9e2cb}
+      .rulebar b{color:#eec96a}
+
+      section.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+      section.panel h2{font-family:"Noto Serif SC",serif;font-size:21px;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+      section.panel h2::before{content:"";width:9px;height:22px;background:linear-gradient(180deg,var(--red),var(--gold));border-radius:3px;flex:none}
+      section.panel p.desc{color:var(--ink-soft);font-size:14px;line-height:1.7;margin:0 0 12px}
+      .hidden{display:none !important}
+      button{font-family:inherit;cursor:pointer}
+
+      /* ===== How to play ===== */
+      .howgrid{display:grid;grid-template-columns:1fr;gap:10px}
+      @media(min-width:680px){.howgrid{grid-template-columns:1fr 1fr}}
+      .how{border:1px solid var(--line);border-radius:12px;background:var(--panel2);padding:13px 15px}
+      .how .ht{font-weight:700;font-size:15px;margin-bottom:5px;color:var(--ink)}
+      .how .ht i{font-style:normal;color:var(--red);font-family:"Noto Serif SC",serif;margin-right:6px}
+      .how p{margin:0;font-size:13.5px;line-height:1.7;color:var(--ink-soft)}
+      .how p b{color:var(--ink)}
+      details.more{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+      details.more summary{cursor:pointer;font-weight:700;font-size:14.5px;color:var(--jade)}
+      details.more ol{margin:10px 0 2px;padding-left:20px;font-size:13.5px;line-height:1.8;color:var(--ink-soft)}
+      details.more ol b{color:var(--ink)}
+
+      /* ===== Setup choices ===== */
+      .pickgrid{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:6px}
+      @media(min-width:680px){.pickgrid{grid-template-columns:repeat(3,1fr)}}
+      .pick{text-align:left;border:1.5px solid var(--line);background:var(--panel2);border-radius:14px;padding:14px;color:var(--ink);transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;width:100%}
+      .pick:hover{transform:translateY(-2px)}
+      .pick.on{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-soft), var(--shadow);background:linear-gradient(180deg,var(--panel2),var(--gold-soft))}
+      .pick .t{font-family:"Noto Serif SC",serif;font-weight:900;font-size:17px;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+      .pick .badge{font-family:"Noto Sans SC",sans-serif;font-size:11px;font-weight:700;background:var(--jade);color:#fff;border-radius:999px;padding:2px 9px}
+      .pick .d{font-size:13px;color:var(--ink-soft);line-height:1.6;display:block}
+      .steplabel{font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--gold);margin:14px 0 8px}
+      .steplabel:first-of-type{margin-top:2px}
+      .mode-btn.primary{border-color:var(--gold)}
+
+      /* LAN */
+      .lan-tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+      .tab-btn{border:1.5px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:999px;padding:8px 16px;font-weight:700;font-size:14px}
+      .tab-btn.on{border-color:var(--gold);background:var(--gold);color:#fff}
+      .step{border-top:1px dashed var(--line);padding:12px 0}
+      .step:first-of-type{border-top:none}
+      .step .st{font-weight:700;font-size:14px;margin-bottom:6px}
+      .step p{margin:0 0 8px;font-size:13px;color:var(--ink-soft);line-height:1.6}
+      textarea{width:100%;min-height:74px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);padding:10px;font-size:12px;font-family:ui-monospace,monospace;resize:vertical;word-break:break-all}
+      .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+      .btn{border:1.5px solid var(--gold);background:linear-gradient(180deg,var(--gold),#8a5f14);color:#fff;border-radius:10px;padding:10px 18px;font-weight:700;font-size:15px;box-shadow:0 4px 12px rgba(90,64,8,.25)}
+      @media (prefers-color-scheme: dark){.btn{background:linear-gradient(180deg,#8a6c1e,#5f4a12)}}
+      .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line);box-shadow:none}
+      .btn:disabled{opacity:.45;cursor:not-allowed}
+      .status{font-size:13px;margin-top:8px;color:var(--ink-soft)}
+      .status.ok{color:var(--def);font-weight:700}
+
+      /* ===== Board & 3D ===== */
+      .board3d{perspective:1400px}
+      .terrain{display:flex;gap:10px;align-items:center;border:1.5px solid var(--gold);border-radius:12px;padding:10px 14px;margin-bottom:10px;background:linear-gradient(90deg,var(--gold-soft),var(--panel));font-size:14px;box-shadow:var(--shadow)}
+      .terrain .tname{font-family:"Noto Serif SC",serif;font-weight:900;font-size:16px;color:var(--ink)}
+      .terrain .tdesc{color:var(--ink-soft);font-size:13px}
+      .fighter{border:1.5px solid var(--line);border-radius:var(--radius);padding:12px 14px;background:linear-gradient(180deg,var(--panel),var(--panel2));margin-bottom:10px;box-shadow:var(--shadow);transform:rotateX(1.2deg);transform-origin:center top}
+      .fighter.active{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-soft), var(--shadow)}
+      .fighter .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+      .fighter .name{font-family:"Noto Serif SC",serif;font-weight:900;font-size:19px}
+      .fighter.p1 .name{color:var(--p1)} .fighter.p2 .name{color:var(--p2)}
+      .fighter .tag{font-size:12px;color:var(--ink-soft)}
+      .hpbar{height:14px;border-radius:7px;background:var(--bg2);border:1px solid var(--line);overflow:hidden;margin:8px 0 6px;box-shadow:inset 0 2px 4px rgba(0,0,0,.18)}
+      .hpfill{height:100%;transition:width .5s ease;background-image:linear-gradient(180deg,rgba(255,255,255,.35),transparent 55%)}
+      .p1 .hpfill{background-color:var(--p1)} .p2 .hpfill{background-color:var(--p2)}
+      .stats{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--ink-soft)}
+      .stats b{color:var(--ink)}
+      .backs{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;perspective:600px}
+      .back{width:24px;height:34px;border-radius:5px;background:linear-gradient(150deg,var(--jade),#0d3a2f);border:1px solid var(--gold);box-shadow:0 3px 6px rgba(0,0,0,.25);transform:rotateX(18deg);position:relative}
+      .back::after{content:"侠";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gold-soft);font-family:"Noto Serif SC",serif;font-size:12px}
+      .clash{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;box-shadow:var(--shadow)}
+      .clash.hit{animation:hitpulse .45s ease}
+      @keyframes hitpulse{0%{transform:scale(1)}30%{transform:scale(1.015);border-color:var(--red)}100%{transform:scale(1)}}
+      .clash .last{font-size:14.5px;line-height:1.6}
+      .clash .last b{color:var(--red)}
+      .log{margin:10px 0 0;padding:0;list-style:none;font-size:13px;color:var(--ink-soft);max-height:132px;overflow:auto}
+      .log li{padding:3px 0;border-top:1px dashed var(--line)}
+      .log li:first-child{border-top:none}
+      .handtitle{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+      .handtitle .who{font-family:"Noto Serif SC",serif;font-weight:900;font-size:17px}
+      .hand{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;perspective:1200px}
+      @media(min-width:560px){.hand{grid-template-columns:repeat(3,1fr)}}
+      @media(min-width:880px){.hand{grid-template-columns:repeat(4,1fr)}}
+      .card{position:relative;text-align:left;border-radius:14px;padding:0;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);min-height:158px;display:flex;flex-direction:column;overflow:visible;box-shadow:var(--card-shadow);transform-style:preserve-3d;transition:transform .18s ease, box-shadow .18s ease;animation:cardin .5s cubic-bezier(.2,.9,.3,1.2) backwards}
+      @keyframes cardin{from{transform:rotateY(88deg) translateY(10px);opacity:0}to{transform:rotateY(0) translateY(0);opacity:1}}
+      .card .band{border-radius:13px 13px 0 0;padding:9px 12px 7px;display:flex;align-items:center;gap:9px;transform:translateZ(18px)}
+      .card.t-atk .band{background:linear-gradient(120deg,var(--red-soft),transparent 75%)}
+      .card.t-def .band{background:linear-gradient(120deg,var(--jade-soft),transparent 75%)}
+      .card.t-skill .band{background:linear-gradient(120deg,var(--gold-soft),transparent 75%)}
+      .card .glyph{flex:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Noto Serif SC",serif;font-weight:900;font-size:19px;color:#fff;box-shadow:0 4px 9px rgba(0,0,0,.28), inset 0 0 0 2px rgba(255,255,255,.35)}
+      .card.t-atk .glyph{background:radial-gradient(circle at 32% 30%, #d95c49, var(--atk))}
+      .card.t-def .glyph{background:radial-gradient(circle at 32% 30%, #2f8a70, var(--def))}
+      .card.t-skill .glyph{background:radial-gradient(circle at 32% 30%, #c49b35, var(--skill))}
+      .card .cname{font-family:"Noto Serif SC",serif;font-weight:900;font-size:16.5px;line-height:1.25}
+      .card .ctype{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--ink-soft)}
+      .card .ctext{font-size:13px;color:var(--ink-soft);line-height:1.55;padding:7px 12px 12px;transform:translateZ(10px)}
+      .card .cost{position:absolute;top:-10px;right:-7px;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 32% 30%, #e8c566, var(--gold));color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid var(--panel);box-shadow:0 4px 9px rgba(0,0,0,.3);z-index:2;transform:translateZ(26px)}
+      .card .tier{position:absolute;bottom:8px;right:10px;font-size:10.5px;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:1px 7px;background:var(--panel2)}
+      .card.t-atk{border-color:var(--atk)} .card.t-def{border-color:var(--def)} .card.t-skill{border-color:var(--skill)}
+      .card:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;animation:none}
+      .card:not(:disabled):hover{box-shadow:0 20px 34px rgba(52,42,14,.3)}
+      .card.playing{animation:playfly .28s ease-in forwards !important;z-index:5}
+      @keyframes playfly{to{transform:translateY(-46px) scale(1.1) rotate(-3deg);opacity:.15}}
+      .turnbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+      .turnhint{font-size:13.5px;color:var(--ink-soft)}
+
+      /* ===== 音效控制条 ===== */
+      .audio-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1.5px solid var(--gold);border-radius:14px;padding:10px 12px;margin-bottom:14px;background:linear-gradient(90deg,var(--panel),var(--panel2));box-shadow:var(--shadow)}
+      .audio-bar .audio-title{font-family:"Noto Serif SC",serif;font-weight:900;font-size:15px;color:var(--ink);display:flex;align-items:center;gap:7px}
+      .audio-btn{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--gold);background:linear-gradient(180deg,var(--gold),#8a5f14);color:#fff;border-radius:999px;padding:8px 15px;font-weight:800;font-size:14px;box-shadow:0 4px 10px rgba(90,64,8,.25)}
+      @media (prefers-color-scheme: dark){.audio-btn{background:linear-gradient(180deg,#8a6c1e,#5f4a12)}}
+      .audio-btn.off{background:transparent;color:var(--ink-soft);border-color:var(--line);box-shadow:none}
+      .audio-btn.amb,.audio-btn.music{background:transparent;color:var(--ink);border-color:var(--jade);box-shadow:none}
+      .audio-btn.amb.off,.audio-btn.music.off{color:var(--ink-soft);border-color:var(--line);opacity:.65}
+      .audio-btn.unlock{background:linear-gradient(180deg,#c33,#8f2418);border-color:#8f2418;font-size:15px;padding:9px 18px}
+      .audio-btn svg{width:18px;height:18px;flex:none}
+      .audio-vol{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink)}
+      .audio-vol input[type="range"]{width:118px;accent-color:var(--gold);cursor:pointer}
+      .audio-hint{font-size:12px;color:var(--ink-soft);line-height:1.5}
+      .audio-now{font-size:12.5px;font-weight:800;color:var(--jade);white-space:nowrap}
+      #audioStatus{font-weight:700}
+      body.in-game .audio-bar{flex:none;margin-bottom:0;padding:6px 9px;border-radius:11px;gap:7px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+      body.in-game .audio-bar .audio-btn, body.in-game .audio-bar .audio-vol, body.in-game .audio-bar .audio-now{flex:none}
+      body.in-game .audio-bar .audio-title{display:none}
+      body.in-game .audio-hint{display:none}
+      body.in-game .audio-btn{padding:6px 11px;font-size:13px}
+      body.in-game .audio-btn.unlock{padding:6px 13px;font-size:13px}
+      body.in-game .audio-vol input[type="range"]{width:76px}
+      body.in-game .audio-now{font-size:11.5px}
+      @media(max-width:560px){.audio-hint{flex-basis:100%}.audio-vol input[type="range"]{width:96px}body.in-game .audio-vol span{display:none}}
+
+      /* ===== PK 擂台 & 实体卡（三国杀式卡框） ===== */
+      .arena{position:relative;border:1.5px solid var(--gold);border-radius:20px;overflow:hidden;padding:14px 14px 12px;margin-bottom:14px;box-shadow:var(--shadow);background:linear-gradient(180deg, rgba(10,24,17,.30), rgba(10,24,17,.66)), url("assets/hero.webp") center 38%/cover no-repeat, var(--panel2)}
+      .arena-head{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:#f3ecd4;margin-bottom:12px}
+      .arena-head .at{font-family:"Noto Serif SC",serif;font-weight:900;font-size:17px;letter-spacing:.06em;text-shadow:0 2px 8px rgba(0,0,0,.65)}
+      .arena-head .at b{color:#eec96a}
+      .arena-head .ah{font-size:12.5px;color:#ddd5b8;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+      .arena-stage{position:relative;z-index:2;display:flex;align-items:stretch;justify-content:center;gap:10px;perspective:1100px}
+      .arena-stage::after{content:"";position:absolute;left:6%;right:6%;bottom:-14px;height:30px;border-radius:50%;background:radial-gradient(ellipse at center, rgba(0,0,0,.5), transparent 68%);z-index:-1}
+      .vs-seal{flex:none;align-self:center;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 34% 30%, #d95c49, #8f2418);color:#ffe9c9;border:2.5px solid #eed9a0;box-shadow:0 8px 20px rgba(0,0,0,.5), inset 0 0 0 3px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;font-family:"Ma Shan Zheng",serif;font-size:19px;transform:rotate(-6deg);text-align:center;line-height:1.15;z-index:3}
+      /* 人物牌：武将牌式实体卡 */
+      .fighter{flex:1 1 0;max-width:330px;min-width:0;margin-bottom:0;padding:0;overflow:hidden;border:3px solid #6d5a26;border-radius:14px;background:linear-gradient(180deg,#f7efdb,#eadfc2);color:#22302a;box-shadow:0 16px 30px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,252,240,.75);transform:rotateX(2deg)}
+      @media (prefers-color-scheme: dark){.fighter{background:linear-gradient(180deg,#22392f,#16281f);color:#ecf2e6;border-color:#8a6d1f}}
+      .fighter.active{border-color:#e0b64f;box-shadow:0 0 0 3px rgba(238,201,106,.65), 0 16px 30px rgba(0,0,0,.45)}
+      .fighter .head{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 11px 7px;color:#fff}
+      .fighter.p1 .head{background:linear-gradient(90deg,#8f2418,#b3382a)}
+      .fighter.p2 .head{background:linear-gradient(90deg,#0d3a2f,#17604f)}
+      .fighter .name{color:#ffeec4 !important;font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .fighter .tag{font-size:11px;color:rgba(255,255,255,.85);text-align:right}
+      .portrait{position:relative;height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-bottom:2px solid #a87b1f;overflow:hidden}
+      .fighter.p1 .portrait{background:radial-gradient(120px 70px at 50% 18%, #f6ded8, transparent 70%),linear-gradient(160deg,#5d1a12,#b3382a 55%,#5d1a12)}
+      .fighter.p2 .portrait{background:radial-gradient(120px 70px at 50% 18%, #d3e8dd, transparent 70%),linear-gradient(160deg,#08231b,#17604f 55%,#08231b)}
+      .portrait .pglyph{font-family:"Ma Shan Zheng",serif;font-size:54px;line-height:1;color:#ffeec4;text-shadow:0 4px 14px rgba(0,0,0,.55)}
+      .portrait .psub{font-size:11.5px;letter-spacing:.22em;color:rgba(255,238,196,.92)}
+      .portrait .pseal{position:absolute;top:7px;right:8px;width:24px;height:24px;border-radius:6px;background:#b3382a;color:#ffe9c9;border:1.5px solid rgba(255,233,201,.7);display:flex;align-items:center;justify-content:center;font-family:"Noto Serif SC",serif;font-size:12px;transform:rotate(5deg)}
+      .pips{display:flex;align-items:center;gap:4px;padding:8px 11px 0;flex-wrap:wrap}
+      .pips .plab{font-size:11px;font-weight:700;letter-spacing:.08em;color:#8a5f14;margin-right:2px}
+      @media (prefers-color-scheme: dark){.pips .plab{color:#e0b64f}}
+      .pip{width:15px;height:15px;border-radius:50% 50% 50% 3px;transform:rotate(-45deg);background:radial-gradient(circle at 34% 32%, #ff9a86, #b3382a 70%);border:1.5px solid #7d1f14;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+      .pip.off{background:rgba(90,80,60,.25);border-color:rgba(90,80,60,.45);box-shadow:none}
+      .fighter .hpbar{margin:7px 11px 5px}
+      .fighter .stats{padding:2px 11px 10px;font-size:12.5px;gap:4px 10px}
+      .fighter .backs{padding:0 11px 10px;margin-top:2px}
+      .arena .clash{position:relative;z-index:2;margin:14px 0 2px;background:rgba(251,247,236,.94)}
+      @media (prefers-color-scheme: dark){.arena .clash{background:rgba(21,39,32,.94)}}
+      @media(max-width:560px){.portrait{height:88px}.portrait .pglyph{font-size:42px}.vs-seal{width:44px;height:44px;font-size:15px}.fighter .stats{font-size:11.5px}.arena{padding:11px 9px 10px}.arena-stage{gap:6px}}
+      /* 手牌：实体卡 + 扇形展开 */
+      .hand{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:14px 0;padding:18px 8px 10px;perspective:1200px}
+      .card{flex:0 1 176px;width:176px;aspect-ratio:5/7.4;min-height:0;margin-left:-18px;overflow:hidden;border:3px solid #6d5a26;border-radius:12px;background:linear-gradient(180deg,#f8f1de,#eee2c4);color:#22302a;box-shadow:0 14px 26px rgba(30,22,4,.35), inset 0 0 0 2px rgba(255,252,240,.8);transform:rotate(var(--fan-rot,0deg));transform-origin:50% 92%}
+      .card:first-child{margin-left:0}
+      @media (prefers-color-scheme: dark){.card{background:linear-gradient(180deg,#263c31,#182a21);color:#ecf2e6;border-color:#8a6d1f}}
+      .card.t-atk{border-color:#8f2418}.card.t-def{border-color:#0d4a3a}.card.t-skill{border-color:#8a6d1f}
+      .card:not(:disabled):hover{transform:rotate(0deg) translateY(-16px) scale(1.045);z-index:6;box-shadow:0 26px 40px rgba(30,22,4,.42)}
+      .card .cost{position:static;flex:none;width:30px;height:30px;font-size:15px;border:2.5px solid #fff7e0;z-index:4;margin-right:2px;transform:none}
+      .card .chead{display:flex;align-items:center;justify-content:flex-start;gap:5px;padding:7px 9px 6px 7px;border-bottom:2px solid rgba(168,123,31,.55)}
+      .card.t-atk .chead{background:linear-gradient(180deg,rgba(179,56,42,.24),transparent)}
+      .card.t-def .chead{background:linear-gradient(180deg,rgba(23,96,79,.24),transparent)}
+      .card.t-skill .chead{background:linear-gradient(180deg,rgba(168,123,31,.26),transparent)}
+      .card .chead .cname{font-size:16px;text-align:center;flex:1;white-space:nowrap}
+      .card .cart{position:relative;flex:none;height:31%;margin:7px 9px 0;border:1.5px solid rgba(109,90,38,.65);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;overflow:hidden}
+      .card.t-atk .cart{background:radial-gradient(90px 60px at 50% 22%, rgba(255,255,255,.55), transparent 70%),linear-gradient(155deg,#e08573,#b3382a 58%,#6d1a10)}
+      .card.t-def .cart{background:radial-gradient(90px 60px at 50% 22%, rgba(255,255,255,.5), transparent 70%),linear-gradient(155deg,#4da184,#17604f 58%,#0a2e24)}
+      .card.t-skill .cart{background:radial-gradient(90px 60px at 50% 22%, rgba(255,255,255,.5), transparent 70%),linear-gradient(155deg,#d9b558,#8a6d1f 58%,#54400e)}
+      .card .cart-glyph{font-family:"Ma Shan Zheng",serif;font-size:46px;line-height:1.05;color:#fff7e0;text-shadow:0 4px 12px rgba(0,0,0,.5)}
+      .card .cart-type{font-size:10.5px;font-weight:700;letter-spacing:.34em;color:rgba(255,247,224,.92);text-indent:.34em}
+      .card .ctextbox{flex:1;margin:7px 9px 9px;border:1.5px solid rgba(109,90,38,.55);border-radius:8px;background:rgba(255,252,240,.66);padding:8px 9px;display:block;overflow:hidden}
+      @media (prefers-color-scheme: dark){.card .ctextbox{background:rgba(10,20,14,.4)}}
+      .card .ctext{display:block;padding:0;font-size:12px;line-height:1.5;color:inherit;opacity:.88;transform:none}
+      .card .tier{bottom:12px;right:12px;background:rgba(255,252,240,.8)}
+      @media(max-width:560px){.card{flex-basis:158px;width:158px;margin-left:-22px}.card .cart-glyph{font-size:38px}.card .cost{width:27px;height:27px;font-size:13px}.card .chead{padding:6px 7px 5px 6px}.card .chead .cname{font-size:14px}}
+      .back{width:26px;height:38px;border:2px solid #a87b1f;border-radius:6px;background:linear-gradient(150deg,#2f8a70,#0d3a2f);box-shadow:0 4px 8px rgba(0,0,0,.35), inset 0 0 0 2px rgba(238,217,160,.35)}
+
+      /* ===== IP 形象 ===== */
+      .ip-grid{display:grid;grid-template-columns:1fr;gap:12px}
+      @media(min-width:680px){.ip-grid{grid-template-columns:repeat(3,1fr)}}
+      .ip-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel2);display:flex;gap:0;align-items:stretch}
+      @media(min-width:680px){.ip-card{flex-direction:column}}
+      .ip-card img{width:110px;height:100%;min-height:132px;object-fit:cover;object-position:50% 10%;flex:none}
+      @media(min-width:680px){.ip-card img{width:100%;height:168px}}
+      .ip-card .ip-body{padding:11px 13px}
+      .ip-card .ip-name2{font-family:"Noto Serif SC",serif;font-weight:900;font-size:16px;margin-bottom:3px}
+      .ip-card .ip-role{font-size:11.5px;font-weight:700;color:var(--gold);letter-spacing:.05em;margin-bottom:5px}
+      .ip-card p{margin:0;font-size:13px;line-height:1.6;color:var(--ink-soft)}
+      .ip-card p b{color:var(--ink)}
+      /* 人物牌内的 IP 行 + 唯一血槽 */
+      .ip-row{display:flex;gap:11px;align-items:center;padding:9px 11px 4px}
+      .ip-img{width:66px;height:66px;border-radius:14px;object-fit:cover;object-position:50% 10%;border:2px solid var(--gold);flex:none;background:#f5eed8;box-shadow:0 4px 10px rgba(0,0,0,.25)}
+      .ip-info{flex:1;min-width:0}
+      .ip-info .ip-name{font-family:"Noto Serif SC",serif;font-weight:900;font-size:15.5px;line-height:1.3;text-wrap:balance}
+      .ip-info .ip-desc{font-size:11.5px;color:#8a5f14;margin:1px 0 5px;text-wrap:balance}
+      @media (prefers-color-scheme: dark){.ip-info .ip-desc{color:#e0b64f}.ip-info .ip-name{color:#ecf2e6}}
+      .hp-single{display:flex;align-items:center;gap:8px}
+      .hp-single .hpbar{flex:1;margin:0;height:11px}
+      .hp-num{font-weight:900;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+      .hp-num small{font-weight:500;color:var(--ink-soft);font-size:11px}
+      .blood-tag{display:inline-block;font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px;color:#fff;white-space:nowrap}
+      .blood-tag.bt-high{background:#b3382a}
+      .blood-tag.bt-mid{background:#2f6f8f}
+      .blood-tag.bt-low{background:#6a4a9e}
+
+      /* ===== 对局一屏模式：页面锁定不上下滚动 ===== */
+      body.in-game{height:100dvh;overflow:hidden}
+      body.in-game .wrap{height:100dvh;max-height:100dvh;padding:8px 10px 8px;display:flex;flex-direction:column;overflow:hidden}
+      body.in-game .foot{display:none}
+      body.in-game .hero, body.in-game #howto{display:none}
+      body.in-game #board{display:flex;flex-direction:column;flex:1;min-height:0;gap:6px}
+      body.in-game .terrain{flex:none;margin-bottom:0;padding:6px 11px;font-size:12.5px}
+      body.in-game .terrain .tname{font-size:14px;white-space:nowrap}
+      body.in-game .arena{flex:none;margin-bottom:0;padding:9px 10px 8px}
+      body.in-game .arena-head{margin-bottom:8px}
+      body.in-game .arena-head .at{font-size:15px}
+      body.in-game .vs-seal{width:44px;height:44px;font-size:15px}
+      body.in-game .ip-img{width:56px;height:56px;border-radius:12px}
+      body.in-game .ip-row{padding:7px 10px 2px;gap:9px}
+      body.in-game .fighter .stats{padding:1px 10px 7px;font-size:12px;gap:3px 9px}
+      body.in-game .fighter .backs{padding:0 10px 7px}
+      body.in-game .back{width:19px;height:27px}
+      body.in-game .back::after{font-size:9px}
+      body.in-game .arena .clash{margin-top:8px;padding:7px 10px}
+      body.in-game .clash .last{font-size:13px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+      body.in-game .log{display:none}
+      body.in-game .handtitle{flex:none;margin:0}
+      body.in-game .handtitle .who{font-size:15px}
+      body.in-game .turnhint{font-size:12px}
+      body.in-game #hand{flex:none;height:192px;flex-wrap:nowrap;justify-content:flex-start;align-items:flex-end;overflow-x:auto;overflow-y:hidden;padding:12px 6px 4px;scrollbar-width:thin;-webkit-overflow-scrolling:touch;gap:10px}
+      body.in-game #hand .card{flex:0 0 140px;width:140px;margin-left:0;aspect-ratio:auto;height:176px}
+      body.in-game #hand .card .cart{height:40px;flex:none;flex-direction:row;gap:7px;margin:6px 8px 0}
+      body.in-game #hand .card .cart-glyph{font-size:25px}
+      body.in-game #hand .card .cart-type{letter-spacing:.18em;text-indent:0;white-space:nowrap}
+      body.in-game #hand .card .ctextbox{margin:6px 8px 8px;padding:7px 8px;overflow:visible}
+      body.in-game #hand .card .cname{font-size:14.5px}
+      body.in-game .turnbar{flex:none;margin-top:2px}
+      body.in-game .turnbar .btn{padding:8px 15px;font-size:14px}
+      @media(max-height:780px){
+        body.in-game #hand{height:188px}
+        body.in-game #hand .card{flex-basis:130px;width:130px;height:172px}
+        body.in-game #hand .card .cart-glyph{font-size:22px}
+        body.in-game #hand .card .cost{width:25px;height:25px;font-size:12.5px}
+        body.in-game #hand .card .chead{padding:6px 6px 5px}
+        body.in-game #hand .card .cname{font-size:13px}
+        body.in-game #hand .card .ctext{font-size:11px;line-height:1.45}
+        body.in-game .log{display:none}
+        body.in-game .ip-img{width:46px;height:46px}
+      }
+      @media(max-width:560px){
+        body.in-game #hand .card{flex-basis:132px;width:132px;margin-left:0}
+        body.in-game #hand .card .cost{width:25px;height:25px;font-size:12.5px}
+        body.in-game #hand .card .chead{padding:6px 6px 5px}
+        body.in-game #hand .card .cname{font-size:13.5px}
+        body.in-game #hand .card .ctext{font-size:11.5px}
+        body.in-game .ip-img{width:48px;height:48px}
+        body.in-game .ip-info .ip-name{font-size:14px}
+        body.in-game .blood-tag{display:block;width:fit-content;margin:4px 0 0}
+        body.in-game .arena-head{margin-bottom:6px}
+        body.in-game .arena .clash{margin-top:5px;padding:6px 10px}
+        body.in-game .fighter .stats{padding-bottom:5px}
+        body.in-game .fighter .backs{display:none}
+        body.in-game .arena-head .ah{display:none}
+      }
+      @media(max-height:700px){
+        body.in-game #hand{height:182px}
+        body.in-game #hand .card{height:166px}
+        body.in-game .fighter .backs{display:none}
+        body.in-game .arena-head{display:none}
+        body.in-game .ip-img{width:40px;height:40px}
+      }
+
+      /* ===== 出牌现身动画：人物立体现身出招，随即淡出（仅擂台内，不挡手牌） ===== */
+      .play-fx{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;pointer-events:none;perspective:900px;overflow:hidden}
+      .fx-pos{transform:translateX(calc(var(--dir,1) * -42px))}
+      @media(max-width:560px){.fx-pos{transform:translateX(calc(var(--dir,1) * -26px))}}
+      .fx-stage{position:relative;width:170px;height:170px;display:flex;align-items:center;justify-content:center;transform-style:preserve-3d;opacity:0}
+      .play-fx.on .fx-stage{animation:fxLifecycle 1.15s ease forwards}
+      @keyframes fxLifecycle{0%{opacity:0;transform:scale(.55) rotateY(-42deg) rotateX(10deg) translateY(16px)}18%{opacity:1;transform:scale(1.09) rotateY(7deg) rotateX(0deg) translateY(0)}30%{transform:scale(1) rotateY(0deg)}76%{opacity:1;transform:scale(1.02) rotateY(0deg) translateY(-2px)}100%{opacity:0;transform:scale(.9) rotateY(16deg) translateY(-12px)}}
+      .fx-char{position:relative;width:108px;height:108px;transform-style:preserve-3d}
+      .fx-char img{width:100%;height:100%;object-fit:cover;object-position:50% 10%;border-radius:16px;border:3px solid var(--gold);box-shadow:0 18px 34px rgba(0,0,0,.5),0 0 0 4px rgba(238,217,160,.35);display:block;background:#f5eed8}
+      .play-fx.t-atk .fx-char img{box-shadow:0 18px 34px rgba(0,0,0,.5),0 0 26px rgba(179,56,42,.75)}
+      .play-fx.t-def .fx-char img{box-shadow:0 18px 34px rgba(0,0,0,.5),0 0 26px rgba(23,96,79,.8)}
+      .play-fx.t-skill .fx-char img{box-shadow:0 18px 34px rgba(0,0,0,.5),0 0 26px rgba(168,123,31,.85)}
+      .play-fx.on.t-atk .fx-char{animation:fxLunge .5s ease .22s}
+      @keyframes fxLunge{0%{transform:translateX(0) rotate(0deg) scale(1)}38%{transform:translateX(calc(var(--dir,1) * 32px)) rotate(calc(var(--dir,1) * 5deg)) scale(1.07)}100%{transform:translateX(0) rotate(0deg) scale(1)}}
+      .play-fx.on.t-def .fx-char{animation:fxGuard .62s ease .16s}
+      @keyframes fxGuard{0%{transform:scale(1)}35%{transform:scale(1.08)}100%{transform:scale(1)}}
+      .play-fx.on.t-skill .fx-char{animation:fxCast .8s ease .15s}
+      @keyframes fxCast{0%{transform:translateY(0) rotate(0deg)}30%{transform:translateY(-9px) rotate(-2deg)}60%{transform:translateY(-4px) rotate(2deg)}100%{transform:translateY(0) rotate(0deg)}}
+      .fx-glyph{position:absolute;top:-14px;right:-14px;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Ma Shan Zheng",serif;font-size:22px;color:#fff7e0;border:2.5px solid #fff7e0;box-shadow:0 6px 14px rgba(0,0,0,.45);z-index:3;transform:translateZ(30px)}
+      .play-fx.t-atk .fx-glyph{background:radial-gradient(circle at 32% 30%, #d95c49, var(--atk))}
+      .play-fx.t-def .fx-glyph{background:radial-gradient(circle at 32% 30%, #2f8a70, var(--def))}
+      .play-fx.t-skill .fx-glyph{background:radial-gradient(circle at 32% 30%, #c49b35, var(--skill))}
+      .play-fx.on .fx-glyph{animation:fxGlyphPop .45s cubic-bezier(.2,.9,.3,1.4) .18s backwards}
+      @keyframes fxGlyphPop{from{transform:translateZ(30px) scale(.3);opacity:0}to{transform:translateZ(30px) scale(1);opacity:1}}
+      .fx-slash{position:absolute;left:50%;top:50%;width:190px;height:11px;margin:-6px 0 0 -95px;border-radius:999px;background:linear-gradient(90deg,transparent,#fff 32%,#eec96a 55%,transparent);box-shadow:0 0 18px rgba(238,201,106,.9);opacity:0;z-index:4}
+      .play-fx.on.t-atk .fx-slash{animation:fxSlash .38s ease .3s both}
+      @keyframes fxSlash{0%{opacity:0;transform:rotate(-33deg) scaleX(.1)}28%{opacity:1}100%{opacity:0;transform:rotate(-33deg) scaleX(1.12)}}
+      .fx-ring{position:absolute;left:50%;top:50%;width:138px;height:138px;margin:-69px 0 0 -69px;border-radius:50%;opacity:0;z-index:2}
+      .play-fx.t-def .fx-ring{border:5px solid var(--def);box-shadow:0 0 22px rgba(23,96,79,.65), inset 0 0 18px rgba(23,96,79,.4)}
+      .play-fx.on.t-def .fx-ring{animation:fxRing .78s ease-out .2s both}
+      @keyframes fxRing{0%{opacity:0;transform:scale(.42)}30%{opacity:1}100%{opacity:0;transform:scale(1.32)}}
+      .play-fx.t-skill .fx-ring{border:3.5px dashed var(--gold);box-shadow:0 0 20px rgba(168,123,31,.55)}
+      .play-fx.on.t-skill .fx-ring{animation:fxRune 1s linear .14s both}
+      @keyframes fxRune{0%{opacity:0;transform:scale(.6) rotate(0deg)}22%{opacity:1}100%{opacity:0;transform:scale(1.18) rotate(150deg)}}
+      .fx-banner{position:absolute;left:50%;bottom:-24px;transform:translateX(-50%);white-space:nowrap;background:rgba(8,20,14,.82);color:#ffeec4;border:1.5px solid var(--gold);border-radius:999px;padding:4px 14px;font-size:13px;font-weight:800;letter-spacing:.04em;box-shadow:0 6px 14px rgba(0,0,0,.4);z-index:5}
+      .play-fx.on .fx-banner{animation:fxBannerIn .3s ease .12s backwards}
+      @keyframes fxBannerIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+      @media(max-height:700px){.fx-char{width:92px;height:92px}.fx-stage{width:150px;height:150px}}
+
+      /* ===== Overlays / events ===== */
+      .overlay{position:fixed;inset:0;background:rgba(7,14,10,.76);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;overflow:auto}
+      .overlay .box{background:var(--panel);color:var(--ink);border-radius:18px;border:1px solid var(--line);max-width:440px;width:100%;padding:24px 22px;text-align:center;box-shadow:var(--shadow);margin:auto}
+      .overlay .box h3{font-family:"Noto Serif SC",serif;font-size:24px;margin:0 0 8px}
+      .overlay .box p{color:var(--ink-soft);font-size:14.5px;line-height:1.65;margin:0 0 16px}
+      .overlay .box.wide{max-width:560px;text-align:left}
+      .overlay .box.wide h3{text-align:center}
+      .soupimg{width:100%;height:170px;object-fit:cover;border-radius:12px;border:1px solid var(--line);margin-bottom:12px}
+      .soupface{border:1.5px solid var(--gold);background:var(--panel2);border-radius:12px;padding:13px 15px;font-size:15px;line-height:1.75;margin-bottom:12px}
+      .soupface .lab{font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--red);display:block;margin-bottom:4px}
+      .qbtn{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);border-radius:11px;padding:10px 13px;font-size:14px;margin-bottom:8px;line-height:1.5}
+      .qbtn .ans{flex:none;font-weight:900;border-radius:999px;padding:2px 11px;font-size:13px;background:var(--bg2);color:var(--ink-soft)}
+      .qbtn.revealed{border-color:var(--jade)}
+      .qbtn.revealed .ans{background:var(--jade);color:#fff}
+      .optbtn{display:block;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:11px;padding:11px 13px;font-size:14px;line-height:1.6;margin-bottom:8px}
+      .optbtn:hover{border-color:var(--gold)}
+      .evnote{font-size:13px;color:var(--ink-soft);line-height:1.6;margin:8px 0}
+      .soupprev{display:grid;grid-template-columns:1fr;gap:14px;align-items:center}
+      @media(min-width:680px){.soupprev{grid-template-columns:1.05fr 1fr}}
+      .soupprev img{width:100%;height:100%;min-height:210px;object-fit:cover;border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow)}
+      .foot{font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin-top:6px}
+      @media (prefers-reduced-motion: reduce){
+        .card,.hpfill,.pick{transition:none}
+        .card{animation:none} .clash.hit{animation:none}
+        .card.playing{animation:none !important}
+        .play-fx{display:none !important}
+      }
+      /* ===== v11 简洁高级版：减法 / 留白 / 细金边 / 强主按钮 ===== */
+      :root{--bg:#f6f4ef;--bg2:#f6f4ef;--panel:#ffffff;--panel2:#faf8f2;--ink:#1b241f;--ink-soft:#6b756c;--line:#e3ddd0;--gold:#b9974f;--gold-soft:#f3ecd8;--shadow:0 8px 30px rgba(27,36,31,.06);--card-shadow:0 8px 24px rgba(27,36,31,.10);--radius:18px}
+      @media(prefers-color-scheme:dark){:root{--bg:#0e1512;--bg2:#0e1512;--panel:#16211c;--panel2:#1a2821;--ink:#eef2ec;--ink-soft:#9aaca0;--line:#2a3d33;--gold:#d4af5e;--gold-soft:#2c2515;--shadow:0 8px 30px rgba(0,0,0,.35)}}
+      body{background:var(--bg)!important;font-family:"Noto Sans SC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+      .wrap{max-width:880px;padding:18px 16px 40px}
+      .hero{min-height:178px;border-radius:20px;border:1px solid rgba(185,151,79,.45);box-shadow:0 12px 32px rgba(0,0,0,.12);margin-bottom:14px}
+      .hero::after{background:linear-gradient(180deg,transparent 20%,rgba(8,18,13,.72) 92%)}
+      .hero-in{padding:20px 20px 16px}
+      .seal{width:42px;height:42px;font-size:24px;border-radius:9px}
+      h1{font-size:clamp(36px,7vw,52px);letter-spacing:.06em}
+      .hero .sub{font-size:13.5px;line-height:1.6;max-width:440px;margin-top:6px;opacity:.92}
+      .rulebar{gap:6px;margin-top:10px}.rulebar span{font-size:12px;padding:4px 10px;border-color:rgba(255,255,255,.22);background:rgba(0,0,0,.28);backdrop-filter:blur(6px)}
+      section.panel,details.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:22px 20px;margin-bottom:14px}
+      section.panel h2,details.panel summary{font-family:"Noto Serif SC",serif;font-size:18px;font-weight:700;letter-spacing:.02em}
+      section.panel h2::before{display:none}
+      section.panel h2{padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:14px}
+      details.panel summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;padding:2px 0}
+      details.panel summary::-webkit-details-marker{display:none}
+      details.panel summary::after{content:"展开  +";font-family:"Noto Sans SC",sans-serif;font-size:12px;font-weight:600;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:5px 11px;flex:none;margin-left:12px}
+      details.panel[open ] summary::after{content:"收起  −"}
+      details.panel[open ] summary{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+      section.panel p.desc{font-size:13.5px;line-height:1.65;color:var(--ink-soft)}
+      .howgrid{gap:8px}.how{border:none;border-bottom:1px solid var(--line);border-radius:0;background:transparent;padding:12px 2px}
+      .how p{font-size:13px}
+      .collapse{margin-top:4px}.collapse>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);padding:10px 0;list-style:none}
+      .collapse>summary::-webkit-details-marker{display:none}
+      /* 选项：干净的单选卡 */
+      .steplabel{font-size:12px;letter-spacing:.14em;color:var(--ink-soft);font-weight:700;margin:20px 0 10px}
+      .steplabel:first-of-type{margin-top:4px}
+      .pickgrid{gap:8px}
+      .pick{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:15px 16px;box-shadow:none}
+      .pick:hover{transform:none;border-color:var(--gold)}
+      .pick.on{border-color:var(--gold);background:var(--panel2);box-shadow:inset 0 0 0 1px var(--gold)}
+      .pick .t{font-size:15.5px}.pick .d{font-size:12.5px;line-height:1.55}
+      .pick .badge{background:var(--ink);font-size:10px;letter-spacing:.06em}
+      /* 主按钮：大、强对比、易点 */
+      .btn{min-height:52px;padding:14px 28px;border-radius:999px;font-size:16px;font-weight:800;letter-spacing:.04em;background:#132a21;color:#f0d98c;border:1px solid #132a21;box-shadow:0 10px 24px rgba(19,42,33,.28);display:inline-flex;align-items:center;justify-content:center}
+      @media(prefers-color-scheme:dark){.btn{background:#d4af5e;color:#131a16;border-color:#d4af5e;box-shadow:0 10px 24px rgba(0,0,0,.4)}}
+      .btn:active{transform:scale(.98)}
+      .btn.ghost{min-height:44px;padding:10px 18px;font-size:13.5px;font-weight:600;background:transparent;color:var(--ink-soft);border:1px solid var(--line);box-shadow:none}
+      .btn:disabled{opacity:.38;box-shadow:none}
+      #btnEndTurn{flex:1 1 180px;min-height:56px;font-size:17px}
+      .turnbar{gap:8px;align-items:stretch}
+      .turnbar .btn.ghost{flex:0 0 auto}
+      /* 声音条：极简一行，主按钮突出 */
+      .audio-bar{border:1px solid var(--line);background:var(--panel);border-radius:18px;padding:8px;box-shadow:var(--shadow);gap:6px;margin-bottom:14px}
+      .audio-bar .audio-title{display:none}
+      .audio-hint{display:none!important}
+      .audio-btn{min-height:40px;border-radius:999px;padding:9px 14px;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--ink);box-shadow:none}
+      .audio-btn.unlock{min-height:48px;padding:12px 22px;font-size:15px;background:#b3382a;border-color:#b3382a;color:#fff;box-shadow:0 8px 20px rgba(179,56,42,.32)}
+      .audio-now{font-size:12px;color:var(--ink-soft);font-weight:600}
+      .audio-vol{font-size:12px}.audio-vol input{width:84px}
+      body.in-game .audio-bar{border-radius:12px;padding:5px;margin-bottom:0}
+      body.in-game .audio-btn.unlock{min-height:38px;padding:8px 14px;font-size:13px}
+      /* 角色卡：只留头像/定位/血量 */
+      .ip-grid{gap:10px}.ip-card{border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:none}
+      .ip-card p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12.5px}
+      @media(min-width:680px){.ip-card img{height:138px}}
+      /* 擂台与手牌：视觉重心 */
+      .arena{border:1px solid rgba(185,151,79,.55);border-radius:20px;box-shadow:0 16px 36px rgba(0,0,0,.16);padding:16px}
+      .arena-head .ah{display:none}
+      .fighter{border:1.5px solid rgba(185,151,79,.5)!important;box-shadow:0 10px 24px rgba(0,0,0,.14)}
+      .fighter.active{box-shadow:0 0 0 2px var(--gold),0 12px 26px rgba(0,0,0,.18)}
+      .clash{border:1px solid var(--line);box-shadow:none;border-radius:12px}
+      .terrain{border:1px solid var(--line);box-shadow:none;background:var(--panel);border-radius:12px}
+      .card{border-width:1.5px!important;box-shadow:0 10px 22px rgba(27,36,31,.12)}
+      .foot{display:none}
+      .lan-tabs{gap:6px}.tab-btn{padding:10px 18px;border-radius:999px;border:1px solid var(--line);background:transparent}
+      .tab-btn.on{background:#132a21;color:#f0d98c;border-color:#132a21}
+      textarea{border-radius:12px;background:var(--panel2);border-color:var(--line);min-height:64px}
+      .overlay .box{border-radius:20px;padding:26px 22px;box-shadow:0 24px 60px rgba(0,0,0,.25)}
+      .optbtn,.qbtn{border-radius:12px;padding:13px 14px;border-color:var(--line)}
+      body.in-game .wrap{padding:8px 10px}
+      body.in-game #btnEndTurn{min-height:50px}
+      /* 对战方式 = 开始入口，做成大按钮 */
+      #btnLan,#btnPass,#btnAi{min-height:78px;display:flex;flex-direction:column;justify-content:center;gap:4px;border-width:1.5px}
+      #btnAi{background:#132a21;color:#f0d98c;border-color:#132a21}
+      #btnAi .d{color:rgba(240,217,140,.75)}
+      @media(prefers-color-scheme:dark){#btnAi{background:#d4af5e;color:#131a16;border-color:#d4af5e}#btnAi .d{color:rgba(19,26,22,.7)}}
+      #btnLan{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold),0 8px 20px rgba(185,151,79,.14)}
+      details.panel .soupprev{margin-top:4px}
+      details.panel .hand{padding-top:8px}
+      /* 对局内紧凑：保一屏，主按钮靠宽度醒目而非高度堆叠 */
+      body.in-game .audio-now{display:none}
+      body.in-game .turnbar{flex-wrap:nowrap;margin-top:0}
+      body.in-game #btnEndTurn{min-height:48px;font-size:16px;flex:1 1 auto}
+      body.in-game .turnbar .btn.ghost{min-height:48px;padding:8px 12px;font-size:12.5px;white-space:nowrap}
+
+      /* ===== v12 电影感暗黑奇幻擂台：顶部血条 · 中央大型立绘待机动画 · 扇形手牌 · 中央金色出牌键 ===== */
+      body.in-game{background:radial-gradient(900px 500px at 50% -80px, rgba(185,151,79,.16), transparent 60%),linear-gradient(180deg,#070a08,#0b100c 55%,#070907)!important;color:#ece5cd}
+      body.in-game .terrain{background:rgba(14,20,15,.92);border-color:rgba(185,151,79,.5);color:#e8dfc2}
+      body.in-game .terrain .tname{color:#eec96a}
+      body.in-game .terrain .tdesc{color:#b9b294}
+      body.in-game .audio-bar{background:rgba(13,19,14,.92);border-color:rgba(185,151,79,.45)}
+      body.in-game .audio-btn{color:#e8dfc2;border-color:rgba(185,151,79,.4)}
+      body.in-game .audio-vol{color:#cbbf9f}
+      body.in-game .handtitle .who{color:#eec96a}
+      body.in-game .turnhint{color:#a99f7e}
+      /* 擂台：深色雾气底 + 金色细边 + 飘雾层 */
+      .arena{background:linear-gradient(180deg, rgba(6,9,7,.42), rgba(6,9,7,.90) 78%), url("assets/hero.webp") center 30%/cover no-repeat,#0a0f0b;border:1px solid rgba(212,175,94,.65);box-shadow:0 22px 48px rgba(0,0,0,.55), inset 0 0 60px rgba(0,0,0,.55)}
+      .arena::before{content:"";position:absolute;inset:-12%;z-index:1;pointer-events:none;background:radial-gradient(420px 130px at 18% 78%, rgba(235,240,225,.14), transparent 70%),radial-gradient(520px 150px at 82% 30%, rgba(235,240,225,.10), transparent 70%),radial-gradient(300px 110px at 55% 92%, rgba(238,201,106,.10), transparent 70%);animation:arenaMist 11s ease-in-out infinite alternate}
+      @keyframes arenaMist{from{transform:translateX(-22px)}to{transform:translateX(22px)}}
+      .arena-head{display:none}
+      /* 顶部醒目血条（对手） */
+      .boss-bar{position:relative;z-index:3;margin:2px 2px 6px}
+      .boss-name{display:flex;align-items:center;gap:10px;justify-content:center;font-family:"Noto Serif SC",serif;font-weight:900;font-size:16.5px;letter-spacing:.1em;color:#f0d98c;text-shadow:0 2px 10px rgba(0,0,0,.8);margin-bottom:5px}
+      .boss-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,94,.75));max-width:120px}
+      .boss-line:last-child{background:linear-gradient(90deg,rgba(212,175,94,.75),transparent)}
+      .boss-hpnum{font-family:"Noto Sans SC",sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.04em;color:#ffb59f;font-variant-numeric:tabular-nums}
+      .boss-track{height:15px;border-radius:8px;border:1.5px solid rgba(238,201,106,.85);background:rgba(30,8,5,.85);overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.6), inset 0 2px 5px rgba(0,0,0,.7)}
+      .boss-fill{height:100%;width:100%;background:linear-gradient(180deg,#ff9d7a,#c93a24 60%,#8f1f10);transition:width .6s ease;position:relative}
+      .boss-fill::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 48%,transparent 62%);animation:bossShine 3.2s ease-in-out infinite}
+      @keyframes bossShine{0%,55%{transform:translateX(-70%)}90%,100%{transform:translateX(70%)}}
+      /* 中央大型立绘：待机呼吸 / 光晕闪烁 / 雾气飘动 / 星火 */
+      .stage-hero{position:relative;z-index:2;display:flex;justify-content:center;align-items:flex-start;perspective:900px;padding:2px 0 0;min-height:0}
+      .stage-glow{position:absolute;left:50%;top:46%;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;background:radial-gradient(circle, rgba(238,201,106,.34), rgba(238,201,106,.08) 55%, transparent 72%);animation:glowPulse 3.8s ease-in-out infinite alternate;pointer-events:none}
+      @keyframes glowPulse{from{opacity:.45;transform:scale(.94)}to{opacity:.85;transform:scale(1.06)}}
+      .hero-frame{position:relative;height:clamp(150px,27dvh,248px);aspect-ratio:3/3.9;border-radius:16px;overflow:hidden;border:2.5px solid rgba(238,201,106,.9);box-shadow:0 24px 44px rgba(0,0,0,.6), 0 0 34px rgba(238,201,106,.28), inset 0 0 0 2px rgba(0,0,0,.25);transform-style:preserve-3d;animation:heroBreathe 4.6s ease-in-out infinite;background:#efe7d2}
+      @keyframes heroBreathe{0%,100%{transform:translateY(0) scale(1) rotateX(1.5deg)}50%{transform:translateY(-7px) scale(1.025) rotateX(0deg)}}
+      .stage-hero.my-turn .hero-frame{box-shadow:0 24px 44px rgba(0,0,0,.6), 0 0 44px rgba(238,201,106,.5), inset 0 0 0 2px rgba(0,0,0,.25)}
+      .hero-frame img{width:100%;height:100%;object-fit:cover;object-position:50% 6%;display:block}
+      .stage-fade{position:absolute;left:0;right:0;bottom:0;height:44%;background:linear-gradient(180deg,transparent,rgba(5,8,6,.82));pointer-events:none}
+      .stage-caption{position:absolute;left:0;right:0;bottom:0;padding:16px 12px 8px;display:flex;flex-direction:column;align-items:center;gap:1px;color:#f7efce;text-align:center}
+      .stage-caption #stageHeroName{font-family:"Noto Serif SC",serif;font-weight:900;font-size:15px;letter-spacing:.05em;text-shadow:0 2px 8px rgba(0,0,0,.85);white-space:nowrap}
+      .stage-caption #stageHeroDesc{font-size:10.5px;letter-spacing:.1em;color:rgba(240,217,140,.9);white-space:nowrap}
+      .stage-fog{position:absolute;width:64%;height:52px;border-radius:50%;background:radial-gradient(ellipse at center, rgba(240,244,232,.30), transparent 68%);filter:blur(7px);pointer-events:none;z-index:3}
+      .stage-fog.f1{bottom:-8px;left:-6%;animation:fogDrift 9s ease-in-out infinite alternate}
+      .stage-fog.f2{bottom:16px;right:-8%;width:52%;opacity:.7;animation:fogDrift 13s ease-in-out infinite alternate-reverse}
+      @keyframes fogDrift{from{transform:translateX(-26px)}to{transform:translateX(30px)}}
+      .stage-spark{position:absolute;width:6px;height:6px;border-radius:50%;background:#ffe9a8;box-shadow:0 0 10px 3px rgba(238,201,106,.75);z-index:3;animation:sparkTwinkle 2.6s ease-in-out infinite;pointer-events:none}
+      .stage-spark.s1{left:16%;top:20%}
+      .stage-spark.s2{right:14%;top:34%;animation-delay:.8s;width:4.5px;height:4.5px}
+      .stage-spark.s3{right:24%;top:10%;animation-delay:1.6s;width:5px;height:5px}
+      @keyframes sparkTwinkle{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.25)}}
+      .stage-turn{position:absolute;z-index:4;top:4px;right:2px;background:rgba(6,10,7,.78);border:1px solid rgba(212,175,94,.6);color:#f0d98c;border-radius:999px;padding:3px 11px;font-size:11.5px;font-weight:700;letter-spacing:.05em;backdrop-filter:blur(3px)}
+      /* 双方信息条：压暗成擂台两侧小条，不抢中央立绘 */
+      body.in-game .arena{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+      body.in-game .stage-hero{flex:1 1 auto;align-items:center}
+      body.in-game .hero-frame{height:min(100%,248px)}
+      body.in-game .arena-stage{flex:none}
+      body.in-game .fighter{background:linear-gradient(180deg, rgba(22,32,24,.94), rgba(10,15,11,.96));color:#ece5cd;border-color:rgba(212,175,94,.55)!important;box-shadow:0 10px 22px rgba(0,0,0,.45)}
+      body.in-game .fighter .ip-info .ip-name{color:#f3ecd4}
+      body.in-game .fighter .ip-info .ip-desc{color:#c9a959}
+      body.in-game .fighter .stats{color:#a9b39e}
+      body.in-game .fighter .stats b{color:#f3ecd4}
+      body.in-game .fighter .hp-num{color:#f3ecd4}
+      body.in-game .fighter .hp-num small{color:#a9b39e}
+      body.in-game .arena .clash{background:rgba(7,11,8,.78);border-color:rgba(212,175,94,.4);color:#e8dfc2;backdrop-filter:blur(3px)}
+      body.in-game .clash .last b{color:#eec96a}
+      /* 出牌现身动画放大到擂台中央 */
+      body.in-game .fx-char{width:126px;height:126px}
+      body.in-game .fx-stage{width:196px;height:196px}
+      body.in-game .fx-char img{border-color:#eec96a}
+      /* 底部扇形手牌 */
+      body.in-game #hand{padding:20px 10px 6px;gap:0}
+      body.in-game #hand .card{margin-left:-17px;transform:rotate(var(--fan-rot,0deg));transform-origin:50% 165%;border-color:rgba(212,175,94,.75)!important;box-shadow:0 16px 28px rgba(0,0,0,.5)}
+      body.in-game #hand .card:first-child{margin-left:0}
+      body.in-game #hand .card:not(:disabled):hover{transform:rotate(0deg) translateY(-15px) scale(1.05);z-index:8}
+      /* 底部操作栏：两侧小钮弱化，中央金色出牌键 */
+      body.in-game .turnbar{align-items:center;gap:8px}
+      body.in-game #btnRestart{order:1}
+      body.in-game #btnEndTurn{order:2;flex:0 1 320px;margin:0 auto;min-height:58px;font-size:17.5px;letter-spacing:.1em;background:linear-gradient(180deg,#f0d98c,#c39a3e 55%,#9a741f);color:#2a1d04;border:1.5px solid #ffe9a8;box-shadow:0 12px 30px rgba(212,175,94,.4), inset 0 1px 0 rgba(255,255,255,.65);animation:endPulse 2.4s ease-in-out infinite}
+      body.in-game #btnEndTurn:disabled{animation:none;opacity:.4;box-shadow:none}
+      @keyframes endPulse{0%,100%{box-shadow:0 12px 30px rgba(212,175,94,.32), inset 0 1px 0 rgba(255,255,255,.65)}50%{box-shadow:0 12px 38px rgba(238,201,106,.62), inset 0 1px 0 rgba(255,255,255,.65)}}
+      body.in-game #btnHome{order:3}
+      body.in-game .turnbar .btn.ghost{background:rgba(16,24,18,.7);color:#bdb28a;border-color:rgba(185,151,79,.35);min-height:44px}
+      body.in-game #netHint{display:none}
+      @media(max-height:780px){
+        .hero-frame{height:clamp(128px,23dvh,190px)}
+        body.in-game .hero-frame{height:min(100%,190px)}
+        .boss-name{font-size:15px}
+        .boss-track{height:13px}
+      }
+      @media(max-height:700px){
+        .hero-frame{height:clamp(108px,19dvh,150px)}
+        body.in-game .hero-frame{height:min(100%,150px)}
+        .stage-caption #stageHeroDesc{display:none}
+        body.in-game .clash .last{-webkit-line-clamp:1}
+        body.in-game #btnEndTurn{min-height:52px}
+      }
+      @media(max-width:560px){
+        .boss-name{font-size:14.5px;gap:7px}
+        .stage-spark.s1{left:7%}.stage-spark.s2{right:6%}
+        body.in-game #hand .card{margin-left:-20px}
+        body.in-game #btnEndTurn{font-size:15.5px;letter-spacing:.05em;flex:1 1 auto}
+      }
+      @media (prefers-reduced-motion: reduce){
+        .hero-frame,.stage-glow,.stage-fog,.stage-spark,.boss-fill::after,.arena::before,body.in-game #btnEndTurn{animation:none !important}
+      }
+      /* ===== v12.1 一屏调校：立绘给显式高度，双方信息条压扁，给中央立绘腾位 ===== */
+      body.in-game .hero-frame{height:clamp(126px,21.5dvh,172px)}
+      @media(min-width:700px){body.in-game .hero-frame{height:clamp(176px,27dvh,248px)}}
+      @media(max-height:700px){body.in-game .hero-frame{height:106px}}
+      body.in-game .fighter .tag{display:none}
+      body.in-game .fighter .head{padding:5px 10px 4px}
+      body.in-game .fighter .name{font-size:14.5px;white-space:nowrap}
+      body.in-game .fighter .ip-desc{display:none}
+      body.in-game .ip-img{width:40px;height:40px;border-radius:10px}
+      body.in-game .ip-row{padding:5px 9px 1px;gap:7px}
+      body.in-game .ip-info .ip-name{font-size:13.5px}
+      body.in-game .blood-tag{font-size:9.5px;padding:0 6px;margin-left:4px;vertical-align:1px}
+      body.in-game .fighter .stats{font-size:11px;line-height:1.45;padding:1px 9px 6px;gap:2px 8px}
+      body.in-game .terrain{flex-wrap:nowrap;overflow:hidden}
+      body.in-game .terrain .tdesc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      body.in-game #hand{height:184px}
+      body.in-game #hand .card{height:170px}
+      @media(max-width:700px){body.in-game .clash .last{-webkit-line-clamp:1}}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <!-- ===== 音效控制 ===== -->
+      <div class="audio-bar" id="audioBar">
+        <span class="audio-title">🔊 声音</span>
+        <button class="audio-btn unlock" id="btnUnlock" title="点此启动音频并试听一声">
+          <span>▶ <span id="unlockText">开启声音</span></span>
+        </button>
+        <button class="audio-btn" id="btnSfxToggle" aria-pressed="true" title="单独开启或关闭操作音效（出牌、命中、护盾、海龟汤提示音）">
+          <span id="sfxStateText">音效：开</span>
+        </button>
+        <button class="audio-btn music" id="btnMusicToggle" aria-pressed="true" title="单独开启或关闭背景音乐">
+          <span>🎵 <span id="musicStateText">音乐：开</span></span>
+        </button>
+        <button class="audio-btn amb" id="btnAmbToggle" aria-pressed="true" title="单独开启或关闭环境音（竹林风声、竹叶沙沙与偶尔的刀剑声，只在对局中偶尔轻轻响起）">
+          <span>🎋 环境：<span id="ambStateText">开</span></span>
+        </button>
+        <label class="audio-vol"><span>总音量</span><input type="range" id="volRange" min="0" max="100" value="85" aria-label="总音量" /></label>
+        <span class="audio-now" id="audioNow">♪ 首页 · 雾岛晨雾</span>
+        <span class="audio-hint"><span id="audioStatus">音频未启动</span></span>
+      </div>
+
+      <!-- ===== Hero ===== -->
+      <header class="hero">
+        <img class="bg" src="assets/hero.webp" alt="雾岛之上，竹林、宝塔与发光的奇幻剑阵擂台，两位侠客隔雾对峙" />
+        <div class="hero-in">
+          <div class="sealrow"><div class="seal">侠</div>
+            <div>
+              <h1>雾岛<span class="accent">侠影</span></h1>
+              <p class="sub">两人对决 · 轮流出招 · 先破对方气血者胜</p>
+            </div>
+          </div>
+          <div class="rulebar">
+            <span>气血 <b>按角色</b></span><span>每回合抽 <b>2 张</b></span><span>真气 <b>3</b></span><span>三档难度</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ===== How to play ===== -->
+      <section class="panel" id="howto">
+        <h2>玩法</h2>
+        <p class="desc">出牌伤敌 · 护盾挡伤 · 每回合抽 2 张、真气回满 3 点。一屏对局，无需滚动。</p>
+        <details class="collapse"><summary>展开完整规则　＋</summary>
+        <div class="howgrid">
+          <div class="how"><div class="ht"><i>壹</i>目标</div><p>气血<b>按角色定位定，不是人人一样</b>：阿雾 18 点（耐打）、凌霜 14 点（输出）、小影 13 点（脆皮），人物牌上只有<b>一条血槽</b>加数字，名字旁还标着「高血 / 低血」标签，一眼看清谁厚谁脆。用攻击牌削减对方气血，<b>先把对方气血打到 0 的人获胜</b>。奇闻事件里猜中汤底还能拿到宝物、回血抽牌，反败为胜常常就靠它。</p></div>
+          <div class="how"><div class="ht"><i>贰</i>回合与真气</div><p>轮流行动：回合开始<b>抽 2 张牌、真气回满 3 点</b>（大师档选了紫气珠是 4 点）。出牌只受真气限制，能打几张打几张；点「结束回合」把行动权交给对方。</p></div>
+          <div class="how"><div class="ht"><i>叁</i>护盾与拆招</div><p><b>护盾</b>会先替你挡伤害，跨回合保留。互动牌是核心：<b>斗转星移</b>把伤害弹回去、<b>妙手空空</b>抢走对方护盾、<b>摄心魔音</b>让对方弃牌又少真气——别只顾着砍，先攒盾留反击往往更赚。</p></div>
+          <div class="how"><div class="ht"><i>肆</i>从简单到复杂</div><p><b>入门</b>只有攻、防、疗，先练手感；<b>进阶</b>加入连招、破盾和会轮换的灵雾地形，外加海龟汤奇闻；<b>大师</b>全卡开放，还有秘籍三选一和更频繁的奇闻，算计最深。三档在下面「开局设置」里选。</p></div>
+          <div class="how"><div class="ht"><i>伍</i>灵雾地形（进阶起）</div><p>剑阵每 <b>2 轮</b>换一种地形：<b>剑冢罡风</b>让攻击牌省 1 点真气，<b>竹林清风</b>让防御牌省 1 点，<b>灵泉雾谷</b>让奇术牌省 1 点。跟着地形留牌，节奏会完全不一样。</p></div>
+          <div class="how"><div class="ht"><i>陆</i>江湖奇闻 · 海龟汤</div><p>进阶第 3 轮、大师第 3 和第 6 轮，轮到你时会撞上奇闻：先读<b>汤面</b>（一段怪事），再点开最多 <b>5 个问题</b>，每个问题只会回答「是 / 否 / 无关」；最后从 3 个汤底里猜一个。<b>猜中</b>：回复 3 点气血、抽 1 张牌、得 1 件宝物；<b>猜错</b>：自己气血 −2，对方 +3 护盾。</p></div>
+        </div>
+        <details class="more">
+          <summary>完整流程：从开局到分胜负（点开看）</summary>
+          <ol>
+            <li><b>选难度</b>：入门 / 进阶 / 大师，决定开放哪些牌、有没有地形、奇闻和秘籍。</li>
+            <li><b>选本局牌风</b>：疾风剑宗（攻击多）、玄武守山（护盾回复多）、灵犀奇术（控制抽牌多）——双方用同一套牌风，拼的是手法。</li>
+            <li><b>选对战方式</b>：局域网双机（两台手机同 Wi-Fi 用连接码配对）、双人同机（一台手机轮流传）、人机练习（电脑「凌霜」陪练）。联机时由房主定难度和牌风。</li>
+            <li><b>对局</b>：双方各抽 5 张起手。轮流出牌，真气不够的牌会变灰；对方手牌只显示牌背，你看不到内容。</li>
+            <li><b>大师秘籍</b>：大师档第 4 轮，轮到你时从随机出现的 3 部里挑 1 部永久生效（秘籍共 4 部）：龙血玉佩（气血上限 +4 并回复 4）、破军剑鞘（攻击伤害 +1）、玄龟灵甲（每回合 +1 护盾）、紫气珠（每回合真气 +1）。</li>
+            <li><b>胜负</b>：任一方气血归 0 立即结束，胜者弹窗结算，可直接「再来一局」。</li>
+          </ol>
+        </details>
+        </details>
+      </section>
+
+      <!-- ===== Home / setup ===== -->
+      <div id="home">
+        <section class="panel">
+          <h2>三位侠客</h2>
+          <p class="desc">阿雾 18 血耐打 · 小影 13 血影遁 · 凌霜 14 血霜剑</p>
+          <div class="ip-grid">
+            <div class="ip-card">
+              <img src="assets/ip-awu.webp" alt="阿雾：戴竹斗笠、穿青色衣衫、背着小竹剑、脸颊有雾气漩涡纹的圆脸小侠客" />
+              <div class="ip-body"><div class="ip-name2">阿雾 · 青衫小侠</div><div class="ip-role">玩家一 · 高血耐打型 · 气血 18</div><p><b>竹斗笠 · 小竹剑</b> · 18 点气血，站得住。</p></div>
+            </div>
+            <div class="ip-card">
+              <img src="assets/ip-xiaoying.webp" alt="小影：长紫发、头上推着白色狐狸面具、穿紫色披风、手持梅花纸伞的少女影客" />
+              <div class="ip-body"><div class="ip-name2">小影 · 紫衣影客</div><div class="ip-role">玩家二 · 低血脆皮诡术型 · 气血 13</div><p><b>狐面 · 纸伞</b> · 影遁：每回合首次受伤 −2。</p></div>
+            </div>
+            <div class="ip-card">
+              <img src="assets/ip-lingshuang.webp" alt="凌霜：银白长发系冰蓝丝带、穿霜白衣袍、手持冰晶长剑、脚边蹲着一只小雪狐的剑姬" />
+              <div class="ip-body"><div class="ip-name2">凌霜 · 霜狐剑姬</div><div class="ip-role">电脑陪练 · 中低血输出型 · 气血 14</div><p><b>银发 · 冰剑</b> · 霜剑：攻击伤害 +1。</p></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>开局</h2>
+          <p class="desc">选难度 · 选牌风 · 选对战方式，即刻开打。联机以房主设置为准。</p>
+
+          <div class="steplabel">01 · 难度</div>
+          <div class="pickgrid" id="diffGrid">
+            <button class="pick" data-diff="beginner"><span class="t">入门 · 初入江湖 <span class="badge">简单</span></span><span class="d">5 种基础牌 · 无地形奇闻</span></button>
+            <button class="pick on" data-diff="advanced"><span class="t">进阶 · 江湖历练 <span class="badge">适中</span></span><span class="d">8 种牌 · 地形轮换 · 第 3 轮奇闻</span></button>
+            <button class="pick" data-diff="master"><span class="t">大师 · 宗师论剑 <span class="badge">复杂</span></span><span class="d">12 种牌全开 · 奇闻 · 秘籍三选一</span></button>
+          </div>
+
+          <div class="steplabel">02 · 牌风</div>
+          <div class="pickgrid" id="styleGrid">
+            <button class="pick" data-style="sword"><span class="t">疾风剑宗</span><span class="d">进攻型 · 抢血快</span></button>
+            <button class="pick on" data-style="guard"><span class="t">玄武守山</span><span class="d">守御型 · 先稳后反击</span></button>
+            <button class="pick" data-style="trick"><span class="t">灵犀奇术</span><span class="d">控制型 · 拖节奏</span></button>
+          </div>
+
+          <div class="steplabel">03 · 对战方式 — 点此开始</div>
+          <div class="pickgrid">
+            <button class="pick primary" id="btnLan"><span class="t">局域网双机对战</span><span class="d">同 Wi-Fi · 双机 · 连接码配对</span></button>
+            <button class="pick" id="btnPass"><span class="t">双人同机对战</span><span class="d">一台手机轮流 · 有遮挡页</span></button>
+            <button class="pick" id="btnAi"><span class="t">人机练习</span><span class="d">对电脑凌霜 · 先练手</span></button>
+          </div>
+        </section>
+
+        <section class="panel hidden" id="lanPanel">
+          <h2>局域网配对</h2>
+          <p class="desc">同 Wi-Fi · 交换两次连接码即可开局。</p>
+          <div class="lan-tabs">
+            <button class="tab-btn on" id="tabHost">我是房主（玩家一）</button>
+            <button class="tab-btn" id="tabGuest">我是客人（玩家二）</button>
+          </div>
+          <div id="hostSteps">
+            <div class="step">
+              <div class="st">第 1 步 · 生成房主连接码</div>
+              <button class="btn" id="btnMakeOffer">生成连接码</button>
+              <textarea id="offerOut" readonly placeholder="点上面的按钮，连接码会出现在这里"></textarea>
+              <div class="row"><button class="btn ghost" id="copyOffer">复制房主连接码</button></div>
+              <p style="margin-top:8px">把这段码发给客人，让他在「我是客人」里粘贴。</p>
+            </div>
+            <div class="step">
+              <div class="st">第 2 步 · 粘贴客人回传的连接码</div>
+              <textarea id="answerIn" placeholder="把客人给你的连接码粘贴到这里"></textarea>
+              <div class="row"><button class="btn" id="btnAcceptAnswer">完成配对</button></div>
+              <div class="status" id="hostStatus">等待配对……</div>
+            </div>
+          </div>
+          <div id="guestSteps" class="hidden">
+            <div class="step">
+              <div class="st">第 1 步 · 粘贴房主连接码</div>
+              <textarea id="offerIn" placeholder="把房主给你的连接码粘贴到这里"></textarea>
+              <div class="row"><button class="btn" id="btnMakeAnswer">生成回传连接码</button></div>
+            </div>
+            <div class="step">
+              <div class="st">第 2 步 · 把回传码发给房主</div>
+              <textarea id="answerOut" readonly placeholder="回传连接码会出现在这里"></textarea>
+              <div class="row"><button class="btn ghost" id="copyAnswer">复制回传连接码</button></div>
+              <div class="status" id="guestStatus">等待配对……</div>
+            </div>
+          </div>
+        </section>
+
+        <details class="panel">
+          <summary>江湖奇闻 · 海龟汤</summary>
+          <div class="soupprev">
+            <img src="assets/soup.webp" alt="深夜客栈里一盏油灯、两副碗筷和一把靠门的长刀，窗外是雾气弥漫的江面" />
+            <div>
+              <p class="desc" style="margin-bottom:8px">示例汤面：</p>
+              <div class="soupface"><span class="lab">汤面 · 示例</span>深夜的江边客栈里，掌柜在空无一人的桌上摆了两副碗筷，对着空椅子轻声说「客官，慢走」，然后吹熄了灯。第二天，客栈的账本上多了一笔结清的旧账。</div>
+              <p class="desc" style="margin:0">进阶 / 大师档对局中触发：提问 → 猜汤底。猜中回血抽牌，猜错受罚。</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="panel">
+          <summary>武功图鉴 · 12 式</summary>
+          <p class="desc">金珠为真气消耗 · 标注开放档位。点开查看全部卡牌。</p>
+          <div class="hand" id="catalog"></div>
+        </details>
+      </div>
+
+      <!-- ===== Game board ===== -->
+      <div id="board" class="hidden board3d">
+        <div class="terrain hidden" id="terrainBar"><span class="tname" id="terrainName"></span><span class="tdesc" id="terrainDesc"></span></div>
+        <div class="arena" id="arenaStage">
+          <div class="arena-head"><span class="at">雾岛剑阵 · <b>擂台对决</b></span><span class="ah">一屏对局 · 每回合摸 2 张牌</span></div>
+          <div class="boss-bar">
+            <div class="boss-name"><span class="boss-line"></span><span id="bossName">小影 · 紫衣影客</span><span class="boss-hpnum" id="bossHpNum">13 / 13</span><span class="boss-line"></span></div>
+            <div class="boss-track"><div class="boss-fill" id="bossHpFill"></div></div>
+          </div>
+          <div class="stage-hero" id="stageHero">
+            <div class="stage-glow"></div>
+            <div class="hero-frame">
+              <img id="stageHeroImg" src="assets/ip-xiaoying.webp" alt="小影：头顶白狐面具、手持纸伞的紫衣影客" />
+              <div class="stage-fade"></div>
+              <div class="stage-caption"><span id="stageHeroName">小影 · 紫衣影客</span><span id="stageHeroDesc">狐面纸伞 · 紫雾披风</span></div>
+            </div>
+            <span class="stage-spark s1"></span><span class="stage-spark s2"></span><span class="stage-spark s3"></span>
+            <div class="stage-fog f1"></div><div class="stage-fog f2"></div>
+            <div class="stage-turn" id="stageTurnTag">对方行动中</div>
+          </div>
+          <div class="arena-stage">
+            <div class="fighter p1" id="fMe">
+              <div class="head"><span class="name" id="meName">我</span><span class="tag" id="meTag"></span></div>
+              <div class="ip-row">
+                <img class="ip-img" id="meIpImg" src="assets/ip-awu.webp" alt="阿雾：戴竹斗笠、背小竹剑、脸颊有雾纹的青衫小侠客" />
+                <div class="ip-info">
+                  <div class="ip-name"><span id="meIpName">阿雾 · 青衫小侠</span><span class="blood-tag bt-high" id="meBloodTag">高血 · 耐打型</span></div>
+                  <div class="ip-desc" id="meIpDesc">斗笠竹剑 · 脸颊雾纹</div>
+                  <div class="hp-single"><div class="hpbar"><div class="hpfill" id="meHpFill"></div></div><span class="hp-num" id="meHpNum">18<small> / 18</small></span></div>
+                </div>
+              </div>
+              <div class="stats" id="meStats"></div>
+            </div>
+            <div class="vs-seal">擂台<br>对决</div>
+            <div class="fighter p2" id="fOpp">
+              <div class="head"><span class="name" id="oppName">对手</span><span class="tag" id="oppTag"></span></div>
+              <div class="ip-row">
+                <img class="ip-img" id="oppIpImg" src="assets/ip-xiaoying.webp" alt="小影：头顶白狐面具、手持纸伞的紫衣影客" />
+                <div class="ip-info">
+                  <div class="ip-name"><span id="oppIpName">小影 · 紫衣影客</span><span class="blood-tag bt-low" id="oppBloodTag">低血 · 脆皮型</span></div>
+                  <div class="ip-desc" id="oppIpDesc">狐面纸伞 · 紫雾披风</div>
+                  <div class="hp-single"><div class="hpbar"><div class="hpfill" id="oppHpFill"></div></div><span class="hp-num" id="oppHpNum">13<small> / 13</small></span></div>
+                </div>
+              </div>
+              <div class="stats" id="oppStats"></div>
+              <div class="backs" id="oppBacks"></div>
+            </div>
+          </div>
+          <div class="clash" id="clashBox">
+            <div class="last" id="lastPlayed">对局开始！</div>
+            <ul class="log" id="logList"></ul>
+          </div>
+          <div class="play-fx hidden" id="playFx" aria-hidden="true">
+            <div class="fx-pos"><div class="fx-stage">
+              <span class="fx-ring"></span>
+              <div class="fx-char"><img id="fxImg" src="assets/ip-awu.webp" alt="" /><span class="fx-glyph" id="fxGlyph">剑</span></div>
+              <span class="fx-slash"></span>
+              <span class="fx-banner" id="fxBanner"></span>
+            </div></div>
+          </div>
+        </div>
+        <div class="handtitle">
+          <span class="who" id="handTitle">我的手牌</span>
+          <span class="turnhint" id="turnHint"></span>
+        </div>
+        <div class="hand" id="hand"></div>
+        <div class="turnbar">
+          <button class="btn" id="btnEndTurn">出牌 · 结束回合</button>
+          <button class="btn ghost" id="btnRestart">重新开局</button>
+          <button class="btn ghost" id="btnHome">返回选模式</button>
+          <span class="turnhint" id="netHint"></span>
+        </div>
+      </div>
+
+      <p class="foot">小提示：护盾跨回合保留，所以回合末留一点真气补盾常常比硬打一张小攻击更划算；地形省真气的类型，尽量攒到对应地形再打。</p>
+    </div>
+
+    <!-- pass-and-play handover -->
+    <div class="overlay hidden" id="passOverlay">
+      <div class="box">
+        <h3 id="passTitle">请把手机交给下一位</h3>
+        <p>上一位侠客的手牌已经藏好。轮到你时再点下面的按钮查看你的手牌。</p>
+        <button class="btn" id="btnPassOk">我是下一位，查看手牌</button>
+      </div>
+    </div>
+
+    <!-- event: soup / relic -->
+    <div class="overlay hidden" id="eventOverlay">
+      <div class="box wide" id="eventBox"></div>
+    </div>
+
+    <!-- winner -->
+    <div class="overlay hidden" id="winOverlay">
+      <div class="box">
+        <h3 id="winTitle">对局结束</h3>
+        <p id="winText"></p>
+        <div class="row" style="justify-content:center">
+          <button class="btn" id="btnAgain">再来一局</button>
+          <button class="btn ghost" id="btnWinHome">返回首页</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    (function(){
+      "use strict";
+      // ---------- Audio: real audio files via <audio> elements (media channel) ----------
+      // (v8) The old WebAudio/AudioContext engine reported "running" in desktop
+      // probes yet stayed silent in the phone app webview (context stuck
+      // suspended / synth output muted). Playback now uses baked MP3 files and
+      // HTMLAudioElement — the same media channel that plays voice messages —
+      // started inside the user's tap, with failures shown in the status line.
+      var sfxOn = true, musicOn = true, ambOn = true, volumeLevel = 0.85;
+      var lastDrawSfxAt = 0, lastTurnSfxAt = 0;
+      var desiredSegKey = "home", desiredTheme = null;
+      var audioUnlocked = false, playBlocked = false, audioLoadError = false, audioBlessed = false;
+      var AUDIO_DIR = "assets/audio/";
+      var THEMES = {
+        home:{ file:"bgm-home.mp3", label:"首页 · 雾岛晨雾" },
+        setup:{ file:"bgm-setup.mp3", label:"整备 · 披甲执剑" },
+        soup:{ file:"bgm-soup.mp3", label:"奇闻 · 雾夜低语" },
+        victory:{ file:"bgm-victory.mp3", label:"胜利 · 破雾见日" },
+        defeat:{ file:"bgm-defeat.mp3", label:"落败 · 残月照影" }
+      };
+      function battleTheme(diffKey, styleKey){
+        var name = styleKey === "sword" ? "疾风剑宗" : (styleKey === "trick" ? "灵犀奇术" : "玄武守山");
+        var dLabel = diffKey === "master" ? "大师" : (diffKey === "beginner" ? "入门" : "进阶");
+        var rate = diffKey === "master" ? 1.07 : (diffKey === "beginner" ? 0.93 : 1);
+        return { file:"bgm-battle-" + (styleKey === "sword" ? "sword" : (styleKey === "trick" ? "trick" : "guard")) + ".mp3",
+                 label:"擂台 · " + name + "（" + dLabel + "）", rate:rate };
+      }
+      // ----- Media elements -----
+      function makeAudio(file, loop){
+        var a = new Audio();
+        a.preload = "auto"; a.loop = !!loop; a.src = AUDIO_DIR + file;
+        a.addEventListener("error", function(){ audioLoadError = true; updateAudioStatus(); });
+        return a;
+      }
+      var bgmA = makeAudio(THEMES.home.file, true), bgmB = makeAudio(THEMES.home.file, true);
+      var bgmCur = bgmA, curFile = THEMES.home.file;
+      // Ambient layer (v9): no more continuous sea waves (they read as noise).
+      // Occasional one-shot clips — bamboo wind / leaf rustle most of the time,
+      // a light sword unsheathe or sword-qi whoosh now and then — scheduled at
+      // random 7–18s intervals, low volume, in-game only.
+      var AMB_FILES = [
+        { file:"amb-bamboo-wind.mp3", w:0.34 },
+        { file:"amb-bamboo-rustle.mp3", w:0.33 },
+        { file:"amb-sword-sheathe.mp3", w:0.17 },
+        { file:"amb-sword-qi.mp3", w:0.16 }
+      ];
+      var ambEls = AMB_FILES.map(function(a){ return makeAudio(a.file, false); });
+      var ambTimer = null;
+      var SFX_FILES = ["flip","draw","attack","shield","heal","energy","steal","dark","turnstart","turnend","victory","defeat","soup-appear","soup-ask","soup-correct","soup-wrong","reward","play-attack","play-attack2","play-defense","play-skill"];
+      var sfxEls = {};
+      SFX_FILES.forEach(function(n){ sfxEls[n] = makeAudio("sfx-" + n + ".mp3", false); });
+      function musicTargetVol(){ return Math.min(1, 0.62 * volumeLevel + 0.08); }
+      function applyVolumes(){
+        if(bgmCur && bgmCur.paused === false) bgmCur.volume = musicTargetVol();
+      }
+      // ----- Playback helpers -----
+      function tryPlay(a){
+        try{
+          var pr = a.play();
+          if(pr && pr.catch) pr.catch(function(){ playBlocked = true; updateAudioStatus(); });
+        }catch(e){ playBlocked = true; updateAudioStatus(); }
+      }
+      var fadeTimer = null;
+      function fadeBgmTo(next, theme){
+        if(fadeTimer){ clearInterval(fadeTimer); fadeTimer = null; }
+        var prev = (next === bgmA) ? bgmB : bgmA;
+        if(prev !== bgmCur && !prev.paused){ try{ prev.pause(); }catch(e){} }
+        var from = bgmCur;
+        if(next !== from){
+          if(next.getAttribute("src") !== AUDIO_DIR + theme.file) next.src = AUDIO_DIR + theme.file;
+          next.loop = true;
+          try{ next.playbackRate = theme.rate || 1; }catch(e){}
+          next.volume = 0;
+          tryPlay(next);
+          bgmCur = next; curFile = theme.file;
+        } else {
+          try{ from.playbackRate = theme.rate || 1; }catch(e){}
+          if(from.paused) tryPlay(from);
+        }
+        var target = musicTargetVol(), stepN = 0;
+        fadeTimer = setInterval(function(){
+          stepN++;
+          var k = Math.min(1, stepN / 12);
+          if(from !== bgmCur){ try{ from.volume = Math.max(0, (1 - k) * musicTargetVol()); }catch(e){} }
+          if(bgmCur) bgmCur.volume = target * k;
+          if(k >= 1){
+            clearInterval(fadeTimer); fadeTimer = null;
+            if(from !== bgmCur){ try{ from.pause(); }catch(e){} }
+          }
+        }, 50);
+      }
+      function startDesiredMusic(){
+        if(!musicOn || !desiredTheme) return;
+        if(curFile === desiredTheme.file && bgmCur){
+          try{ bgmCur.playbackRate = desiredTheme.rate || 1; }catch(e){}
+          if(bgmCur.paused){ bgmCur.volume = musicTargetVol(); tryPlay(bgmCur); }
+          return;
+        }
+        fadeBgmTo(bgmCur === bgmA ? bgmB : bgmA, desiredTheme);
+      }
+      function pauseMusic(){
+        if(fadeTimer){ clearInterval(fadeTimer); fadeTimer = null; }
+        try{ bgmA.pause(); bgmB.pause(); }catch(e){}
+      }
+      function blessOne(el){
+        try{
+          var v = el.volume; el.volume = 0;
+          var pr = el.play();
+          var done = function(){ try{ el.pause(); el.currentTime = 0; }catch(e){} el.volume = v; };
+          if(pr && pr.then) pr.then(done, function(){ el.volume = v; }); else done();
+        }catch(e){}
+      }
+      function unlockAudio(withTest){
+        audioUnlocked = true;
+        if(!audioBlessed){
+          audioBlessed = true;
+          // "Bless" every element inside this user gesture (mobile webviews only
+          // allow later programmatic play() on elements first played in a tap).
+          SFX_FILES.forEach(function(n){ if(sfxEls[n].paused) blessOne(sfxEls[n]); });
+          ambEls.forEach(function(el){ if(el.paused) blessOne(el); });
+        }
+        playBlocked = false;
+        startDesiredMusic();
+        if(document.body.classList.contains("in-game")) startAmbience();
+        if(withTest){ setTimeout(function(){ sfxEnergy(); sfxFlip(); }, 60); }
+        updateAudioStatus();
+        return true;
+      }
+      function ensureAudio(){ return unlockAudio(false); }
+      function updateAudioStatus(){
+        var st = document.getElementById("audioStatus"), un = document.getElementById("unlockText"), now = document.getElementById("audioNow");
+        if(st) st.textContent = audioLoadError ? "音频文件加载失败，请刷新页面" :
+          (playBlocked ? "播放被浏览器拦截：请点红色「开启声音」" :
+          (!audioUnlocked ? "音频未启动" : "音频运行中"));
+        if(un) un.textContent = (audioUnlocked && !playBlocked && !audioLoadError) ? "试听" : "开启声音";
+        if(now && desiredTheme) now.textContent = (musicOn ? "♪ " : "♪（已关）") + desiredTheme.label;
+      }
+      // ----- Ambience: occasional bamboo / sword one-shots (in-game only) -----
+      function ambVol(){ return Math.min(1, 0.34 * volumeLevel + 0.03); }
+      function pickAmbEl(){
+        var r = Math.random(), acc = 0;
+        for(var i = 0; i < AMB_FILES.length; i++){ acc += AMB_FILES[i].w; if(r <= acc) return ambEls[i]; }
+        return ambEls[0];
+      }
+      function scheduleAmbience(first){
+        if(ambTimer){ clearTimeout(ambTimer); ambTimer = null; }
+        if(!ambOn || !audioUnlocked) return;
+        var delay = first ? (2200 + Math.random() * 2800) : (7000 + Math.random() * 11000);
+        ambTimer = setTimeout(function(){
+          ambTimer = null;
+          if(ambOn && audioUnlocked && !document.hidden && document.body.classList.contains("in-game")){
+            var base = pickAmbEl();
+            var a = base;
+            if(!base.paused && !base.ended){ a = base.cloneNode(); }
+            a.volume = ambVol();
+            try{ a.currentTime = 0; }catch(e){}
+            tryPlay(a);
+          }
+          scheduleAmbience(false);
+        }, delay);
+      }
+      function startAmbience(){
+        if(!audioUnlocked || !ambOn) return;
+        if(ambTimer) return; // already scheduled — don't reset the random rhythm
+        scheduleAmbience(true);
+      }
+      function stopAmbience(){
+        if(ambTimer){ clearTimeout(ambTimer); ambTimer = null; }
+        ambEls.forEach(function(el){ try{ el.pause(); }catch(e){} });
+      }
+      // ----- Segment music -----
+      function setMusic(segKey, theme){
+        desiredSegKey = segKey; desiredTheme = theme;
+        if(audioUnlocked && musicOn) startDesiredMusic();
+        updateAudioStatus();
+      }
+      function musicHome(){ setMusic("home", THEMES.home); }
+      function musicSetup(){ setMusic("setup", THEMES.setup); }
+      function musicSoup(){ setMusic("soup", THEMES.soup); }
+      function musicBattle(diffKey, styleKey){ setMusic("battle:" + diffKey + ":" + styleKey, battleTheme(diffKey, styleKey)); }
+      function musicEnd(win){ setMusic(win ? "victory" : "defeat", win ? THEMES.victory : THEMES.defeat); }
+      desiredTheme = THEMES.home;
+      // ----- SFX (MP3 clips) -----
+      function playClip(name, delay){
+        var go = function(){
+          if(!sfxOn) return;
+          var base = sfxEls[name]; if(!base) return;
+          var a = base;
+          if(!base.paused && !base.ended){ a = base.cloneNode(); }
+          a.volume = Math.min(1, volumeLevel);
+          try{ a.currentTime = 0; }catch(e){}
+          tryPlay(a);
+        };
+        if(delay) setTimeout(go, delay); else go();
+      }
+      function sfxFlip(){ playClip("flip"); }
+      function sfxDraw(){
+        var now = Date.now(); if(now - lastDrawSfxAt < 300) return; lastDrawSfxAt = now;
+        playClip("draw");
+      }
+      function sfxAttack(){ playClip("attack"); }
+      function sfxShield(){ playClip("shield"); }
+      function sfxHeal(){ playClip("heal"); }
+      function sfxEnergy(){ playClip("energy"); }
+      function sfxSteal(){ playClip("steal"); }
+      function sfxDark(){ playClip("dark"); }
+      function sfxTurnStart(){
+        var now = Date.now(); if(now - lastTurnSfxAt < 250) return; lastTurnSfxAt = now;
+        playClip("turnstart");
+      }
+      function sfxTurnEnd(){
+        var now = Date.now(); if(now - lastTurnSfxAt < 250) return; lastTurnSfxAt = now;
+        playClip("turnend");
+      }
+      function sfxVictory(){ playClip("victory"); }
+      function sfxDefeat(){ playClip("defeat"); }
+      function sfxSoupAppear(){ playClip("soup-appear"); }
+      function sfxSoupAsk(){ playClip("soup-ask"); }
+      function sfxSoupCorrect(){ playClip("soup-correct"); }
+      function sfxSoupWrong(){ playClip("soup-wrong"); }
+      function sfxReward(){ playClip("reward"); }
+      var atkVariantFlip = false;
+      function sfxForCard(defId){
+        // (v9) Card-play sound is led by the card's TYPE, not a shared flip:
+        // attack = sharp blade slash (two variants alternate), defense = deep
+        // golden-bell shield tone, each skill keeps its own signature clip.
+        var def = DEFS[defId]; if(!def){ sfxFlip(); return; }
+        if(def.type === "atk"){
+          atkVariantFlip = !atkVariantFlip;
+          playClip(atkVariantFlip ? "play-attack" : "play-attack2");
+          playClip("attack", 130); // impact lands just after the swing
+        }
+        else if(def.type === "def"){
+          playClip("play-defense");
+          playClip("shield", 110);
+        }
+        else if(defId === "heal") playClip("heal");
+        else if(defId === "draw"){ sfxFlip(); sfxDraw(); }
+        else if(defId === "surge") playClip("energy");
+        else if(defId === "steal") playClip("steal");
+        else if(defId === "pulse") playClip("dark");
+        else playClip("play-skill");
+      }
+      function sfxFromLastPlayedForGuest(text){
+        if(!text) return;
+        if(text.indexOf("猜中奇闻") >= 0){ sfxSoupCorrect(); setTimeout(sfxReward, 180); return; }
+        if(text.indexOf("猜错了奇闻") >= 0){ sfxSoupWrong(); return; }
+        if(text.indexOf("选了秘籍") >= 0){ sfxReward(); return; }
+        var m = text.match(/打出「([^」]+)」/);
+        if(m){
+          var key = null; Object.keys(DEFS).forEach(function(k){ if(DEFS[k].name === m[1]) key = k; });
+          if(key){ sfxForCard(key); return; }
+        }
+        if(text.indexOf("抽了 2 张牌") >= 0 || text.indexOf("抽 1 张牌") >= 0) sfxDraw();
+      }
+      document.addEventListener("pointerdown", function(){ unlockAudio(false); }, {passive:true});
+      document.addEventListener("touchend", function(){ unlockAudio(false); }, {passive:true});
+      document.addEventListener("click", function(){ unlockAudio(false); }, false);
+      document.addEventListener("visibilitychange", function(){
+        if(document.hidden || !audioUnlocked) return;
+        if(musicOn) startDesiredMusic();
+        if(document.body.classList.contains("in-game")) startAmbience();
+      });
+
+      // ---------- Cards (wuxia x fantasy) ----------
+      var DEFS = {
+        starblade:{name:"青锋快斩", type:"atk", glyph:"剑", tier:"beginner", cost:1, text:"造成 3 点伤害。"},
+        meteor:{name:"陨星剑雨", type:"atk", glyph:"雨", tier:"advanced", cost:3, text:"引天外陨星化剑雨，造成 6 点伤害。"},
+        pierce:{name:"破罡一指", type:"atk", glyph:"指", tier:"advanced", cost:2, text:"指劲透体，造成 4 点伤害，无视护盾。"},
+        chain:{name:"连环霹雳掌", type:"atk", glyph:"掌", tier:"advanced", cost:2, text:"先击碎对方 2 点护盾，再造成 2 点伤害。"},
+        nova:{name:"灵龟爆裂", type:"atk", glyph:"爆", tier:"master", cost:3, text:"造成 4 点伤害，自己获得 3 点护盾。"},
+        shield:{name:"金钟罩", type:"def", glyph:"钟", tier:"beginner", cost:1, text:"凝气成钟，获得 4 点护盾。"},
+        mirror:{name:"斗转星移", type:"def", glyph:"移", tier:"master", cost:2, text:"获得 3 点护盾；下次受伤减 2 点，并弹回 2 点（限一次）。"},
+        heal:{name:"九花回春诀", type:"skill", glyph:"春", tier:"beginner", cost:2, text:"运转心法，恢复 4 点气血。"},
+        surge:{name:"气贯长虹", type:"skill", glyph:"气", tier:"beginner", cost:0, text:"本回合真气 +2。"},
+        draw:{name:"天机推演", type:"skill", glyph:"机", tier:"beginner", cost:1, text:"推演天机，抽 2 张牌。"},
+        steal:{name:"妙手空空", type:"skill", glyph:"手", tier:"master", cost:1, text:"抢走对方至多 3 点护盾；无护盾时抽 1 张牌。"},
+        pulse:{name:"摄心魔音", type:"skill", glyph:"音", tier:"master", cost:1, text:"魔音扰心：对方随机弃 1 张手牌，下回合真气 −1。"}
+      };
+      var TYPE_LABEL = {atk:"攻击", def:"防御", skill:"奇术"};
+      var TIER_LABEL = {beginner:"入门开放", advanced:"进阶开放", master:"大师开放"};
+      var TIER_ORDER = {beginner:0, advanced:1, master:2};
+      var DIFFS = {
+        beginner:{label:"入门", soupRounds:[], terrain:false, upgrade:false},
+        advanced:{label:"进阶", soupRounds:[3], terrain:true, upgrade:false},
+        master:{label:"大师", soupRounds:[3,6], terrain:true, upgrade:true}
+      };
+      var STYLES = {
+        sword:{label:"疾风剑宗", base:[["starblade",5],["meteor",3],["pierce",3],["chain",3],["nova",2],["shield",3],["mirror",1],["heal",2],["surge",2],["draw",2],["steal",2],["pulse",2]]},
+        guard:{label:"玄武守山", base:[["starblade",3],["meteor",2],["pierce",2],["chain",2],["nova",1],["shield",5],["mirror",3],["heal",4],["surge",2],["draw",3],["steal",1],["pulse",2]]},
+        trick:{label:"灵犀奇术", base:[["starblade",3],["meteor",2],["pierce",2],["chain",3],["nova",1],["shield",3],["mirror",2],["heal",3],["surge",3],["draw",4],["steal",2],["pulse",2]]}
+      };
+      var TERRAINS = [
+        {name:"剑冢罡风", type:"atk", desc:"本轮攻击牌耗真气 −1，剑气正盛，宜抢攻。"},
+        {name:"竹林清风", type:"def", desc:"本轮防御牌耗真气 −1，清风护体，宜守御。"},
+        {name:"灵泉雾谷", type:"skill", desc:"本轮奇术牌耗真气 −1，灵泉涌动，宜施奇术。"}
+      ];
+      var RELICS = {
+        dragon:{name:"龙血玉佩", desc:"气血上限 +4，并立即回复 4 点气血。"},
+        swordcase:{name:"破军剑鞘", desc:"你打出的攻击牌伤害 +1。"},
+        turtle:{name:"玄龟灵甲", desc:"你的每个回合开始时 +1 点护盾。"},
+        qi:{name:"紫气珠", desc:"你每回合的真气 +1（回满时多 1 点）。"}
+      };
+      // ---------- Soups (original) ----------
+      var SOUPS = [
+        {
+          title:"空椅子的客人",
+          face:"深夜的江边客栈里，掌柜在空无一人的桌上摆了两副碗筷，对着空椅子轻声说「客官，慢走」，然后吹熄了灯。第二天，客栈的账本上多了一笔结清的旧账。",
+          qa:[
+            ["那位「客人」当晚真的来过客栈吗？","是"],
+            ["空椅子上坐着的是鬼吗？","否"],
+            ["掌柜认识这位「客人」吗？","是"],
+            ["那笔旧账是掌柜自己补上的吗？","否"],
+            ["「客人」付的钱是真金白银吗？","无关"]
+          ],
+          options:[
+            "老主顾去世前托人捎话：每年忌日替他摆一副碗筷。掌柜照做十年，当晚老主顾的儿子赶来，替父亲结清了十年前的赊账，对着空椅子坐了一会儿才走，掌柜送他时说了那句「慢走」。",
+            "掌柜年纪大了记性差，把空椅子当成了客人，自己掏钱把账平了。",
+            "半夜有江洋大盗潜入客栈，留下银子后从窗户走了，掌柜对着他的座位道别。"
+          ],
+          correct:0,
+          truth:"老主顾的儿子替父还账：空椅子是留给故人的位置，「客人」是来还账的人，也是来赴一场十年之约的人。"
+        },
+        {
+          title:"断剑不沉湖",
+          face:"铸剑师把一把断剑投入湖中，断剑却没有沉底，而是浮在水面漂了一夜。天亮时，铸剑师看着浮着的断剑，笑着说：「果然是它。」然后把剑捞起，供进了祠堂。",
+          qa:[
+            ["断剑浮起来是因为湖水有问题吗？","否"],
+            ["那把剑是空心的吗？","是"],
+            ["铸剑师投剑之前就知道它会浮吗？","是"],
+            ["剑里藏着东西吗？","是"],
+            ["藏的东西和铸剑师的亲人有关吗？","是"]
+          ],
+          options:[
+            "剑身中空，是铸剑师亡妻留下的「剑匣剑」：她把一封信和一缕头发封在剑腹里。铸剑师投剑验真——真品中空能浮，赝品实心必沉，浮起证明这正是亡妻的那一把。",
+            "湖底有暗流把断剑托住了，铸剑师觉得是吉兆。",
+            "断剑被湖里的巨鱼顶在背上浮了一夜，铸剑师以为是剑灵显灵。"
+          ],
+          correct:0,
+          truth:"中空的剑腹藏着亡妻的信物。投湖不是毁剑，是验剑：浮，是它回家的证明。"
+        },
+        {
+          title:"雪夜多一人",
+          face:"雪夜，五位镖师围着火堆睡下，半夜趟子手数人头，发现火堆边睡着六个人。天亮后人数又变回五个，雪地上却只有五串离开的脚印。趟子手说：「没事，他昨晚帮我们守了夜。」",
+          qa:[
+            ["多出来的那个人是强盗吗？","否"],
+            ["那个人是镖师们认识的人吗？","是"],
+            ["那个人天亮前就离开了吗？","否"],
+            ["雪地上没有第六串脚印，是因为他不会留下脚印吗？","无关"],
+            ["那个人其实一直都在队伍里吗？","是"]
+          ],
+          options:[
+            "第六人是重伤昏迷的老镖头：白天一直被绑在马背上驮着，夜里大家把他安置在火堆边取暖，数人头时把他算了进去；天亮继续绑回马背赶路，所以雪地上只有五串步行脚印。",
+            "雪山里有雪妖化作人形混进来取暖，天亮时化成雪水消失了。",
+            "趟子手半夜数错了，其实一直是五个人，脚印也是他看花了眼。"
+          ],
+          correct:0,
+          truth:"没有第六个「外人」：马背上驮了一路的老镖头，夜里在火堆边，白天在马背上。守夜的说法，是趟子手安慰大家的玩笑。"
+        }
+      ];
+
+      var uidSeq = 1;
+      var selDiff = "advanced", selStyle = "guard";
+      function buildDeck(diffKey, styleKey){
+        var maxTier = TIER_ORDER[diffKey];
+        var pool = STYLES[styleKey].base.filter(function(pair){ return TIER_ORDER[DEFS[pair[0]].tier] <= maxTier; });
+        var d = [];
+        pool.forEach(function(pair){ for(var i=0;i<pair[1];i++) d.push({uid:uidSeq++, def:pair[0]}); });
+        // top up to 30 with basic cards if the tier pool is smaller
+        var basics = ["starblade","shield","heal","draw"];
+        var bi = 0;
+        while(d.length < 30){ d.push({uid:uidSeq++, def:basics[bi % basics.length]}); bi++; }
+        for(var i=d.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=d[i]; d[i]=d[j]; d[j]=t; }
+        return d;
+      }
+
+      // ---------- Authoritative state ----------
+      var state = null, mode = null, perspective = 0, lanRole = null, guestView = null;
+      function newPlayer(name, idx){
+        var ch = charFor({name:name}, idx||0);
+        return { name:name, hp:ch.hp, maxHp:ch.hp, trait:ch.trait, dodgeUsed:false, shield:0, energy:0, reflect:false, slowed:false,
+                 hand:[], deck:buildDeck(selDiff, selStyle), discard:[], relics:[], treasures:0, soupCount:0, upgraded:false };
+      }
+      function terrainIdx(){ return state ? Math.floor((state.round-1)/2) % TERRAINS.length : 0; }
+      function effCost(defId, pi){
+        var c = DEFS[defId].cost;
+        if(state && DIFFS[state.diff].terrain && TERRAINS[terrainIdx()].type === DEFS[defId].type) c = Math.max(0, c-1);
+        return c;
+      }
+      function drawCards(p, n){
+        for(var i=0;i<n;i++){
+          if(p.deck.length===0){
+            if(p.discard.length===0) return;
+            p.deck = p.discard; p.discard = [];
+            for(var k=p.deck.length-1;k>0;k--){ var j=Math.floor(Math.random()*(k+1)); var t=p.deck[k]; p.deck[k]=p.deck[j]; p.deck[j]=t; }
+            state.log.push(p.name+" 的弃牌堆洗回了牌库。");
+          }
+          p.hand.push(p.deck.pop());
+        }
+        if(n > 0) sfxDraw();
+      }
+      function startGame(names){
+        state = { turn:0, round:1, winner:null, diff:selDiff, style:selStyle, pending:null, playSeq:0, lastFx:null,
+                  lastPlayed:"对局开始！难度「"+DIFFS[selDiff].label+"」· 牌风「"+STYLES[selStyle].label+"」，先手是 "+names[0]+"。",
+                  log:[], players:[newPlayer(names[0],0), newPlayer(names[1],1)], soupDeck: shuffleIdx([0,1,2]) };
+        state.log.push("对局开始，双方各抽 5 张牌。难度："+DIFFS[selDiff].label+"，牌风："+STYLES[selStyle].label+"。");
+        drawCards(state.players[0],5); drawCards(state.players[1],5);
+        beginTurn(true);
+      }
+      function shuffleIdx(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+      function beginTurn(first){
+        var p = state.players[state.turn], cfg = DIFFS[state.diff];
+        var base = p.relics.indexOf("qi")>=0 ? 4 : 3;
+        p.energy = p.slowed ? base-1 : base;
+        if(p.slowed){ p.slowed = false; state.log.push(p.name+" 受魔音所扰，本回合真气 −1。"); }
+        p.dodgeUsed = false;
+        if(p.relics.indexOf("turtle")>=0){ p.shield += 1; state.log.push(p.name+" 的玄龟灵甲生效，+1 护盾。"); }
+        if(!first){ drawCards(p,2); }
+        if(first) sfxTurnStart();
+        state.log.push("—— 轮到 "+p.name+"（真气 "+p.energy+(first?"":"，已摸 2 张牌")+"）——");
+        maybeTriggerEvent();
+      }
+      function maybeTriggerEvent(){
+        if(state.pending || state.winner!==null) return;
+        var pi = state.turn, p = state.players[pi], cfg = DIFFS[state.diff];
+        var nextSoupRound = cfg.soupRounds[p.soupCount];
+        if(nextSoupRound !== undefined && state.round === nextSoupRound){
+          var sIdx = state.soupDeck[(state.soupDeckPos||0) % state.soupDeck.length];
+          state.soupDeckPos = (state.soupDeckPos||0) + 1;
+          state.pending = { kind:"soup", player:pi, soup:sIdx, revealed:[false,false,false,false,false] };
+          state.log.push(p.name+" 在雾岛撞上江湖奇闻「"+SOUPS[sIdx].title+"」！");
+          return;
+        }
+        if(cfg.upgrade && state.round===4 && !p.upgraded){
+          var keys = shuffleIdx(Object.keys(RELICS).slice());
+          state.pending = { kind:"upgrade", player:pi, options:keys.slice(0,3) };
+          state.log.push(p.name+" 寻得宗师遗藏，可任选一部秘籍！");
+        }
+      }
+      function dealDamage(srcIdx, amount, opts){
+        opts = opts || {};
+        var src = state.players[srcIdx], dst = state.players[1-srcIdx];
+        var dmg = amount, note = "";
+        if(!opts.pierce && dst.shield>0){
+          var absorbed = Math.min(dst.shield, dmg);
+          dst.shield -= absorbed; dmg -= absorbed;
+          note += "护盾挡下 "+absorbed+" 点；";
+        }
+        if(dst.trait==="dodge" && !dst.dodgeUsed && dmg>0){
+          dst.dodgeUsed = true; var dodged = Math.min(2, dmg); dmg -= dodged;
+          note += "影遁卸去 "+dodged+" 点；";
+        }
+        if(dst.reflect && dmg>0){
+          dst.reflect = false; dmg = Math.max(0, dmg-2); src.hp -= 2;
+          note += "斗转星移弹回 2 点给 "+src.name+"；";
+        }
+        dst.hp -= dmg;
+        return note+"对 "+dst.name+" 造成 "+dmg+" 点伤害。";
+      }
+      function checkWinner(){
+        for(var i=0;i<2;i++){ if(state.players[i].hp<=0){ state.winner = 1-i; return true; } }
+        return false;
+      }
+      function playCard(pi, handIdx){
+        if(!state || state.winner!==null || state.turn!==pi || state.pending) return false;
+        var p = state.players[pi], foe = state.players[1-pi];
+        var card = p.hand[handIdx]; if(!card) return false;
+        var def = DEFS[card.def], cost = effCost(card.def, pi);
+        if(cost > p.energy) return false;
+        p.energy -= cost;
+        p.hand.splice(handIdx,1); p.discard.push(card);
+        sfxForCard(card.def);
+        var atkBonus = def.type==="atk" ? (p.relics.indexOf("swordcase")>=0?1:0) + (p.trait==="frost"?1:0) : 0;
+        var result = "";
+        switch(card.def){
+          case "starblade": result = dealDamage(pi,3+atkBonus); break;
+          case "meteor": result = dealDamage(pi,6+atkBonus); break;
+          case "pierce": result = dealDamage(pi,4+atkBonus,{pierce:true}); break;
+          case "chain": { var broken = Math.min(foe.shield,2); foe.shield -= broken; result = "击碎对方 "+broken+" 点护盾；" + dealDamage(pi,2+atkBonus); break; }
+          case "nova": p.shield += 3; result = "自己 +3 护盾；" + dealDamage(pi,4+atkBonus); break;
+          case "shield": p.shield += 4; result = p.name+" 获得 4 点护盾。"; break;
+          case "mirror": p.shield += 3; p.reflect = true; result = p.name+" 获得 3 点护盾并施展斗转星移。"; break;
+          case "heal": { var h = Math.min(p.maxHp-p.hp,4); p.hp += h; result = p.name+" 恢复 "+h+" 点气血。"; break; }
+          case "surge": p.energy += 2; result = p.name+" 本回合真气 +2。"; break;
+          case "draw": drawCards(p,2); result = p.name+" 抽了 2 张牌。"; break;
+          case "steal": {
+            if(foe.shield>0){ var s = Math.min(foe.shield,3); foe.shield -= s; p.shield += s; result = p.name+" 从 "+foe.name+" 处抢走了 "+s+" 点护盾。"; }
+            else { drawCards(p,1); result = foe.name+" 没有护盾，"+p.name+" 改为抽 1 张牌。"; } break; }
+          case "pulse": {
+            foe.slowed = true;
+            if(foe.hand.length>0){ var ri = Math.floor(Math.random()*foe.hand.length); var gone = foe.hand.splice(ri,1)[0]; foe.discard.push(gone); result = foe.name+" 随机弃掉了「"+DEFS[gone.def].name+"」，下回合真气 −1。"; }
+            else result = foe.name+" 没有手牌可弃，下回合真气 −1。"; break; }
+        }
+        state.lastPlayed = p.name+" 打出「"+def.name+"」："+result;
+        state.playSeq++; state.lastFx = { actor:pi, def:card.def };
+        state.log.push(state.lastPlayed);
+        checkWinner(); trimHand(p);
+        return true;
+      }
+      function trimHand(p){
+        while(p.hand.length>7){ var c = p.hand.shift(); p.discard.push(c); state.log.push(p.name+" 手牌超限，弃掉了「"+DEFS[c.def].name+"」。"); }
+      }
+      function endTurn(){
+        if(!state || state.winner!==null || state.pending) return;
+        sfxTurnEnd();
+        state.turn = 1 - state.turn;
+        if(state.turn===0) state.round++;
+        beginTurn(false);
+        checkWinner();
+      }
+      // ---------- Events ----------
+      function soupAsk(qi){
+        if(!state || !state.pending || state.pending.kind!=="soup") return false;
+        if(!state.pending.revealed[qi]) sfxSoupAsk();
+        state.pending.revealed[qi] = true; return true;
+      }
+      function soupGuess(oi){
+        if(!state || !state.pending || state.pending.kind!=="soup") return false;
+        var pend = state.pending, soup = SOUPS[pend.soup], p = state.players[pend.player], foe = state.players[1-pend.player];
+        p.soupCount++;
+        if(oi === soup.correct){
+          sfxSoupCorrect(); setTimeout(sfxReward, 200);
+          var h = Math.min(p.maxHp-p.hp,3); p.hp += h; drawCards(p,1); p.treasures++;
+          state.lastPlayed = p.name+" 猜中奇闻「"+soup.title+"」的汤底！回复 "+h+" 气血、抽 1 张牌、得到 1 件宝物。汤底："+soup.truth;
+        } else {
+          sfxSoupWrong();
+          p.hp -= 2; foe.shield += 3;
+          state.lastPlayed = p.name+" 猜错了奇闻「"+soup.title+"」的汤底，气血 −2，"+foe.name+" +3 护盾。汤底其实是："+soup.truth;
+        }
+        state.log.push(state.lastPlayed);
+        state.pending = null;
+        checkWinner();
+        return true;
+      }
+      function upgradePick(oi){
+        if(!state || !state.pending || state.pending.kind!=="upgrade") return false;
+        var pend = state.pending, p = state.players[pend.player];
+        var key = pend.options[oi]; if(!key) return false;
+        sfxReward();
+        p.relics.push(key); p.upgraded = true;
+        if(key==="dragon"){ p.maxHp += 4; p.hp += 4; }
+        state.lastPlayed = p.name+" 选了秘籍「"+RELICS[key].name+"」："+RELICS[key].desc;
+        state.log.push(state.lastPlayed);
+        state.pending = null;
+        return true;
+      }
+
+      // ---------- Views ----------
+      function pendingView(){
+        if(!state.pending) return null;
+        var pend = state.pending;
+        if(pend.kind==="soup"){
+          var soup = SOUPS[pend.soup];
+          return { kind:"soup", player:pend.player, title:soup.title, face:soup.face,
+                   qa: soup.qa.map(function(q,i){ return { q:q[0], revealed:pend.revealed[i], ans: pend.revealed[i] ? q[1] : null }; }),
+                   options: soup.options.slice() };
+        }
+        return { kind:"upgrade", player:pend.player, options: pend.options.map(function(k){ return { name:RELICS[k].name, desc:RELICS[k].desc }; }) };
+      }
+      function makeView(forIdx){
+        var cfg = DIFFS[state.diff];
+        return {
+          turn: state.turn, round: state.round, winner: state.winner,
+          diff: state.diff, diffLabel: cfg.label, styleLabel: STYLES[state.style].label,
+          terrain: cfg.terrain ? TERRAINS[terrainIdx()] : null, style: state.style,
+          pending: pendingView(),
+          playSeq: state.playSeq, lastFx: state.lastFx,
+          lastPlayed: state.lastPlayed, log: state.log.slice(-7), myIdx: forIdx,
+          players: state.players.map(function(p,i){
+            return { name:p.name, hp:p.hp, maxHp:p.maxHp, shield:p.shield, energy:p.energy, reflect:p.reflect,
+                     treasures:p.treasures, relics:p.relics.map(function(k){ return RELICS[k].name; }),
+                     handCount:p.hand.length, deckCount:p.deck.length, perk: charFor(p, i).perk,
+                     hand: i===forIdx ? p.hand.map(function(c){ return { def:c.def, cost:effCost(c.def, i) }; }) : null };
+          })
+        };
+      }
+
+      // ---------- Rendering ----------
+      var $ = function(id){ return document.getElementById(id); };
+      var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function statsHtml(p){
+        return "<span>护盾 <b>"+p.shield+"</b></span>"+
+               "<span>真气 <b>"+p.energy+"</b></span>"+
+               (p.reflect ? "<span><b>斗转星移生效中</b></span>" : "")+
+               (p.perk ? "<span>被动 <b>"+p.perk+"</b></span>" : "")+
+               "<span>宝物 <b>"+p.treasures+"</b></span>"+
+               (p.relics.length ? "<span>秘籍 <b>"+p.relics.join("、")+"</b></span>" : "")+
+               "<span>手牌 <b>"+p.handCount+"</b></span><span>牌库 <b>"+p.deckCount+"</b></span>";
+      }
+      function cardEl(card, opts){
+        opts = opts || {};
+        var def = DEFS[card.def];
+        var cost = (opts.cost !== undefined) ? opts.cost : def.cost;
+        var b = document.createElement("button");
+        b.className = "card t-"+def.type;
+        b.style.animationDelay = ((opts.delay||0)*0.06)+"s";
+        b.innerHTML = "<span class='chead'><span class='cost'>"+cost+"</span><span class='cname'>"+def.name+"</span></span>"+
+          "<span class='cart'><span class='cart-glyph'>"+def.glyph+"</span><span class='cart-type'>"+TYPE_LABEL[def.type]+" · 真气 "+cost+"</span></span>"+
+          "<span class='ctextbox'><span class='ctext'>"+def.text+"</span></span>"+
+          (opts.showTier ? "<span class='tier'>"+TIER_LABEL[def.tier]+"</span>" : "");
+        if(opts.disabled) b.disabled = true;
+        if(opts.onPlay) b.addEventListener("click", function(){
+          unlockAudio(false);
+          if(reduced){ opts.onPlay(); return; }
+          b.classList.add("playing");
+          setTimeout(function(){ opts.onPlay(); }, 240);
+        });
+        if(!reduced && !opts.noTilt) attachTilt(b);
+        return b;
+      }
+      function attachTilt(el){
+        el.addEventListener("pointermove", function(e){
+          if(e.pointerType === "touch") return;
+          var r = el.getBoundingClientRect();
+          var x = (e.clientX - r.left)/r.width - 0.5, y = (e.clientY - r.top)/r.height - 0.5;
+          el.style.transform = "perspective(700px) rotateY("+(x*16)+"deg) rotateX("+(-y*14)+"deg) translateY(-6px) translateZ(14px)";
+        });
+        el.addEventListener("pointerleave", function(){ el.style.transform = ""; });
+      }
+      // 角色定位：血量按特点分档（耐打高、脆皮低、输出中低），并配与定位匹配的被动
+      function charFor(player, idx){
+        if(player.name.indexOf("凌霜")>=0) return { hp:14, trait:"frost", blood:"中血 · 输出型", bt:"bt-mid", perk:"霜剑：攻击牌伤害 +1" };
+        if(idx===0) return { hp:18, trait:"tank", blood:"高血 · 耐打型", bt:"bt-high", perk:"敦实耐打：天生血厚" };
+        return { hp:13, trait:"dodge", blood:"低血 · 脆皮型", bt:"bt-low", perk:"影遁：每回合首次受伤 −2" };
+      }
+      // IP 形象：按座位分配，凌霜（电脑）用专属形象
+      function ipFor(player, idx){
+        if(player.name.indexOf("凌霜")>=0) return { name:"凌霜 · 霜狐剑姬", desc:"银发冰剑 · 雪狐相伴", img:"assets/ip-lingshuang.webp", alt:"凌霜：银白长发、冰晶长剑、脚边有小雪狐的霜狐剑姬" };
+        if(idx===0) return { name:"阿雾 · 青衫小侠", desc:"斗笠竹剑 · 脸颊雾纹", img:"assets/ip-awu.webp", alt:"阿雾：戴竹斗笠、背小竹剑、脸颊有雾纹的青衫小侠客" };
+        return { name:"小影 · 紫衣影客", desc:"狐面纸伞 · 紫雾披风", img:"assets/ip-xiaoying.webp", alt:"小影：头顶白狐面具、手持纸伞的紫衣影客" };
+      }
+      function setIp(prefix, player, idx){
+        var ip = ipFor(player, idx);
+        var img = $(prefix+"IpImg"); img.src = ip.img; img.alt = ip.alt;
+        $(prefix+"IpName").textContent = ip.name;
+        $(prefix+"IpDesc").textContent = ip.desc;
+        var ch = charFor(player, idx), tag = $(prefix+"BloodTag");
+        tag.textContent = ch.blood; tag.className = "blood-tag " + ch.bt;
+      }
+      var lastPlayedSeen = "";
+      var sfxWinnerSeen = null, sfxPendingSeen = "";
+      // 出牌现身动画：让出牌方角色在擂台中央以立体形态现身出招
+      // （攻=挥剑前冲+剑光，防=护盾环展开，奇术=法阵旋转施法），约 1.15 秒后淡出。
+      // 由 state.playSeq 序号驱动（makeView 带出），同名牌连打两次也会各播一次；
+      // 本地 / 电脑 / 同机 / 局域网客人四条路径都经 render 触发。
+      var fxTimer = null, fxSeqSeen = 0;
+      function triggerPlayFx(view, actorIdx, defId){
+        if(reduced) return;
+        var fx = $("playFx"); if(!fx) return;
+        var def = DEFS[defId], ip = ipFor(view.players[actorIdx], actorIdx);
+        $("fxImg").src = ip.img; $("fxImg").alt = ip.alt;
+        $("fxGlyph").textContent = def.glyph;
+        $("fxBanner").textContent = view.players[actorIdx].name + " 使出「" + def.name + "」";
+        fx.style.setProperty("--dir", actorIdx === view.myIdx ? 1 : -1);
+        fx.className = "play-fx t-" + def.type + (actorIdx === view.myIdx ? " fx-mine" : " fx-opp");
+        void fx.offsetWidth; // 重启动画
+        fx.classList.add("on");
+        if(fxTimer) clearTimeout(fxTimer);
+        fxTimer = setTimeout(function(){ fx.classList.remove("on"); fx.classList.add("hidden"); fxTimer = null; }, 1180);
+      }
+      function render(view){
+        var me = view.players[view.myIdx], opp = view.players[1-view.myIdx];
+        document.body.classList.add("in-game");
+        if(ambOn) startAmbience();
+        // 段落音乐：胜负 > 海龟汤 > 对局（随难度/牌风变化），交叉淡入淡出
+        if(view.winner !== null && view.winner !== undefined) musicEnd(mode === "pass" || view.winner === view.myIdx);
+        else if(view.pending && view.pending.kind === "soup") musicSoup();
+        else musicBattle(view.diff || selDiff, view.style || selStyle);
+        // 海龟汤 / 秘籍事件出现提示音（本地与局域网客人共用渲染检测）
+        var pendKey = view.pending ? (view.pending.kind + ":" + (view.pending.title || "relic") + ":" + view.round + ":" + view.pending.player) : "";
+        if(pendKey && pendKey !== sfxPendingSeen){
+          sfxPendingSeen = pendKey;
+          if(view.pending.kind === "soup") sfxSoupAppear(); else sfxReward();
+        }
+        if(!pendKey) sfxPendingSeen = "";
+        // 出牌现身动画：序号变了就播一次出牌方角色的现身出招
+        if(view.playSeq === 0) fxSeqSeen = 0;
+        else if(view.playSeq !== undefined && view.playSeq !== fxSeqSeen){
+          fxSeqSeen = view.playSeq;
+          if(view.lastFx) triggerPlayFx(view, view.lastFx.actor, view.lastFx.def);
+        }
+        // 胜负音效：按当前视角区分胜利 / 失败，同机模式统一播胜利音
+        if(view.winner !== null && view.winner !== undefined){
+          if(sfxWinnerSeen !== view.winner){
+            sfxWinnerSeen = view.winner;
+            if(mode === "pass" || view.winner === view.myIdx) sfxVictory(); else sfxDefeat();
+          }
+        } else { sfxWinnerSeen = null; }
+        $("board").classList.remove("hidden"); $("home").classList.add("hidden");
+        if(view.terrain){ $("terrainBar").classList.remove("hidden"); $("terrainName").textContent = "灵雾地形 · "+view.terrain.name; $("terrainDesc").textContent = view.terrain.desc; }
+        else $("terrainBar").classList.add("hidden");
+        $("meName").textContent = me.name + (view.turn===view.myIdx ? "（行动中）" : "");
+        $("oppName").textContent = opp.name + (view.turn!==view.myIdx ? "（行动中）" : "");
+        $("meTag").textContent = (view.myIdx===0 ? "玩家一" : "玩家二") + " · " + view.diffLabel + "档 · " + view.styleLabel;
+        $("oppTag").textContent = (view.myIdx===0 ? "玩家二" : "玩家一");
+        $("fMe").className = "fighter " + (view.myIdx===0 ? "p1" : "p2") + (view.turn===view.myIdx ? " active" : "");
+        $("fOpp").className = "fighter " + (view.myIdx===0 ? "p2" : "p1") + (view.turn!==view.myIdx ? " active" : "");
+        $("meHpFill").style.width = Math.max(0, me.hp/me.maxHp*100) + "%";
+        $("oppHpFill").style.width = Math.max(0, opp.hp/opp.maxHp*100) + "%";
+        $("meHpNum").innerHTML = Math.max(0,me.hp)+"<small> / "+me.maxHp+"</small>";
+        $("oppHpNum").innerHTML = Math.max(0,opp.hp)+"<small> / "+opp.maxHp+"</small>";
+        setIp("me", me, view.myIdx);
+        setIp("opp", opp, 1-view.myIdx);
+        // v12 电影擂台：顶部血条 + 中央大型立绘都跟随「对手」视角同步，待机动画由 CSS 常驻
+        var bossIp = ipFor(opp, 1-view.myIdx);
+        $("bossName").textContent = bossIp.name;
+        $("bossHpFill").style.width = Math.max(0, opp.hp/opp.maxHp*100) + "%";
+        $("bossHpNum").textContent = Math.max(0,opp.hp) + " / " + opp.maxHp;
+        var shImg = $("stageHeroImg");
+        if(shImg.getAttribute("src") !== bossIp.img) shImg.src = bossIp.img;
+        shImg.alt = bossIp.alt;
+        $("stageHeroName").textContent = bossIp.name;
+        $("stageHeroDesc").textContent = bossIp.desc;
+        $("stageTurnTag").textContent = view.winner!==null ? "对局结束" : (view.turn===view.myIdx ? "你的回合 · 点牌出招" : opp.name + " 行动中");
+        $("stageHero").classList.toggle("my-turn", view.turn===view.myIdx && view.winner===null);
+        $("meStats").innerHTML = statsHtml(me);
+        $("oppStats").innerHTML = statsHtml(opp);
+        var backs = $("oppBacks"); backs.innerHTML = "";
+        for(var i=0;i<opp.handCount;i++){ var d=document.createElement("div"); d.className="back"; backs.appendChild(d); }
+        $("lastPlayed").innerHTML = "第 "+view.round+" 轮 · <b>"+escapeHtml(view.lastPlayed)+"</b>";
+        if(view.lastPlayed !== lastPlayedSeen){
+          var prevPlayed = lastPlayedSeen;
+          lastPlayedSeen = view.lastPlayed;
+          if(mode === "lan" && lanRole === "guest" && prevPlayed !== "") sfxFromLastPlayedForGuest(view.lastPlayed);
+          var cb = $("clashBox"); cb.classList.remove("hit"); void cb.offsetWidth; if(!reduced) cb.classList.add("hit");
+        }
+        var log = $("logList"); log.innerHTML = "";
+        view.log.slice().reverse().forEach(function(line){ var li=document.createElement("li"); li.textContent=line; log.appendChild(li); });
+        $("handTitle").textContent = me.name + " 的手牌";
+        var myTurn = view.turn===view.myIdx && view.winner===null;
+        var blocked = !!view.pending;
+        $("turnHint").textContent = view.winner!==null ? "对局已结束" : (blocked ? "先处理奇遇" : (myTurn ? "你的回合 · 点牌出招" : "等对方出招"));
+        var hand = $("hand"); hand.innerHTML = "";
+        var handCards = me.hand||[];
+        handCards.forEach(function(card, idx){
+          var el = cardEl(card, {
+            cost: card.cost, delay: idx,
+            disabled: !myTurn || blocked || card.cost > me.energy,
+            onPlay: function(){ onPlayCard(idx); }
+          });
+          el.style.setProperty("--fan-rot", ((idx - (handCards.length-1)/2) * 2.8) + "deg");
+          hand.appendChild(el);
+        });
+        if((me.hand||[]).length===0){ hand.innerHTML = "<p class='turnhint'>手牌空了，结束回合抽牌吧。</p>"; }
+        $("btnEndTurn").disabled = !myTurn || blocked;
+        $("netHint").textContent = mode==="lan" ? (lanRole==="host" ? "局域网对战中 · 你是房主" : "局域网对战中 · 你是客人") : "";
+        renderEvent(view);
+        if(view.winner!==null){
+          var wname = view.players[view.winner].name;
+          $("winTitle").textContent = "🏆 " + wname + " 获胜！";
+          $("winText").textContent = mode==="ai" ? (view.winner===0 ? "漂亮！你打赢了电脑侠客凌霜。" : "凌霜赢了这一局，再来一局试试先攒盾、等对应地形再打爆发。")
+            : (mode==="lan" ? (view.winner===view.myIdx ? "你赢下了这场雾岛对决！" : "对方赢了这一局，点「再来一局」由房主重开。")
+            : wname + " 赢下了这一局！");
+          $("winOverlay").classList.remove("hidden");
+        } else {
+          $("winOverlay").classList.add("hidden");
+        }
+      }
+      function renderEvent(view){
+        var ov = $("eventOverlay"), box = $("eventBox");
+        var pend = view.pending;
+        if(!pend || view.winner!==null){ ov.classList.add("hidden"); return; }
+        if(mode==="pass" && !$("passOverlay").classList.contains("hidden")){ ov.classList.add("hidden"); return; }
+        var mine = pend.player === view.myIdx;
+        var actor = view.players[pend.player].name;
+        var html = "";
+        if(pend.kind==="soup"){
+          html += "<h3>江湖奇闻 · 海龟汤</h3>";
+          html += "<img class='soupimg' src='assets/soup.webp' alt='深夜客栈里的油灯、两副碗筷与靠门的长刀'>";
+          html += "<div class='soupface'><span class='lab'>汤面 · "+escapeHtml(pend.title)+"</span>"+escapeHtml(pend.face)+"</div>";
+          if(mine){
+            html += "<p class='evnote'>你是本轮的解汤人。点下面的问题逐个提问，每个问题只会答「是 / 否 / 无关」；想清楚后在最下面猜汤底。猜中：回复 3 气血 + 抽 1 牌 + 1 件宝物；猜错：气血 −2，对方 +3 护盾。</p>";
+            pend.qa.forEach(function(q,i){
+              html += "<button class='qbtn"+(q.revealed?" revealed":"")+"' data-q='"+i+"'><span>"+escapeHtml(q.q)+"</span><span class='ans'>"+(q.revealed ? q.ans : "点此提问")+"</span></button>";
+            });
+            html += "<p class='evnote'><b>猜汤底（选一个）：</b></p>";
+            pend.options.forEach(function(o,i){
+              html += "<button class='optbtn' data-guess='"+i+"'>"+escapeHtml(o)+"</button>";
+            });
+          } else {
+            html += "<p class='evnote'>"+escapeHtml(actor)+" 正在解这碗汤，你只能看到汤面——等他猜完，战局会随之变化。</p>";
+          }
+        } else {
+          html += "<h3>宗师遗藏 · 秘籍三选一</h3>";
+          if(mine){
+            html += "<p class='evnote'>雾岛深处寻得三部秘籍，任选一部，效果永久生效：</p>";
+            pend.options.forEach(function(o,i){
+              html += "<button class='optbtn' data-relic='"+i+"'><b>"+escapeHtml(o.name)+"</b> —— "+escapeHtml(o.desc)+"</button>";
+            });
+          } else {
+            html += "<p class='evnote'>"+escapeHtml(actor)+" 正在挑选秘籍，稍候继续对局。</p>";
+          }
+        }
+        box.innerHTML = html;
+        ov.classList.remove("hidden");
+        if(mine){
+          box.querySelectorAll("[data-q]").forEach(function(btn){
+            btn.addEventListener("click", function(){ onSoupAsk(parseInt(btn.getAttribute("data-q"),10)); });
+          });
+          box.querySelectorAll("[data-guess]").forEach(function(btn){
+            btn.addEventListener("click", function(){ onSoupGuess(parseInt(btn.getAttribute("data-guess"),10)); });
+          });
+          box.querySelectorAll("[data-relic]").forEach(function(btn){
+            btn.addEventListener("click", function(){ onUpgradePick(parseInt(btn.getAttribute("data-relic"),10)); });
+          });
+        }
+      }
+      function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+      function currentView(){
+        if(mode==="lan" && lanRole==="guest") return guestView;
+        return state ? makeView(perspective) : null;
+      }
+      function refresh(){ var v = currentView(); if(v) render(v); }
+      function afterHostAction(){ if(mode==="lan" && lanRole==="host") broadcast(); refresh(); maybeAiEvent(); }
+      function maybeAiEvent(){
+        if(mode!=="ai" || !state || !state.pending || state.pending.player!==1 || state.winner!==null) return;
+        var pend = state.pending;
+        setTimeout(function(){
+          if(!state || state.winner!==null || !state.pending) return;
+          if(state.pending.kind==="soup"){
+            state.pending.revealed[0] = true; state.pending.revealed[1] = true;
+            soupGuess(Math.random()<0.5 ? SOUPS[state.pending.soup].correct : (SOUPS[state.pending.soup].correct+1)%3);
+          } else {
+            upgradePick(Math.floor(Math.random()*state.pending.options.length));
+          }
+          refresh();
+          if(state && state.winner===null && state.turn===1 && !state.pending) aiTakeTurn();
+        }, 1400);
+      }
+
+      // ---------- Actions ----------
+      function onPlayCard(idx){
+        if(mode==="lan"){
+          if(lanRole==="host"){ if(playCard(0, idx)){ broadcast(); refresh(); } }
+          else { sfxFlip(); sendToHost({type:"play", handIdx:idx}); }
+          return;
+        }
+        if(playCard(perspective, idx)){
+          refresh();
+          if(mode==="ai" && state.winner===null && state.turn===1) aiTakeTurn();
+        }
+      }
+      function onSoupAsk(qi){
+        if(mode==="lan"){
+          if(lanRole==="host"){ if(soupAsk(qi)){ broadcast(); refresh(); } }
+          else { sfxSoupAsk(); sendToHost({type:"soupAsk", qi:qi}); }
+          return;
+        }
+        if(soupAsk(qi)) refresh();
+      }
+      function onSoupGuess(oi){
+        if(mode==="lan"){
+          if(lanRole==="host"){ if(soupGuess(oi)){ broadcast(); refresh(); } }
+          else sendToHost({type:"soupGuess", oi:oi});
+          return;
+        }
+        if(soupGuess(oi)){ refresh(); if(mode==="ai" && state.winner===null && state.turn===1) aiTakeTurn(); }
+      }
+      function onUpgradePick(oi){
+        if(mode==="lan"){
+          if(lanRole==="host"){ if(upgradePick(oi)){ broadcast(); refresh(); } }
+          else sendToHost({type:"upgradePick", oi:oi});
+          return;
+        }
+        if(upgradePick(oi)){ refresh(); if(mode==="ai" && state.winner===null && state.turn===1) aiTakeTurn(); }
+      }
+      function onEndTurn(){
+        if(mode==="lan"){
+          if(lanRole==="host"){ endTurn(); broadcast(); refresh(); maybeAiEvent(); }
+          else { sendToHost({type:"end"}); }
+          return;
+        }
+        if(mode==="pass"){
+          endTurn();
+          if(state.winner===null){
+            perspective = state.turn;
+            $("passTitle").textContent = "请把手机交给 " + state.players[perspective].name;
+            $("passOverlay").classList.remove("hidden");
+            refresh();
+          } else refresh();
+          return;
+        }
+        endTurn(); refresh();
+        if(mode==="ai" && state.winner===null){
+          if(state.pending && state.pending.player===1) maybeAiEvent();
+          else if(state.turn===1) aiTakeTurn();
+        }
+      }
+      function aiTakeTurn(){
+        var step = function(){
+          if(!state || state.winner!==null || state.turn!==1 || state.pending){ refresh(); return; }
+          var p = state.players[1];
+          var playable = [];
+          p.hand.forEach(function(c,i){ if(effCost(c.def,1)<=p.energy) playable.push(i); });
+          if(playable.length===0){ endTurn(); refresh(); return; }
+          playable.sort(function(a,b){ return aiScore(p.hand[b].def, p) - aiScore(p.hand[a].def, p); });
+          var pick = playable[0];
+          if(aiScore(p.hand[pick].def, p) <= 0 && p.energy < 3){ endTurn(); refresh(); return; }
+          playCard(1, pick); refresh();
+          if(state.winner===null && !state.pending) setTimeout(step, 650);
+        };
+        setTimeout(step, 650);
+      }
+      function aiScore(defId, p){
+        switch(defId){
+          case "heal": return p.hp<=9 ? 10 : 2;
+          case "shield": return p.shield===0 ? 8 : 3;
+          case "mirror": return p.shield===0 ? 7 : 3;
+          case "meteor": return 9; case "nova": return 9; case "pierce": return 7;
+          case "starblade": return 6; case "chain": return 6;
+          case "steal": return state.players[0].shield>0 ? 8 : 4;
+          case "pulse": return 5; case "draw": return p.hand.length<=3 ? 7 : 4;
+          case "surge": return p.hand.length>1 ? 8 : 1;
+          default: return 3;
+        }
+      }
+
+      // ---------- LAN (WebRTC manual code exchange) ----------
+      var pc = null, dc = null;
+      function encodeObj(o){ return btoa(unescape(encodeURIComponent(JSON.stringify(o)))); }
+      function decodeObj(s){ return JSON.parse(decodeURIComponent(escape(atob(s.trim())))); }
+      function waitIce(){
+        return new Promise(function(res){
+          if(pc.iceGatheringState==="complete") return res();
+          var done=false; var t=setTimeout(function(){ if(!done){done=true;res();} }, 3500);
+          pc.addEventListener("icegatheringstatechange", function(){
+            if(pc.iceGatheringState==="complete" && !done){ done=true; clearTimeout(t); res(); }
+          });
+        });
+      }
+      function newPc(){
+        pc = new RTCPeerConnection({iceServers: []});
+        pc.onconnectionstatechange = function(){
+          var st = pc.connectionState;
+          if(lanRole==="host") $("hostStatus").textContent = "连接状态："+st;
+          else $("guestStatus").textContent = "连接状态："+st;
+        };
+        return pc;
+      }
+      function setupDc(channel){
+        dc = channel;
+        dc.onopen = function(){
+          if(lanRole==="host"){
+            $("hostStatus").textContent = "已连接！对局开始。"; $("hostStatus").classList.add("ok");
+            startGame(["青衫客（房主）","紫衣客（客人）"]);
+            perspective = 0; broadcast(); refresh();
+          } else {
+            $("guestStatus").textContent = "已连接！等待房主发牌……"; $("guestStatus").classList.add("ok");
+          }
+        };
+        dc.onmessage = function(ev){
+          var msg; try{ msg = JSON.parse(ev.data); }catch(e){ return; }
+          if(lanRole==="host"){
+            if(!state) return;
+            var ok = false;
+            if(msg.type==="play") ok = playCard(1, msg.handIdx);
+            else if(msg.type==="end"){ if(state.turn===1 && state.winner===null && !state.pending){ endTurn(); ok = true; } }
+            else if(msg.type==="soupAsk") ok = soupAsk(msg.qi);
+            else if(msg.type==="soupGuess") ok = soupGuess(msg.oi);
+            else if(msg.type==="upgradePick") ok = upgradePick(msg.oi);
+            else if(msg.type==="restart"){ startGame(["青衫客（房主）","紫衣客（客人）"]); ok = true; }
+            if(ok){ broadcast(); refresh(); }
+          } else {
+            if(msg.type==="view"){ guestView = msg.view; render(guestView); }
+          }
+        };
+        dc.onclose = function(){ $("netHint").textContent = "连接已断开，请返回重新配对。"; };
+      }
+      function broadcast(){ if(dc && dc.readyState==="open" && state) dc.send(JSON.stringify({type:"view", view: makeView(1)})); }
+      function sendToHost(obj){ if(dc && dc.readyState==="open") dc.send(JSON.stringify(obj)); }
+
+      // ---------- UI wiring ----------
+      var catalog = $("catalog");
+      Object.keys(DEFS).forEach(function(k, i){ catalog.appendChild(cardEl({def:k}, {disabled:true, showTier:true, delay:i, noTilt:false})); });
+
+      function bindPick(gridId, attr, set){
+        $(gridId).querySelectorAll(".pick").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            $(gridId).querySelectorAll(".pick").forEach(function(b){ b.classList.remove("on"); });
+            btn.classList.add("on"); set(btn.getAttribute(attr));
+          });
+        });
+      }
+      bindPick("diffGrid", "data-diff", function(v){ selDiff = v; musicSetup(); });
+      bindPick("styleGrid", "data-style", function(v){ selStyle = v; musicSetup(); });
+
+      // ---------- 声音控制 wiring（音效 / 音乐 / 环境音分开，总音量统一） ----------
+      function syncAudioUi(){
+        var s = $("btnSfxToggle");
+        s.classList.toggle("off", !sfxOn); s.setAttribute("aria-pressed", sfxOn ? "true" : "false");
+        $("sfxStateText").textContent = sfxOn ? "音效：开" : "音效：关";
+        var m = $("btnMusicToggle");
+        m.classList.toggle("off", !musicOn); m.setAttribute("aria-pressed", musicOn ? "true" : "false");
+        $("musicStateText").textContent = musicOn ? "音乐：开" : "音乐：关";
+        var w = $("btnAmbToggle");
+        w.classList.toggle("off", !ambOn); w.setAttribute("aria-pressed", ambOn ? "true" : "false");
+        $("ambStateText").textContent = ambOn ? "开" : "关";
+        updateAudioStatus();
+      }
+      $("btnUnlock").addEventListener("click", function(){ unlockAudio(true); syncAudioUi(); });
+      $("btnSfxToggle").addEventListener("click", function(){
+        sfxOn = !sfxOn; unlockAudio(false);
+        if(sfxOn) setTimeout(sfxFlip, 80);
+        syncAudioUi();
+      });
+      $("btnMusicToggle").addEventListener("click", function(){
+        musicOn = !musicOn;
+        if(!musicOn) pauseMusic();
+        else { unlockAudio(false); startDesiredMusic(); }
+        syncAudioUi();
+      });
+      $("btnAmbToggle").addEventListener("click", function(){
+        ambOn = !ambOn; unlockAudio(false);
+        if(ambOn){ if(document.body.classList.contains("in-game")) startAmbience(); }
+        else stopAmbience();
+        syncAudioUi();
+      });
+      $("volRange").addEventListener("input", function(){
+        volumeLevel = parseInt(this.value, 10) / 100;
+        applyVolumes();
+      });
+      syncAudioUi();
+
+      function goHome(){
+        stopAmbience(); musicHome(); sfxWinnerSeen = null; sfxPendingSeen = "";
+        document.body.classList.remove("in-game");
+        $("winOverlay").classList.add("hidden"); $("passOverlay").classList.add("hidden"); $("eventOverlay").classList.add("hidden");
+        $("board").classList.add("hidden"); $("home").classList.remove("hidden");
+        state = null; guestView = null;
+      }
+      $("btnPass").addEventListener("click", function(){
+        unlockAudio(false); mode="pass"; perspective=0; startGame(["青衫客","紫衣客"]); refresh();
+      });
+      $("btnAi").addEventListener("click", function(){
+        unlockAudio(false); mode="ai"; perspective=0; startGame(["你","凌霜（电脑）"]); refresh();
+        if(state.pending && state.pending.player===1) maybeAiEvent();
+      });
+      $("btnLan").addEventListener("click", function(){
+        unlockAudio(false); musicSetup();
+        $("lanPanel").classList.remove("hidden");
+        $("lanPanel").scrollIntoView({behavior:"smooth", block:"start"});
+      });
+      $("tabHost").addEventListener("click", function(){
+        lanRole="host"; $("tabHost").classList.add("on"); $("tabGuest").classList.remove("on");
+        $("hostSteps").classList.remove("hidden"); $("guestSteps").classList.add("hidden");
+      });
+      $("tabGuest").addEventListener("click", function(){
+        lanRole="guest"; $("tabGuest").classList.add("on"); $("tabHost").classList.remove("on");
+        $("guestSteps").classList.remove("hidden"); $("hostSteps").classList.add("hidden");
+      });
+      lanRole = "host";
+
+      $("btnMakeOffer").addEventListener("click", function(){
+        mode="lan"; lanRole="host";
+        newPc(); setupDc(pc.createDataChannel("wudao"));
+        pc.createOffer().then(function(offer){ return pc.setLocalDescription(offer); }).then(waitIce).then(function(){
+          $("offerOut").value = encodeObj(pc.localDescription);
+          $("hostStatus").textContent = "房主连接码已生成，把它发给客人，然后等客人回传连接码。难度与牌风按你上面选的来。";
+        }).catch(function(err){ $("hostStatus").textContent = "生成失败："+err.message; });
+      });
+      $("btnAcceptAnswer").addEventListener("click", function(){
+        var v = $("answerIn").value.trim(); if(!v || !pc) { $("hostStatus").textContent = "请先生成房主连接码，并粘贴客人的回传码。"; return; }
+        pc.setRemoteDescription(decodeObj(v)).then(function(){
+          $("hostStatus").textContent = "已收到回传码，正在连接……";
+        }).catch(function(err){ $("hostStatus").textContent = "回传码无效："+err.message; });
+      });
+      $("btnMakeAnswer").addEventListener("click", function(){
+        var v = $("offerIn").value.trim(); if(!v){ $("guestStatus").textContent = "请先粘贴房主连接码。"; return; }
+        mode="lan"; lanRole="guest";
+        newPc(); pc.ondatachannel = function(e){ setupDc(e.channel); };
+        pc.setRemoteDescription(decodeObj(v)).then(function(){ return pc.createAnswer(); })
+          .then(function(ans){ return pc.setLocalDescription(ans); }).then(waitIce).then(function(){
+            $("answerOut").value = encodeObj(pc.localDescription);
+            $("guestStatus").textContent = "回传码已生成，把它发给房主，房主点「完成配对」后自动开局。";
+          }).catch(function(err){ $("guestStatus").textContent = "房主连接码无效："+err.message; });
+      });
+      function copyText(id, btn, label){
+        var ta = $(id); ta.select(); ta.setSelectionRange(0, ta.value.length);
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(ta.value).then(function(){ btn.textContent="已复制"; setTimeout(function(){ btn.textContent = label; },1500); });
+        }
+      }
+      $("copyOffer").addEventListener("click", function(){ copyText("offerOut", this, "复制房主连接码"); });
+      $("copyAnswer").addEventListener("click", function(){ copyText("answerOut", this, "复制回传连接码"); });
+
+      $("btnEndTurn").addEventListener("click", onEndTurn);
+      $("btnPassOk").addEventListener("click", function(){ $("passOverlay").classList.add("hidden"); refresh(); });
+      function restart(){
+        $("winOverlay").classList.add("hidden");
+        if(mode==="lan"){
+          if(lanRole==="host"){ startGame(["青衫客（房主）","紫衣客（客人）"]); broadcast(); refresh(); }
+          else sendToHost({type:"restart"});
+          return;
+        }
+        if(mode==="ai"){ startGame(["你","凌霜（电脑）"]); }
+        else { startGame(["青衫客","紫衣客"]); }
+        perspective = 0; refresh();
+        if(mode==="ai" && state.pending && state.pending.player===1) maybeAiEvent();
+      }
+      $("btnRestart").addEventListener("click", restart);
+      $("btnAgain").addEventListener("click", restart);
+      $("btnHome").addEventListener("click", goHome);
+      $("btnWinHome").addEventListener("click", goHome);
+    })();
+    </script>
+  </body>
+</html>
