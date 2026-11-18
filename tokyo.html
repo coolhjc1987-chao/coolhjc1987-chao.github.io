@@ -506,6 +506,7 @@
   .lab { line-height: 1.15; }
 .route-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}.route-svg{width:100%;max-height:540px;display:block;border-radius:14px;background:#eee}.route-key{font-size:13px;font-weight:650}.route-stops{padding-left:24px;line-height:1.7}.route-stops li{margin:10px 0}.route-links{display:grid;gap:8px}.route-nav{display:block;border:1px solid #d6ccbd;border-radius:10px;padding:11px 13px;font-size:13px;min-height:44px}.route-credit{font-size:11px!important;line-height:1.55!important;color:#6e665c}.daily-route{margin-top:18px;margin-bottom:18px}.daily-route h3{margin-bottom:18px}@media(max-width:640px){.route-grid{grid-template-columns:1fr;gap:12px}.route-svg{max-height:none}.route-stops{font-size:14px}}
 .fx-card{scroll-margin-top:18px}.fx-grid{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr);gap:12px;align-items:center}.fx-grid label,.fx-rate-label{display:block;font-size:14px;font-weight:650}.fx-grid input,.fx-rate-label input{display:block;width:100%;box-sizing:border-box;min-height:52px;padding:12px;margin-top:8px;border:1px solid #b9ac98;border-radius:12px;background:#fffdfa;color:#1c1915;font-size:21px}.fx-equals{text-align:center;padding-top:24px}.fx-card button{min-height:44px;border:1px solid #b9ac98;border-radius:10px;background:#f2eadc;color:#1c1915;padding:10px 14px;font:inherit;cursor:pointer}.fx-card button:disabled{opacity:.6}.fx-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.fx-source{font-size:12px!important;color:#6b6258;line-height:1.6!important}.fx-rate-label{margin:14px 0}.fx-card input:focus-visible,.fx-card button:focus-visible{outline:3px solid #2c5874;outline-offset:2px}#fx-message{min-height:24px}.fx-entry{display:inline-block;margin-top:12px;padding:10px 14px;border:1px solid #b9ac98;border-radius:10px;min-height:44px} @media(max-width:480px){.fx-grid{grid-template-columns:1fr;gap:8px}.fx-equals{padding:0}.fx-grid input{font-size:24px}}
+.place-actions{display:flex;flex-wrap:wrap;gap:8px}.place-actions .map-link{min-height:44px;padding:10px 12px;margin:0;border:1px solid #d6ccbd;border-radius:10px}.ride-note{font-size:11px!important;color:#6b6258;line-height:1.5!important;margin-top:8px!important}
 </style>
 <noscript><style>.panel{display:block !important} nav.tabbar{display:none}</style></noscript>
 </head>
@@ -583,7 +584,8 @@
     <p><b>京成 Skyliner</b>，行李多也较从容。日暮里到空港第 2 ビル最快 36 分，可继续到京成上野。车票 IC 1,267 日元（磁票 1,280）加ライナー指定席 1,300 日元，合计约 2,567–2,580 日元。</p>
     <p><b>JR 成田特快 N'EX</b>。成田空港站到东京站最快 53 分，可直达东京、品川、涩谷、新宿。普通车指定席：东京 3,140 日元；品川 / 涩谷 / 新宿 3,330 日元。票价页注明信息更新日期 2026-03-14。</p>
   </article>
-  <article class="card">
+  <article class="card"><h3 class="display">地图与打车怎么用</h3><p>每天「地点」和美食卡片均有 Google 定位、路线导航、Uber 打车入口及网页备用。Uber 只传入目的地名称/地址（已知时含地图代表坐标），不获取你的位置、不自动叫车。请在 Uber 选择实际上车点、核对目的地入口、车型、费用后自行确认。</p><p>已安装 Uber 时，系统可能直接打开 App；未安装时可能引导安装。可用「Uber 网页备用」尝试网页版，通常需登录。若目的地未带入，复制下方地点卡片的日文地址搜索；公园、寺院、步行街请选可停车入口，机场必须再核对航站楼。酒店未定，不添加酒店打车目的地。不保证当地即时有车或价格。</p><p><a href="https://developer.uber.com/docs/riders/ride-requests/tutorials/deep-links/introduction" target="_blank" rel="noopener noreferrer">Uber 官方深链说明</a></p></article>
+<article class="card">
     <div class="card-title"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plane"/></svg></span><h3 class="display">羽田机场</h3></div>
     <p><b>京急电铁</b>。到品川约 14 分，车票 330 日元 / IC 327 日元。官网页另列出到涩谷约 26 分、原宿（表参道）约 29 分、浅草（雷门）约 37 分、新宿约 33 分，含部分换乘，是参考时分。</p>
     <p><b>东京单轨电车</b>。各航站楼到浜松町，成人 520 日元 / IC 519 日元，再转 JR 山手线。</p>
@@ -788,7 +790,23 @@
 const gm = (q) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
 function esc(s){return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function inlineB(s){return esc(s).replace(/&lt;b&gt;/g,"<b>").replace(/&lt;\/b&gt;/g,"</b>");}
-function linkBtn(q){return '<a class="map-link" href="'+gm(q)+'" target="_blank" rel="noopener noreferrer">'+ico("pin","lite")+'在 Google 地图打开</a>';}
+function uberDestination(q){
+ const extras={
+ "東京ドーム天然温泉 Spa LaQua 東京都文京区春日1-1-1":{lat:35.70713,lon:139.75294,name:"Spa LaQua"},
+ "竹下通り 原宿":{lat:35.670868,lon:139.705917,name:"原宿竹下通"},
+ "ARC’TERYX 原宿ブランドストア 東京都渋谷区神宮前6-12-23":{lat:35.667076,lon:139.704514,name:"ARC’TERYX 原宿ブランドストア"}
+ };
+ const p=extras[q]||PLACES.find(x=>x.q===q);
+ const dest={addressLine1:p?p.name:q,addressLine2:q};
+ if(p&&!p.airport){dest.latitude=p.lat;dest.longitude=p.lon;}
+ return dest;
+}
+function uberUrl(q,web=false){const u=new URL(web?"https://m.uber.com/":"https://m.uber.com/looking");u.searchParams.set("drop[0]",JSON.stringify(uberDestination(q)));return u.href;}
+function linkBtn(q){
+ const a=(href,label)=>'<a class="map-link" href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+label+'</a>';
+ const nav="https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(q);
+ return '<div class="place-actions">'+a(gm(q),'Google 地图定位')+a(nav,'Google 路线导航')+a(uberUrl(q),'Uber 打车入口 ↗')+a(uberUrl(q,true),'Uber 网页备用 ↗')+'</div><p class="ride-note">只预填目的地，不下单；上车点、可停靠入口、车型和价格请在 Uber 确认。机场须再选择航站楼。</p>';
+}
 function ico(name, cls){
   return '<span class="ico '+(cls||"")+'"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-'+name+'"/></svg></span>';
 }
