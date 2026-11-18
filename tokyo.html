@@ -515,7 +515,7 @@
   <p class="kicker">Tokyo · two easy days</p>
   <h1 class="display">东京</h1>
   <p class="lede">两天两晚，只走一条不赶的线。周五下午抵达羽田，进城安顿后可选浅草羽子板市，周六上午看浅草寺羽子板市、下午去后乐园，晚上在附近 Spa LaQua 泡汤，周日神宫和原宿，11点逛始祖鸟，午饭后在表参道买 Apple TV，晚上去机场。适合从北京出发、想轻松吃喝的游客。</p>
-  <p class="when" id="when">2026年12月18日（周五）晚抵达，12月20日（周日）晚离开。</p>
+  <p class="when" id="when">2026年12月18日（周五）下午抵达羽田，12月20日（周日）晚离开。</p>
   <ol class="route">
     <li>浅草羽子板市</li>
     <li>小石川后乐园</li>
@@ -960,14 +960,14 @@ document.querySelectorAll("nav.tabbar button").forEach(btn=>{
   const end = new Date("2026-12-20T23:59:00+09:00");
   const now = new Date();
   const el = document.getElementById("when");
-  let extra = "2026年12月18日（周五）晚抵达，12月20日（周日）晚离开。";
+  let extra = "2026年12月18日（周五）下午抵达羽田，12月20日（周日）晚离开。";
   if(now < depart){
     const days = Math.ceil((depart - now) / 86400000);
-    extra = "距 12月18日晚抵达还有 " + days + " 天。2026年12月18日（周五）晚至 12月20日（周日）晚。";
+    extra = "距 12月18日下午抵达羽田还有 " + days + " 天。2026年12月18日（周五）下午至 12月20日（周日）晚。";
   } else if(now <= end){
-    extra = "这三天正在途中。2026年12月18日（周五）晚至 12月20日（周日）晚。";
+    extra = "这三天正在途中。2026年12月18日（周五）下午至 12月20日（周日）晚。";
   } else {
-    extra = "2026年12月18日晚至 12月20日晚的这段行程已经过去。";
+    extra = "2026年12月18日下午至 12月20日晚的这段行程已经过去。";
   }
   el.textContent = extra;
 })();
