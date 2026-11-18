@@ -621,7 +621,21 @@
 <div class="fx-actions"><button id="fx-refresh" type="button">刷新参考汇率</button><button id="fx-clear" type="button">清空金额</button></div>
 <details><summary>离线 / 手动设置汇率</summary><label class="fx-rate-label">1 人民币 = 多少日元？<input id="fx-rate" type="text" inputmode="decimal" autocomplete="off" value="23.93" /></label><button id="fx-manual" type="button">使用手动汇率</button><p>手动汇率不代表最新市场价；点击刷新后会恢复在线参考汇率。金额只在本页计算，不上传、不保存；仅缓存最近成功获取的汇率。</p></details>
 <p class="fx-source">来源：<a href="https://frankfurter.dev/" target="_blank" rel="noopener noreferrer">Frankfurter v2（央行及官方来源汇总）</a>。这是每日/定期公布的参考汇率，<b>不是实时行情</b>。汇率日期与获取时间分别显示；刷新失败时保留旧值并提示。银行卡手续费和商户动态货币转换费用未计入。</p>
-</article>
+
+<section id="tax-estimator" style="border-top:1px solid #ded8cf;margin-top:24px;padding-top:20px">
+<p class="eyebrow">TAX REFUND · 2026年12月适用</p><h3 class="display">日本购物退税估算</h3>
+<p>仅用于<strong>10% 标准消费税商品</strong>。税前价 = 含税价 ÷ 1.1，不能直接减 10%。食品等 8% 税率、混合税率或非免税商品请勿套用。</p>
+<div class="fx-grid"><label>商品含税总价 JPY<input id="tax-price" type="text" inputmode="decimal" autocomplete="off" placeholder="例如 11000" /></label><div class="fx-equals" aria-hidden="true">−</div><label>退税手续费总额 JPY（可留空）<input id="tax-fee" type="text" inputmode="decimal" autocomplete="off" placeholder="未知则留空，不代表免费" /></label></div>
+<div class="fx-actions"><button id="tax-use-jpy" type="button">使用上方日元金额</button></div>
+<div id="tax-result" role="status" aria-live="polite"></div>
+<p class="fx-source">人民币金额沿用上方当前汇率，刷新或手动修改后同步重算；银行换汇和刷卡费用未计入。手续费请向商家确认后填入总日元金额（若按比例收取，请先按商家指定基数算出金额）；留空只展示未扣费估算，不承诺实际到账。</p>
+<details><summary>2026年12月退税条件与办理提醒</summary>
+<ul><li>2026年11月1日起采用“先含税付款、出境确认后退款”，不是结账直接减税。须为合资格非居民旅客，在参与免税服务的商店办理并出示护照；不保证 Apple 或始祖鸟具体门店提供服务。</li>
+<li>通常同一人、同一店、同一天税前合计至少 ¥5,000。仅10%商品时相当于含税 ¥5,500。本计算器不核验身份、门店或交易资格。</li>
+<li>购买后90天内离境，随身持有该笔交易全部免税商品，在托运行李之前完成海关确认；抽检时须出示商品。消耗品若已在日本吃掉、用掉不能退；同笔交易缺少商品可能整笔不退。预留机场办理时间。</li>
+<li>返款方式、到账时间和手续费由门店/退款服务商说明。日本政府不收该项退款手续费，但服务商费用可能由旅客承担，没有统一费率。实际退税、舍入、手续费与汇率以商家和收款机构为准。</li></ul>
+<p class="fx-source">规则核对：2026-11-18。<a href="https://www.mlit.go.jp/kankocho/tax-free/page01_000001_00028.html" target="_blank" rel="noopener noreferrer">日本观光厅新制与门槛</a> · <a href="https://www.customs.go.jp/kaigairyoko/taxrefund.htm" target="_blank" rel="noopener noreferrer">日本海关出境确认</a> · <a href="https://www.mlit.go.jp/kankocho/tax-free/page01_000001_00044.html" target="_blank" rel="noopener noreferrer">观光厅手续费说明</a></p>
+</details></section></article>
   <article class="card">
     <h3 class="display">Apple TV 4K（第4世代）</h3>
     <dl class="kv">
@@ -1144,10 +1158,25 @@ window.addEventListener("load", bootMap);
   to.value=result.toFixed(2);
   message.textContent="1 人民币 ≈ "+state.rate+" 日元；结果保留两位小数。";
  }
+ function calculateTax(){
+ const price=el("tax-price"),fee=el("tax-fee"),out=el("tax-result");
+ if(!price.value.trim()){out.textContent="输入含税日元价，可查看税前价及人民币估算。";return;}
+ const p=number(price.value),unknown=!fee.value.trim(),f=unknown?0:number(fee.value);
+ if(p===null||p<=0||p>1e12||f===null||f<0){out.textContent="请填写大于0的含税价及非负手续费，金额不超过1万亿日元。";return;}
+ const net=p/1.1,tax=p-net;
+ if(f>tax){out.textContent="手续费超过理论税额，请核对金额；暂不计算退款。";return;}
+ const fmt=n=>n.toLocaleString("zh-CN",{minimumFractionDigits:2,maximumFractionDigits:2});
+ const pair=n=>"¥"+fmt(n)+" / 约人民币 "+fmt(n/state.rate)+" 元";
+ out.replaceChildren();
+ [["税前价（不含手续费）",net],["理论消费税额",tax],["预计退款"+(unknown?"（未扣手续费）":""),tax-f],["退税后成本"+(unknown?"（未扣手续费）":""),net+f]].forEach(([label,n])=>{const line=document.createElement("p");line.textContent=label+"："+pair(n);out.appendChild(line);});
+ const note=document.createElement("p");note.className="fx-source";note.textContent=(net+1e-8<5000?"此金额单独不足税前 ¥5,000 门槛；若无同店同日其他合格购买，不能据此退税。":"金额达到通常门槛，但仍须满足身份、商店及出境条件。")+(unknown?" 手续费未知，以上按未扣费展示。":" 已扣除所填手续费 ¥"+fmt(f)+"。");out.appendChild(note);
+ }
+ el("tax-price").addEventListener("input",calculateTax);el("tax-fee").addEventListener("input",calculateTax);
+ el("tax-use-jpy").onclick=()=>{el("tax-price").value=jpy.value;calculateTax();};
  function show(extra=""){
   rateInput.value=String(state.rate);
   source.textContent=state.mode+" · "+(state.mode==="手动汇率"?"设置时间："+new Date(state.fetchedAt).toLocaleString():"汇率日期："+state.date+(state.fetchedAt?" · 获取时间："+new Date(state.fetchedAt).toLocaleString():" · 随页面内置，尚未在线刷新"))+(extra?" · "+extra:"");
-  calculate();
+  calculate();calculateTax();
  }
  try{const saved=JSON.parse(localStorage.getItem("tokyo-cny-jpy-rate-v1"));if(validRecord(saved))state={...saved,mode:"本机缓存参考汇率"};}catch{}
  cny.addEventListener("input",()=>{last="CNY";calculate();});jpy.addEventListener("input",()=>{last="JPY";calculate();});
