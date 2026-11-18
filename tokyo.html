@@ -505,6 +505,7 @@
   nav.tabbar button[aria-selected="true"] .bar { background: var(--accent); }
   .lab { line-height: 1.15; }
 .route-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}.route-svg{width:100%;max-height:540px;display:block;border-radius:14px;background:#eee}.route-key{font-size:13px;font-weight:650}.route-stops{padding-left:24px;line-height:1.7}.route-stops li{margin:10px 0}.route-links{display:grid;gap:8px}.route-nav{display:block;border:1px solid #d6ccbd;border-radius:10px;padding:11px 13px;font-size:13px;min-height:44px}.route-credit{font-size:11px!important;line-height:1.55!important;color:#6e665c}.daily-route{margin-top:18px;margin-bottom:18px}.daily-route h3{margin-bottom:18px}@media(max-width:640px){.route-grid{grid-template-columns:1fr;gap:12px}.route-svg{max-height:none}.route-stops{font-size:14px}}
+.fx-card{scroll-margin-top:18px}.fx-grid{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr);gap:12px;align-items:center}.fx-grid label,.fx-rate-label{display:block;font-size:14px;font-weight:650}.fx-grid input,.fx-rate-label input{display:block;width:100%;box-sizing:border-box;min-height:52px;padding:12px;margin-top:8px;border:1px solid #b9ac98;border-radius:12px;background:#fffdfa;color:#1c1915;font-size:21px}.fx-equals{text-align:center;padding-top:24px}.fx-card button{min-height:44px;border:1px solid #b9ac98;border-radius:10px;background:#f2eadc;color:#1c1915;padding:10px 14px;font:inherit;cursor:pointer}.fx-card button:disabled{opacity:.6}.fx-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.fx-source{font-size:12px!important;color:#6b6258;line-height:1.6!important}.fx-rate-label{margin:14px 0}.fx-card input:focus-visible,.fx-card button:focus-visible{outline:3px solid #2c5874;outline-offset:2px}#fx-message{min-height:24px}.fx-entry{display:inline-block;margin-top:12px;padding:10px 14px;border:1px solid #b9ac98;border-radius:10px;min-height:44px} @media(max-width:480px){.fx-grid{grid-template-columns:1fr;gap:8px}.fx-equals{padding:0}.fx-grid input{font-size:24px}}
 </style>
 <noscript><style>.panel{display:block !important} nav.tabbar{display:none}</style></noscript>
 </head>
@@ -515,6 +516,7 @@
   <p class="kicker">Tokyo · two easy days</p>
   <h1 class="display">东京</h1>
   <p class="lede">两天两晚，只走一条不赶的线。周五下午抵达羽田，进城安顿后可选浅草羽子板市，周六上午看浅草寺羽子板市、下午去后乐园，晚上在附近 Spa LaQua 泡汤，周日神宫和原宿，11点逛始祖鸟，午饭后在表参道买 Apple TV，晚上去机场。适合从北京出发、想轻松吃喝的游客。</p>
+  <a class="fx-entry" id="fx-open" href="?tab=shop#currency-calculator">人民币 ⇄ 日元换算 ↗</a>
   <p class="when" id="when">2026年12月18日（周五）下午抵达羽田，12月20日（周日）晚离开。</p>
   <ol class="route">
     <li>浅草羽子板市</li>
@@ -609,6 +611,15 @@
     <h2 class="display">购物</h2>
     <p>12月20日先逛始祖鸟原宿店，再去 Apple 表参道。购机核心是 Apple TV 4K（第4世代）。规格按 2026年11月13日晚已对照的 Apple 日本新闻稿、购买页和规格页抄录，本页不再改写这些参数。</p>
   </div>
+<article class="card fx-card" id="currency-calculator">
+<p class="eyebrow">CNY ⇄ JPY · 旅行换算</p><h3 class="display">人民币 / 日元计算器</h3>
+<p>任意一侧输入金额，另一侧自动换算。用于估算，不是银行、刷卡或换钞成交价。</p>
+<div class="fx-grid"><label>人民币 CNY<input id="fx-cny" type="text" inputmode="decimal" autocomplete="off" value="100" aria-describedby="fx-message" /></label><div class="fx-equals" aria-hidden="true">⇄</div><label>日元 JPY<input id="fx-jpy" type="text" inputmode="decimal" autocomplete="off" aria-describedby="fx-message" /></label></div>
+<p id="fx-message" role="status" aria-live="polite"></p><p id="fx-source" class="fx-source"></p>
+<div class="fx-actions"><button id="fx-refresh" type="button">刷新参考汇率</button><button id="fx-clear" type="button">清空金额</button></div>
+<details><summary>离线 / 手动设置汇率</summary><label class="fx-rate-label">1 人民币 = 多少日元？<input id="fx-rate" type="text" inputmode="decimal" autocomplete="off" value="23.93" /></label><button id="fx-manual" type="button">使用手动汇率</button><p>手动汇率不代表最新市场价；点击刷新后会恢复在线参考汇率。金额只在本页计算，不上传、不保存；仅缓存最近成功获取的汇率。</p></details>
+<p class="fx-source">来源：<a href="https://frankfurter.dev/" target="_blank" rel="noopener noreferrer">Frankfurter v2（央行及官方来源汇总）</a>。这是每日/定期公布的参考汇率，<b>不是实时行情</b>。汇率日期与获取时间分别显示；刷新失败时保留旧值并提示。银行卡手续费和商户动态货币转换费用未计入。</p>
+</article>
   <article class="card">
     <h3 class="display">Apple TV 4K（第4世代）</h3>
     <dl class="kv">
@@ -1098,6 +1109,56 @@ renderFood();
 if(TABS.includes(params.get("tab"))) showTab(params.get("tab"));
 window.addEventListener("load", bootMap);
 </script>
+<script id="currency-calculator-script">
+(function initCurrencyCalculator(){
+ const seed={date:"2026-11-18",rate:23.93,fetchedAt:null};
+ const el=id=>document.getElementById(id), cny=el("fx-cny"),jpy=el("fx-jpy"),rateInput=el("fx-rate"),refresh=el("fx-refresh"),message=el("fx-message"),source=el("fx-source");
+ let state={...seed,mode:"页面内置参考值"},last="CNY",revision=0,controller=null;
+ function number(v){const x=String(v).trim();return /^(?:\d+(?:\.\d*)?|\.\d+)$/.test(x)&&Number.isFinite(Number(x))?Number(x):null;}
+ function validRate(x){return Number.isFinite(x)&&x>0&&x<1000000;}
+ function validRecord(x){return x&&validRate(x.rate)&&typeof x.date==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(x.date)&&Number.isFinite(Date.parse(x.date))&&Date.parse(x.date)<=Date.now()+86400000&&(!x.fetchedAt||Number.isFinite(Date.parse(x.fetchedAt)));}
+ function calculate(){
+  const from=last==="CNY"?cny:jpy,to=last==="CNY"?jpy:cny;
+  if(!from.value.trim()){to.value="";message.textContent="输入人民币或日元金额即可换算。";return;}
+  const n=number(from.value);
+  if(n===null||n<0||n>1e12){to.value="";message.textContent="请输入0至1万亿元以内的数字金额，不要输入货币符号、逗号或负数。";return;}
+  const result=last==="CNY"?n*state.rate:n/state.rate;
+  to.value=result.toFixed(2);
+  message.textContent="1 人民币 ≈ "+state.rate+" 日元；结果保留两位小数。";
+ }
+ function show(extra=""){
+  rateInput.value=String(state.rate);
+  source.textContent=state.mode+" · "+(state.mode==="手动汇率"?"设置时间："+new Date(state.fetchedAt).toLocaleString():"汇率日期："+state.date+(state.fetchedAt?" · 获取时间："+new Date(state.fetchedAt).toLocaleString():" · 随页面内置，尚未在线刷新"))+(extra?" · "+extra:"");
+  calculate();
+ }
+ try{const saved=JSON.parse(localStorage.getItem("tokyo-cny-jpy-rate-v1"));if(validRecord(saved))state={...saved,mode:"本机缓存参考汇率"};}catch{}
+ cny.addEventListener("input",()=>{last="CNY";calculate();});jpy.addEventListener("input",()=>{last="JPY";calculate();});
+ el("fx-clear").onclick=()=>{cny.value="";jpy.value="";calculate();cny.focus();};
+ el("fx-manual").onclick=()=>{
+  const n=number(rateInput.value);if(!validRate(n)){message.textContent="汇率必须为大于0且小于1,000,000的数字。当前汇率未改变。";return;}
+  revision++;if(controller)controller.abort();refresh.disabled=false;
+  state={rate:n,date:null,fetchedAt:new Date().toISOString(),mode:"手动汇率"};show("仅本次页面有效，不作为市场报价");
+ };
+ async function fetchRate(){
+  const rev=++revision;if(controller)controller.abort();controller=new AbortController();const ctrl=controller;
+  refresh.disabled=true;source.textContent="正在获取参考汇率… 当前仍按 "+state.rate+" 日元/人民币计算。";
+  const timer=setTimeout(()=>ctrl.abort(),10000);
+  try{
+   const res=await fetch("https://api.frankfurter.dev/v2/rate/CNY/JPY",{signal:ctrl.signal,credentials:"omit",cache:"no-cache"});
+   if(!res.ok)throw new Error("http");
+   const data=await res.json();if(data.base!=="CNY"||data.quote!=="JPY"||!validRecord(data))throw new Error("data");
+   if(rev!==revision)return;
+   state={rate:data.rate,date:data.date,fetchedAt:new Date().toISOString(),mode:"在线参考汇率（非实时）"};
+   try{localStorage.setItem("tokyo-cny-jpy-rate-v1",JSON.stringify({rate:state.rate,date:state.date,fetchedAt:state.fetchedAt}));}catch{}
+   show();
+  }catch(e){if(rev===revision)show("刷新失败或网络不可用，继续使用上述汇率；可手动调整");}
+  finally{clearTimeout(timer);if(rev===revision)refresh.disabled=false;}
+ }
+ refresh.onclick=fetchRate;
+ el("fx-open").onclick=e=>{e.preventDefault();showTab("shop");el("currency-calculator").scrollIntoView({behavior:"smooth",block:"start"});};
+ show();
+ fetchRate();
+})();</script>
 </body>
 </html>
 
